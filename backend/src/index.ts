@@ -1,3 +1,4 @@
+import {config} from "dotenv";
 import {serve} from "@hono/node-server";
 import {Hono} from "hono";
 
@@ -11,10 +12,13 @@ app.get("/", (c) => {
     return c.text("Backend läuft hoffentlich..."); // Sendet eine Text-Antwort zurück
 });
 
+//Nimmt sich die Port variable aus .env
+const port = Number(process.env.PORT) || 3000;
+
 // Startet den Server auf Port 3000
 serve({
     fetch: app.fetch,
-    port: 3000,
+    port,
 },(info) => {
-    console.log(`Server läuft unter hht://localhost:${info.port}`);
+    console.log(`Server läuft unter http://localhost:${info.port}`);
 })
