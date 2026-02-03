@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { timeStamp } from "node:console";
 
 //Warum eine Health-Route?
 //Das ist Standard bei Backends. Sie zeigt: Server läuft
@@ -10,10 +9,10 @@ const health = new Hono();
 
 //"/" ist relativ – die Basis-URL wird in index.ts definiert
 health.get("/", (c) => {
-    return c.json({
-        status: "ok",
-        timeStamp: new Date().toISOString(),
-    });
+  return c.json({
+    status: "ok",
+    timeStamp: new Date().toISOString(),
+  });
 });
 
 //Exportiert die Route, damit index.ts sie importieren kann

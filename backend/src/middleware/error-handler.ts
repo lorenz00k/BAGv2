@@ -16,8 +16,7 @@ export const errorHandler: ErrorHandler = (err, c) => {
   });
 
   // Unterscheide zwischen bekannten und unbekannten Fehlern
-  const status =
-    "status" in err ? (err.status as ContentfulStatusCode) : 500;
+  const status = "status" in err ? (err.status as ContentfulStatusCode) : 500;
   const message = status === 500 ? "Internal Server Error" : err.message;
 
   return c.json(

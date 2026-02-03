@@ -6,16 +6,16 @@ const allowedOrigins = [
 ];
 
 export const corsMiddleware = cors({
-    //Welche Domains dürfen zugreifen
+  //Welche Domains dürfen zugreifen
   origin: (origin) => {
     // Kein Origin = Server-to-Server Request, erlauben
     if (!origin) return "*";
-    
+
     // Prüfen ob Origin erlaubt ist
     if (allowedOrigins.includes(origin)) {
       return origin;
     }
-    
+
     return null; // Blockieren
   },
   allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
