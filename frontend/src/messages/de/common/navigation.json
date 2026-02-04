@@ -1,0 +1,15 @@
+{
+    "navigation": "Navigation",
+    "aria": {
+        "primaryMenu": "Hauptmenü",
+        "secondaryMenu": "Weitere Navigation"
+    },
+    "menu": {
+        "open": "Menü öffnen",
+        "close": "Menü schließen",
+        "more": "Mehr"
+    },
+    "language": {
+        "select": "Sprache wählen"
+    }
+}

@@ -33,7 +33,8 @@ const focusableSelectors = [
 ].join(",");
 
 export default function MobileSidebar({ locale, open, onClose }: MobileSidebarProps) {
-    const tNav = useTranslations("nav");
+    const tNav = useTranslations("common.navigation");
+    const tItems = useTranslations("common.items")
     const drawerRef = useRef<HTMLDivElement | null>(null);
     const lastFocusedElement = useRef<HTMLElement | null>(null);
     const pathname = usePathname();
@@ -95,7 +96,7 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
             {/* Backdrop: UI Button, aber neutralisiert */}
             <Button
                 variant="secondary"
-                aria-label={tNav("closeMenu")}
+                aria-label={tNav("menu.close")}
                 onClick={onClose}
                 tabIndex={open ? 0 : -1}
                 className={[
@@ -131,7 +132,7 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
                             />
                             <div>
                                 {/* falls das bei dir unter item.bac liegt -> hier wieder tItem("bac") */}
-                                <div className={styles.brandTitle}>BAC</div>
+                                <div className={styles.brandTitle}>{tItems("app")}</div>
                                 <div className={styles.brandSub}>{tNav("navigation")}</div>
                             </div>
                         </Link>
@@ -140,7 +141,7 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
                         <Button
                             variant="secondary"
                             onClick={onClose}
-                            aria-label={tNav("closeMenu")}
+                            aria-label={tNav("menu.close")}
                             tabIndex={open ? 0 : -1}
                             className={[
                                 styles.close,
@@ -165,7 +166,7 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
                 </div>
 
                 <div className={styles.content}>
-                    <div className={styles.sectionLabel}>{tNav("primaryMenu")}</div>
+                    <div className={styles.sectionLabel}>{tNav("aria.primaryMenu")}</div>
 
                     <nav className={styles.nav}>
                         {primary.map((link) => {
@@ -179,7 +180,7 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
                                     className={`${styles.item} ${active ? styles.active : ""}`}
                                     tabIndex={open ? 0 : -1}
                                 >
-                                    <span>{tNav(link.labelKey)}</span>
+                                    <span>{tItems(link.labelKey.replace("item.", ""))}</span>
                                 </Link>
                             );
                         })}
@@ -189,7 +190,7 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
                     <div className={styles.divider} style={{ margin: "0 12px" }} />
                     <div className={styles.spacer} />
 
-                    <div className={styles.sectionLabel}>{tNav("more")}</div>
+                    <div className={styles.sectionLabel}>{tNav("menu.more")}</div>
 
                     <nav className={styles.nav}>
                         {secondary.map((link) => {
@@ -203,7 +204,7 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
                                     className={`${styles.item} ${styles["item--secondary"]} ${active ? styles.active : ""}`}
                                     tabIndex={open ? 0 : -1}
                                 >
-                                    {tNav(link.labelKey)}
+                                    {tItems(link.labelKey.replace("item.", ""))}
                                 </Link>
                             );
                         })}

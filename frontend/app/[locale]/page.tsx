@@ -3,20 +3,23 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/locales";
+import { getTranslations } from "next-intl/server";
 
-export default function Home({ params }: { params: { locale: Locale } }) {
-    const t = useTranslations("home");
-    const { locale } = params;
+type PageProps = {
+    params: Promise<{ locale: Locale }>;
+};
 
-    const items = [
-        { href: `/${locale}/compliance-checker`, title: t("complianceTitle"), desc: t("complianceDesc") },
-        { href: `/${locale}/gastro-ai`, title: t("gastroTitle"), desc: t("gastroDesc") },
-        { href: `/${locale}/address-checker`, title: t("addressTitle"), desc: t("addressDesc") },
-    ];
+export default async function Home({
+    params
+}: PageProps) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "pages.home" });
+
 
     return (
         <main className="mx-auto max-w-6xl px-6 py-10">
-            Hello
+            <h2>{t('hero.title')}</h2>
+
         </main>
     );
 }

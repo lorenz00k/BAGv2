@@ -2,16 +2,17 @@
     "navigation": {
         "next": "Weiter",
         "back": "Zurück",
-        "finish": "Auswertung anzeigen"
+        "finish": "Auswertung anzeigen",
+        "close": "Schließen"
     },
     "check": {
+        "start": "Check starten",
         "restart": "Checker neu starten",
-        "newCheck": "Neue Adresse prüfen"
+        "new": "Neuen Check starten"
     },
     "addressCheck": {
         "run": "Adresse prüfen",
-        "downloadReport": "Bericht als PDF herunterladen",
-        "backToComplianceCheck": "Zurück zum Betriebsanlagen-Check"
+        "downloadReport": "Bericht als PDF herunterladen"
     },
     "documents": {
         "open": "Zu den Dokumenten"

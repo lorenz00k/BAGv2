@@ -4,8 +4,9 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import type { Locale } from "@/i18n/locales";
 import Footer from "@/components/common/Footer/Footer";
+import "@/styles/globals.css";
 
-export default async function LocaleLayout({
+export default async function RootLayout({
     children,
     params,
 }: {
@@ -19,11 +20,12 @@ export default async function LocaleLayout({
     return (
         <html lang={locale}>
             <body>
-                <NextIntlClientProvider messages={messages}>
+                <NextIntlClientProvider locale={locale} messages={messages}>
                     <HeaderNav locale={locale} />
-                    {children}
 
-                    <Footer locale={locale} />
+                    {children}
+                    {/* <Footer locale={locale} />*/}
+
                 </NextIntlClientProvider>
             </body>
         </html>

@@ -26,7 +26,7 @@ export default function LanguageSwitcher({ direction = 'down' }: LanguageSwitche
     const pathname = usePathname()
     const searchParams = useSearchParams()
     const params = useParams<{ locale?: string | string[] }>()
-    const t = useTranslations('nav')
+    const t = useTranslations("common.navigation");
 
     const [isOpen, setIsOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
@@ -75,7 +75,7 @@ export default function LanguageSwitcher({ direction = 'down' }: LanguageSwitche
                 onClick={() => setIsOpen((p) => !p)}
                 className={`h-8 gap-1.5 rounded-full bg-white/80 px-3 text-xs font-medium text-slate-700 shadow-sm hover:bg-white ${isOpen ? 'ring-2 ring-slate-400' : ''
                     }`}
-                aria-label={t('selectLanguage')}
+                aria-label={t('language.select')}
                 aria-haspopup="listbox"
                 aria-expanded={isOpen}
             >

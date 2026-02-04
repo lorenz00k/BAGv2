@@ -1,161 +1,100 @@
 // src/i18n/bundles.ts
-// show which message bundles exist
+// show which message bundles exist (nested namespaces)
 
 import type { AbstractIntlMessages } from "next-intl";
 import type { Locale } from "./locales";
 
 type Loader = (l: Locale) => Promise<AbstractIntlMessages>;
 
-// Keys sind eure Namespaces im messages-Objekt
+/**
+ * We return a top-level object like:
+ * {
+ *   common: { actions, labels, items, navigation },
+ *   pages: { home, faq, ... },
+ *   components: { featureCards, footer, stats },
+ *   sections: { ... },
+ *   seo: { routes }
+ * }
+ *
+ * So you can use:
+ * useTranslations("common.items")
+ * useTranslations("common.navigation")
+ * useTranslations("pages.home")
+ * ...
+ */
 export const messageBundles: Record<string, Loader> = {
-    // common
-    commonActions: (l) =>
-        import(`@/messages/${l}/common/actions.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    commonLabels: (l) =>
-        import(`@/messages/${l}/common/labels.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    commonItems: (l) =>
-        import(`@/messages/${l}/common/items.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
+    common: async (l) =>
+        ({
+            actions: (await import(`@/messages/${l}/common/actions.json`)).default,
+            labels: (await import(`@/messages/${l}/common/labels.json`)).default,
 
-    // components
-    featureCards: (l) =>
-        import(`@/messages/${l}/components/featureCards.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    footer: (l) =>
-        import(`@/messages/${l}/components/footer.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    stats: (l) =>
-        import(`@/messages/${l}/components/stats.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
+            items: (await import(`@/messages/${l}/common/items.json`)).default,
 
-    // pages
-    home: (l) =>
-        import(`@/messages/${l}/pages/home.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    faqPage: (l) =>
-        import(`@/messages/${l}/pages/faq.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    addressCheckerPage: (l) =>
-        import(`@/messages/${l}/pages/addressChecker.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    complianceCheckerPage: (l) =>
-        import(`@/messages/${l}/pages/complianceChecker.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    complianceResultPage: (l) =>
-        import(`@/messages/${l}/pages/complianceResult.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
+            // navigation ui strings
+            navigation: (await import(`@/messages/${l}/common/navigation.json`)).default,
+        }) as AbstractIntlMessages,
 
-    // sections - address check
-    addressCheckBadges: (l) =>
-        import(`@/messages/${l}/sections/addressCheck.badges.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    addressCheckMap: (l) =>
-        import(`@/messages/${l}/sections/addressCheck.map.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    addressCheckPois: (l) =>
-        import(`@/messages/${l}/sections/addressCheck.pois.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    addressCheckRisk: (l) =>
-        import(`@/messages/${l}/sections/addressCheck.risk.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    addressCheckSearch: (l) =>
-        import(`@/messages/${l}/sections/addressCheck.search.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
+    pages: async (l) =>
+        ({
+            home: (await import(`@/messages/${l}/pages/home.json`)).default,
+            faq: (await import(`@/messages/${l}/pages/faq.json`)).default,
 
-    // sections - home
-    approvalFlow: (l) =>
-        import(`@/messages/${l}/sections/approvalFlow.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    approvalSeo: (l) =>
-        import(`@/messages/${l}/sections/approvalSeo.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    checkerIntro: (l) =>
-        import(`@/messages/${l}/sections/checkerIntro.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    founderGuide: (l) =>
-        import(`@/messages/${l}/sections/founderGuide.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
+            // keep the filenames you actually have under src/messages/{locale}/pages/*
+            addressChecker: (await import(`@/messages/${l}/pages/addressChecker.json`)).default,
+            complianceChecker: (await import(`@/messages/${l}/pages/complianceChecker.json`)).default,
+            complianceResult: (await import(`@/messages/${l}/pages/complianceResult.json`)).default,
+        }) as AbstractIntlMessages,
 
-    // sections - compliance checker
-    complianceCheckerForm: (l) =>
-        import(`@/messages/${l}/sections/complianceChecker.form.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
+    components: async (l) =>
+        ({
+            featureCards: (await import(`@/messages/${l}/components/featureCards.json`)).default,
+            footer: (await import(`@/messages/${l}/components/footer.json`)).default,
+            stats: (await import(`@/messages/${l}/components/stats.json`)).default,
+        }) as AbstractIntlMessages,
 
-    // sections - compliance result
-    complianceResultClassification: (l) =>
-        import(`@/messages/${l}/sections/complianceResult.classification.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    complianceResultContent: (l) =>
-        import(`@/messages/${l}/sections/complianceResult.content.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    complianceResultDisclaimer: (l) =>
-        import(`@/messages/${l}/sections/complianceResult.disclaimer.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    complianceResultDownloadDocuments: (l) =>
-        import(`@/messages/${l}/sections/complianceResult.downloadDocuments.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    complianceResultGfvo: (l) =>
-        import(`@/messages/${l}/sections/complianceResult.gfvo.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    complianceResultLabels: (l) =>
-        import(`@/messages/${l}/sections/complianceResult.labels.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    complianceResultReasons: (l) =>
-        import(`@/messages/${l}/sections/complianceResult.reasons.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
+    sections: async (l) =>
+        ({
+            approvalFlow: (await import(`@/messages/${l}/sections/approvalFlow.json`)).default,
+            approvalSeo: (await import(`@/messages/${l}/sections/approvalSeo.json`)).default,
+            founderGuide: (await import(`@/messages/${l}/sections/founderGuide.json`)).default,
 
-    // sections - faq
-    faqCta: (l) =>
-        import(`@/messages/${l}/sections/faq.cta.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    faqGroups: (l) =>
-        import(`@/messages/${l}/sections/faq.groups.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    faqQuestions: (l) =>
-        import(`@/messages/${l}/sections/faq.questions.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
 
-    // seo
-    routes: (l) =>
-        import(`@/messages/${l}/seo/routes.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        )
+            addressChecker: {
+                badges: (await import(`@/messages/${l}/sections/addressChecker.badges.json`)).default,
+                map: (await import(`@/messages/${l}/sections/addressChecker.map.json`)).default,
+                pois: (await import(`@/messages/${l}/sections/addressChecker.pois.json`)).default,
+                risk: (await import(`@/messages/${l}/sections/addressChecker.risk.json`)).default,
+                search: (await import(`@/messages/${l}/sections/addressChecker.search.json`)).default,
+            },
+
+            complianceChecker: {
+                form: (await import(`@/messages/${l}/sections/complianceChecker.form.json`)).default
+            },
+
+            complianceResult: {
+                labels: (await import(`@/messages/${l}/sections/complianceResult.labels.json`)).default,
+                gfvo: (await import(`@/messages/${l}/sections/complianceResult.gfvo.json`)).default,
+                reasons: (await import(`@/messages/${l}/sections/complianceResult.reasons.json`)).default,
+                classifications: (await import(`@/messages/${l}/sections/complianceResult.classifications.json`)).default,
+                content: (await import(`@/messages/${l}/sections/complianceResult.content.json`)).default,
+                disclaimer: (await import(`@/messages/${l}/sections/complianceResult.disclaimer.json`)).default,
+                downloadDocuments: (await import(`@/messages/${l}/sections/complianceResult.downloadDocuments.json`)).default
+            },
+
+            faq: {
+                cta: (await import(`@/messages/${l}/sections/faq.cta.json`)).default,
+                groups: (await import(`@/messages/${l}/sections/faq.groups.json`)).default,
+                questions: (await import(`@/messages/${l}/sections/faq.questions.json`)).default
+            }
+        }) as AbstractIntlMessages,
+
+    seo: async (l) =>
+        ({
+            routes: (await import(`@/messages/${l}/seo/routes.json`)).default
+        }) as AbstractIntlMessages
 };
 
-// Lädt alle Bundles generisch
+// Loads all bundles and merges them
 export async function loadAllMessages(locale: Locale): Promise<AbstractIntlMessages> {
     const entries = await Promise.all(
         Object.entries(messageBundles).map(async ([key, loader]) => [key, await loader(locale)] as const)
