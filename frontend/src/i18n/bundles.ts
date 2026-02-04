@@ -17,6 +17,10 @@ export const messageBundles: Record<string, Loader> = {
         import(`@/messages/${l}/common/labels.json`).then(
             (m) => m.default as AbstractIntlMessages
         ),
+    commonItems: (l) =>
+        import(`@/messages/${l}/common/items.json`).then(
+            (m) => m.default as AbstractIntlMessages
+        ),
 
     // components
     featureCards: (l) =>
@@ -51,10 +55,6 @@ export const messageBundles: Record<string, Loader> = {
         ),
     complianceResultPage: (l) =>
         import(`@/messages/${l}/pages/complianceResult.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
-    metadataPage: (l) =>
-        import(`@/messages/${l}/pages/metadata.json`).then(
             (m) => m.default as AbstractIntlMessages
         ),
 
@@ -99,20 +99,12 @@ export const messageBundles: Record<string, Loader> = {
         ),
 
     // sections - compliance checker
-    complianceCheckerActions: (l) =>
-        import(`@/messages/${l}/sections/complianceChecker.actions.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
     complianceCheckerForm: (l) =>
         import(`@/messages/${l}/sections/complianceChecker.form.json`).then(
             (m) => m.default as AbstractIntlMessages
         ),
 
     // sections - compliance result
-    complianceResultActions: (l) =>
-        import(`@/messages/${l}/sections/complianceResult.actions.json`).then(
-            (m) => m.default as AbstractIntlMessages
-        ),
     complianceResultClassification: (l) =>
         import(`@/messages/${l}/sections/complianceResult.classification.json`).then(
             (m) => m.default as AbstractIntlMessages
