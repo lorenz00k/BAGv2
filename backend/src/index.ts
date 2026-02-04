@@ -12,7 +12,7 @@ config();
 
 //reihenfolge ist wichtig!!! Request → Logger → CORS → Route also middleware vor routing
 
-//Hono : Erstellt deine App-Instanz
+//Hono : Erstellt App-Instanz
 const app = new Hono();
 
 //Middleware einsetzten

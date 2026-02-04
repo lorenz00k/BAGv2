@@ -40,5 +40,10 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-  }
+  },
+  "exclude": [
+    "ndoe_modules",
+    "dist",
+    "drizzle.config.ts"
+  ]
 }
