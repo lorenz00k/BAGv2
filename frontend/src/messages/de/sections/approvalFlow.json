@@ -1,0 +1,33 @@
+{
+    "heading": "So funktioniert der Check",
+    "intro": "Entwickelt für Gründer:innen, Unternehmer:innen und Projektstarter in Wien.",
+    "steps": [
+        {
+            "title": "Fragen beantworten",
+            "text": "Gib ein paar Eckdaten zu Betrieb und Standort ein.",
+            "bullets": [
+                "Betriebsart & Nutzung",
+                "Fläche, Personen, Betrieb",
+                "Standort & Dauer"
+            ]
+        },
+        {
+            "title": "Sofort Einschätzung erhalten",
+            "text": "Du bekommst sofort eine erste Orientierung zur Genehmigungspflicht.",
+            "bullets": [
+                "Genehmigung wahrscheinlich?",
+                "Welche Punkte sind kritisch?",
+                "Empfohlene nächste Schritte"
+            ]
+        },
+        {
+            "title": "Dokumente vorbereiten",
+            "text": "Wenn eine Genehmigung nötig ist, zeigen wir dir, welche Dokumente gebraucht werden.",
+            "bullets": [
+                "Checkliste für Unterlagen",
+                "Hinweise zu Plänen & Nachweisen"
+            ],
+            "cta": "Zu den benötigten Unterlagen"
+        }
+    ]
+}

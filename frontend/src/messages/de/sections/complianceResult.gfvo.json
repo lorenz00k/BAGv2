@@ -1,0 +1,18 @@
+{
+    "match": {
+        "title": "Einstufung nach 2. GFVO"
+    },
+    "categories": {
+        "retail": "Einzelhandel bis 600 m² (§ 1 Abs. 1 Z 1 2. GFVO)",
+        "office": "Bürobetriebe ohne lärmende Maschinen (§ 1 Abs. 1 Z 2 2. GFVO)",
+        "warehouse": "Lager in Gebäuden bis 600 m² (§ 1 Abs. 1 Z 3 2. GFVO)",
+        "cosmetics": "Kosmetik-, Fußpflege-, Massagebetriebe (§ 1 Abs. 1 Z 4 2. GFVO)",
+        "tailor": "Änderungsschneidereien/haushaltsähnliche Nähmaschinen oder Schuhservice (§ 1 Abs. 1 Z 5 2. GFVO)",
+        "textilePickup": "Übernahmestelle für Textilreiniger/Wäschebügler (§ 1 Abs. 1 Z 10 2. GFVO)",
+        "accommodation": "Beherbergungsbetrieb ≤ 30 Betten, ohne Wellness, nur Frühstück (§ 1 Abs. 1 Z 8 2. GFVO)",
+        "iceSalon": "Gastgewerbe in der Betriebsart Eissalon (§ 1 Abs. 1 Z 9 2. GFVO)",
+        "dataCenter": "Rechenzentrum ohne Feuerungsanlagen (nur Notstrom) (§ 1 Abs. 1 Z 11 2. GFVO)",
+        "infrastructureSite": "Betrieb innerhalb genehmigter Eisenbahn-, Flugplatz-, Hafen- oder Krankenanstaltseinrichtungen (§ 1 Abs. 1 Z 12 2. GFVO)",
+        "embeddedFacility": "Betrieb bis 400 m² innerhalb einer genehmigten Gesamtanlage (§ 1 Abs. 1 Z 13 2. GFVO)"
+    }
+}

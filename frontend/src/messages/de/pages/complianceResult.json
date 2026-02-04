@@ -1,0 +1,12 @@
+{
+    "title": "Auswertung Betriebsanlagen checker",
+    "sections": {
+        "labels": "complianceResult.labels",
+        "gfvo": "complianceResult.gfvo",
+        "reasons": "complianceResult.reasons",
+        "classifications": "complianceResult.classifications",
+        "content": "complianceResult.content",
+        "disclaimer": "complianceResult.disclaimer",
+        "downloadDocuments": "complianceResult.downloadDocuments"
+    }
+}

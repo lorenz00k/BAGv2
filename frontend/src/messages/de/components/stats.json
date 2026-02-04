@@ -1,0 +1,16 @@
+{
+    "items": [
+        {
+            "valueTemplate": "{value}",
+            "label": "Sprachen verfügbar"
+        },
+        {
+            "valueTemplate": "{value} min",
+            "label": "Ergebnis in Minuten"
+        },
+        {
+            "valueTemplate": "100%",
+            "label": "Kostenlos & sicher"
+        }
+    ]
+}

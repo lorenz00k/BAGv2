@@ -1,0 +1,15 @@
+{
+    "title": "Bewertung für Betriebsanlagengenehmigung",
+    "levels": {
+        "high": "Hohes Risiko",
+        "medium": "Mittleres Risiko",
+        "low": "Geringes Risiko"
+    },
+    "points": "Punkte",
+    "warnings": "Wichtige Hinweise:",
+    "recommendations": "Empfehlungen:",
+    "disclaimer": {
+        "title": "Hinweis",
+        "text": "Diese Bewertung ist eine erste Einschätzung. Für eine rechtsverbindliche Auskunft kontaktieren Sie bitte die MA 36 (Magistratische Bezirksamt)."
+    }
+}

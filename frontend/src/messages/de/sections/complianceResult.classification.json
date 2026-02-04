@@ -1,0 +1,18 @@
+{
+    "noFacility": {
+        "title": "Keine Betriebsanlage nach GewO",
+        "summary": "Die Tätigkeit ist mobil oder bloß vorübergehend und fällt damit nicht unter den Betriebsanlagenbegriff (§ 74 GewO)."
+    },
+    "freistellungGFVO": {
+        "title": "Genehmigungsfrei nach 2. GFVO",
+        "summary": "Die Anlage erfüllt Kategorie, Zeitvorgaben und Ausschlussfreiheit der 2. Genehmigungsfreistellungsverordnung."
+    },
+    "needsPermit": {
+        "title": "Genehmigungspflichtige Betriebsanlage",
+        "summary": "Es greifen Ausschlussgründe oder zu erwartende Immissionen – ein Verfahren nach § 74 GewO ist erforderlich."
+    },
+    "individualAssessment": {
+        "title": "Einzelfallprüfung empfohlen",
+        "summary": "Es liegt keine klare Freistellung vor; die Behörde kann Genehmigungsfreiheit im Einzelfall feststellen."
+    }
+}

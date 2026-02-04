@@ -1,0 +1,9 @@
+{
+    "title": "Häufig gestellte Fragen",
+    "subtitle": "Alles Wichtige rund um Betriebsanlagengenehmigung, Gewerbeanmeldung und Unternehmensgründung in Wien",
+    "sections": {
+        "groups": "faq.groups",
+        "questions": "faq.questions",
+        "cta": "faq.cta"
+    }
+}

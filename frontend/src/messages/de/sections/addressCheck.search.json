@@ -1,0 +1,9 @@
+{
+    "label": "Straßenname in Wien eingeben",
+    "placeholder": "z.B. Rathausstraße, Mariahilfer Straße",
+    "button": "Adresse prüfen",
+    "searching": "Suche läuft...",
+    "error": "Fehler bei der Adresssuche. Bitte versuchen Sie es erneut.",
+    "noResults": "Keine Adresse gefunden. Bitte überprüfen Sie Ihre Eingabe.",
+    "multipleResults": "Bitte wählen Sie die richtige Adresse:"
+}

@@ -1,0 +1,14 @@
+{
+    "approval": {
+        "title": "Genehmigung & Ablauf",
+        "description": "Dauer, Start vor Genehmigung und zuständige Stelle."
+    },
+    "costs": {
+        "title": "Kosten & Unterlagen",
+        "description": "Gebühren, Gutachten und welche Dokumente du brauchst."
+    },
+    "legal": {
+        "title": "Rechtliches & Sonderfälle",
+        "description": "Gewerbeanmeldung vs. Genehmigung, Freistellung, Nachbarn, Sprache."
+    }
+}

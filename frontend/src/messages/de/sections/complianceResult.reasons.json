@@ -1,0 +1,20 @@
+{
+    "title": "Rechtliche Einschätzung",
+    "items": {
+        "externalVentilation": "Außenliegende Lüftungs- oder Klimageräte lösen gemäß § 2 Z 2 2. GFVO Genehmigungspflicht aus.",
+        "regulatedHazardousStorage": "Es werden Gefahrstoffe in Mengen gelagert, für die besondere Rechtsvorschriften gelten (§ 2 Z 3 2. GFVO).",
+        "labelledHazardousStorage": "Kennzeichnungspflichtige Gefahrstoffe ohne spezielle Lagervorschriften schließen die Freistellung aus (§ 2 Z 4 2. GFVO).",
+        "musicExclusion": "Musikdarbietungen oder laute Beschallung sind nach § 2 Z 5 2. GFVO nicht freigestellt.",
+        "ippcSeveso": "IPPC-/Seveso-relevante Anlagen sind stets genehmigungspflichtig (§ 2 Z 6 2. GFVO).",
+        "noFacilityDefinition": "Keine örtlich gebundene, auf Dauer angelegte Betriebsanlage – daher endet der Checker hier.",
+        "operatingHours": "Geplante Betriebszeiten überschreiten den Rahmen der 2. GFVO (§ 1 Abs. 2).",
+        "areaExceeded": "Die angegebene Fläche überschreitet die Höchstgrenze der gewählten Freistellungskategorie.",
+        "accommodationBeds": "Mehr als 30 Gästebetten führen zur Genehmigungspflicht (§ 1 Abs. 1 Z 8 2. GFVO).",
+        "accommodationBuildingUse": "Das Gebäude wird nicht ausschließlich für Wohn-/Beherbergungszwecke genutzt – Voraussetzung der Freistellung fehlt.",
+        "accommodationWellness": "Wellness- bzw. Badeeinrichtungen sind vom Ausnahmetatbestand nicht umfasst.",
+        "accommodationMeals": "Die Abgabe vollwertiger Mahlzeiten überschreitet die Freistellung (nur Frühstück/kleiner Imbiss erlaubt).",
+        "expectedImpairments": "Nach § 74 Abs. 2 GewO sind schädliche Immissionen, Gefährdungen oder Störungen zu erwarten.",
+        "individualAssessment": "Keine eindeutige Freistellung – eine behördliche Feststellung kann Genehmigungsfreiheit bestätigen.",
+        "freistellungSummary": "Alle Voraussetzungen der 2. GFVO sind erfüllt – die Anlage bleibt genehmigungsfrei, solange die Auflagen eingehalten werden."
+    }
+}

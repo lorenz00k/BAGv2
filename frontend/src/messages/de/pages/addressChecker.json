@@ -1,0 +1,12 @@
+{
+    "title": "Adressen-Check für Betriebsanlagen",
+    "subtitle": "Überprüfen Sie Ihre geplante Betriebsadresse auf potenzielle Probleme",
+    "description": "Wir zeigen Ihnen Kirchen, Krankenhäuser, Schulen und andere relevante Einrichtungen in der Nähe, die bei der Betriebsanlagengenehmigung eine Rolle spielen können.",
+    "sections": {
+        "search": "addressCheck.search",
+        "map": "addressCheck.map",
+        "pois": "addressCheck.pois",
+        "risk": "addressCheck.risk",
+        "badges": "addressCheck.badges"
+    }
+}

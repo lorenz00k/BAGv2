@@ -1,0 +1,21 @@
+{
+    "title": "Umgebung",
+    "empty": "Keine problematischen Einrichtungen in unmittelbarer Nähe gefunden.",
+    "categories": {
+        "krankenhaus": "Krankenhäuser",
+        "religion": "Religiöse Einrichtungen",
+        "kath": "Katholische Kirchen",
+        "evangkirche": "Evangelische Kirchen",
+        "orthodox": "Orthodoxe Kirchen",
+        "islam": "Moscheen",
+        "israel": "Synagogen",
+        "buddh": "Buddhistische Tempel",
+        "kindergarten": "Kindergärten",
+        "schule": "Schulen",
+        "friedhof": "Friedhöfe",
+        "baustelle": "Baustellen",
+        "polizei": "Polizei"
+    },
+    "distance": "Entfernung",
+    "nearby": "Nähe"
+}

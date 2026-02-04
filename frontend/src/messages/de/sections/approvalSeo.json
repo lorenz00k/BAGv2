@@ -1,0 +1,22 @@
+{
+    "heading": "Warum eine Betriebsanlagengenehmigung wichtig ist",
+    "intro": "In Wien und ganz Österreich benötigen viele Unternehmen eine Betriebsanlagengenehmigung nach der Gewerbeordnung. Unser kostenloser Check hilft Ihnen schnell und unkompliziert herauszufinden, ob Ihr Betrieb genehmigungspflichtig ist.",
+    "features": [
+        {
+            "title": "Schnell & einfach",
+            "text": "In nur {value} Minuten erhalten Sie eine erste Einschätzung, ob Sie eine Betriebsanlagengenehmigung benötigen. Keine komplizierten Formulare, keine Wartezeiten, kein kompliziertes Beamtendeutsch."
+        },
+        {
+            "title": "Mehrsprachig",
+            "text": "Unser Service ist in {value} Sprachen verfügbar: Deutsch, Englisch, Serbisch, Kroatisch, Türkisch, Italienisch, Spanisch und Ukrainisch – für alle Unternehmer:innen in Wien zugänglich."
+        },
+        {
+            "title": "Kostenlos & anonym",
+            "text": "Der Check ist völlig kostenlos und Ihre Daten bleiben privat. Keine Registrierung erforderlich, keine versteckten Kosten."
+        }
+    ],
+    "why": {
+        "title": "Wann brauchen Sie eine Betriebsanlagengenehmigung?",
+        "text": "Eine Betriebsanlagengenehmigung ist in Österreich für viele gewerbliche Tätigkeiten erforderlich. Die Genehmigungsfreistellungsverordnung regelt, welche Betriebe von der Genehmigungspflicht ausgenommen sind. Faktoren wie Betriebsfläche, Lärm, Öffnungszeiten und Art der Tätigkeit spielen eine wichtige Rolle."
+    }
+}
