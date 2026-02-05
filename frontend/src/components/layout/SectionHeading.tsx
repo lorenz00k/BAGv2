@@ -1,5 +1,6 @@
 import type { HTMLAttributes } from "react";
 import clsx from "clsx";
+import { BreakText } from "../common/BreakText";
 
 export function SectionHeading(props: HTMLAttributes<HTMLDivElement>) {
     const { className, ...rest } = props;
@@ -15,7 +16,7 @@ export function SectionHeading(props: HTMLAttributes<HTMLDivElement>) {
 }
 
 export function SectionTitle(props: HTMLAttributes<HTMLHeadingElement>) {
-    const { className, ...rest } = props;
+    const { className, children, ...rest } = props;
     return (
         <h2
             className={clsx(
@@ -23,26 +24,32 @@ export function SectionTitle(props: HTMLAttributes<HTMLHeadingElement>) {
                 className
             )}
             {...rest}
-        />
+        >
+            <BreakText>{children}</BreakText>
+        </h2 >
     );
 }
 
 export function SectionCopy(props: HTMLAttributes<HTMLParagraphElement>) {
-    const { className, ...rest } = props;
+    const { className, children, ...rest } = props;
     return (
         <p
             className={clsx("max-w-[65ch] mx-auto text-[var(--color-fg-subtle)]", className)}
             {...rest}
-        />
+        >
+            <BreakText>{children}</BreakText>
+        </p>
     );
 }
 
 export function SectionSubtitle(props: HTMLAttributes<HTMLParagraphElement>) {
-    const { className, ...rest } = props;
+    const { className, children, ...rest } = props;
     return (
         <p
             className={clsx("mt-[0.9rem] max-w-[55ch] mx-auto text-[var(--color-fg-subtle)]", className)}
             {...rest}
-        />
+        >
+            <BreakText>{children}</BreakText>
+        </p>
     );
 }

@@ -1,0 +1,141 @@
+{
+    "title": "Datenschutzerklärung",
+    "controller": {
+        "heading": "1. Verantwortlicher",
+        "name": "Lennard Baur, Lorenz Klemm",
+        "address": "Mechitaristengasse 2, 1070 Wien, Österreich",
+        "emailLabel": "E-Mail",
+        "email": "betriebsanlage.check@gmx.at",
+        "dpo": "Ein Datenschutzbeauftragter wurde nicht bestellt."
+    },
+    "sections": [
+        {
+            "heading": "2. Zwecke, Rechtsgrundlagen und Datenkategorien",
+            "intro": "Wir verarbeiten personenbezogene Daten beim Besuch dieser Website zu den folgenden Zwecken:",
+            "subsections": [
+                {
+                    "heading": "2.1. Bereitstellung der Website / Server-Logs",
+                    "bullets": [
+                        "Daten: IP-Adresse (gekürzt), Datum/Zeit der Anfrage, Zeitzone, HTTP-Status, User-Agent, Referrer, aufgerufene URL.",
+                        "Zweck: Technische Bereitstellung, Stabilität, Sicherheit (Missbrauchserkennung), Fehleranalyse.",
+                        "Rechtsgrundlage: Berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO).",
+                        "Bereitstellungsnotwendigkeit: Erforderlich für den Betrieb der Website."
+                    ]
+                },
+                {
+                    "heading": "2.2. Hosting & Content Delivery (Vercel)",
+                    "bullets": [
+                        "Dienst: Vercel, Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA (Rechenzentren u. a. in EU/EEA; CDN weltweit).",
+                        "Daten: Technische Nutzungsdaten (siehe 2.1), Auslieferungs- und Protokolldaten.",
+                        "Zweck: Hosting, Auslieferung der Website, Performance, Sicherheit.",
+                        "Rechtsgrundlage: Berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO).",
+                        "Empfänger/Auftragsverarbeiter: Vercel (Auftragsverarbeitung).",
+                        "Drittlandübermittlung: Möglich (USA). Schutz durch EU-Standardvertragsklauseln (SCCs) und zusätzliche Maßnahmen."
+                    ]
+                },
+                {
+                    "heading": "2.3. Webanalyse (Vercel Web Analytics – cookielos)",
+                    "bullets": [
+                        "Dienst: Vercel Web Analytics (integriert in Hosting).",
+                        "Daten: Aggregierte Seitenaufrufe, Referrer, UTM-Parameter, Browser-/Geräteinformationen, Land/Region; ohne Third-Party-Cookies und ohne persistente Nutzer-IDs (Hash-basiert, i. d. R. kurzlebig).",
+                        "Zweck: Reichweitenmessung, Verbesserung der Inhalte und Usability.",
+                        "Rechtsgrundlage: Berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO).",
+                        "Hinweis: Keine Nachverfolgung über längere Zeiträume/über Websites hinweg; keine personalisierte Werbung.",
+                        "Widerspruch: Siehe Punkt 7 (Rechte) – Sie können der Verarbeitung aus Gründen, die sich aus Ihrer besonderen Situation ergeben, widersprechen."
+                    ]
+                },
+                {
+                    "heading": "2.4. Webanalyse (Google Analytics 4 – nur nach Einwilligung)",
+                    "bullets": [
+                        "Dienst: Google Analytics 4 (GA4).",
+                        "Anbieter: Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland (ggf. Verarbeitung auch durch Google LLC, USA).",
+                        "Einsatz: GA4 wird erst geladen, wenn Sie in unserem Cookie-Banner der Kategorie „Statistik/Analyse“ zustimmen. Ohne Einwilligung findet keine Messung über GA4 statt (Consent Mode v2: Standard „denied“).",
+                        "Daten: Seitenaufrufe, Ereignisse/Interaktionen, ungefähre Standortdaten (Land/Region), Geräte-/Browser-Informationen, Referrer/UTM-Parameter, pseudonyme Kennungen; nach Angaben von Google keine Speicherung vollständiger IP-Adressen.",
+                        "Zweck: Reichweitenmessung, Fehleranalyse und Verbesserung von Inhalten/Usability.",
+                        "Rechtsgrundlage: Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Sie können Ihre Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen.",
+                        "Widerruf/Opt-Out: Über die Cookie-Einstellungen können Sie Ihre Auswahl jederzeit ändern (Analytics erlauben/ablehnen).",
+                        "Drittlandtransfer: Eine Übermittlung in die USA kann nicht ausgeschlossen werden. Rechtsgrundlage sind die EU-Standardvertragsklauseln; dennoch kann ein Restrisiko bestehen.",
+                        "Speicherdauer: Ereignisdaten in GA4 werden i. d. R. 2 oder 14 Monate vorgehalten (je nach Kontoeinstellung); sonstige Daten bis zur Zweckerreichung bzw. Widerruf.",
+                        "Weitere Infos: Datenschutzhinweise von Google unter policies.google.com/privacy."
+                    ]
+                },
+                {
+                    "heading": "2.5. Kontaktaufnahme (Formular/E-Mail)",
+                    "bullets": [
+                        "Daten: Name, E-Mail, Betreff, Nachricht, ggf. Anhänge, Zeitpunkt.",
+                        "Zweck: Bearbeitung Ihrer Anfrage; ggf. vorvertragliche Kommunikation.",
+                        "Rechtsgrundlage: Berechtigtes Interesse (Art. 6 Abs. 1 lit. f) und/oder vorvertragliche Maßnahmen (Art. 6 Abs. 1 lit. b).",
+                        "Speicherdauer: Bis zur abschließenden Bearbeitung und gemäß gesetzlichen Aufbewahrungsfristen."
+                    ]
+                }
+            ]
+        },
+        {
+            "heading": "3. Cookies und lokale Speichertechnologien",
+            "paragraphs": [
+                "Wir setzen derzeit keine nicht-notwendigen Cookies/Tracker ein. Technisch erforderliche Cookies/Storage können zur Bereitstellung der Website notwendig sein."
+            ]
+        },
+        {
+            "heading": "4. Empfänger und Auftragsverarbeiter",
+            "paragraphs": [
+                "Vercel, Inc. (Hosting, CDN, Analytics) – Auftragsverarbeitung auf Basis der Standardvertragsklauseln (SCCs).",
+                "Mit den genannten Anbietern bestehen Auftragsverarbeitungsverträge gemäß Art. 28 DSGVO."
+            ]
+        },
+        {
+            "heading": "5. Drittlandübermittlungen",
+            "paragraphs": [
+                "Eine Übermittlung in Drittländer (insb. USA) kann im Rahmen der Nutzung von Vercel erfolgen. Rechtsgrundlage sind die EU-Standardvertragsklauseln (SCCs) und ggf. zusätzliche technische/organisatorische Maßnahmen. Nähere Informationen stellt der jeweilige Anbieter bereit."
+            ]
+        },
+        {
+            "heading": "6. Speicherdauer",
+            "bullets": [
+                "Server-Logs: 30 Tage zur Sicherstellung von Betrieb und Sicherheit, danach Löschung/Anonymisierung.",
+                "Kontaktanfragen: bis Abschluss der Bearbeitung und gemäß gesetzlichen Aufbewahrungsfristen.",
+                "Webanalyse (cookielos): Es werden aggregierte, nicht personenbeziehbare Statistiken vorgehalten; Rohdaten mit IP-Bezug werden nicht dauerhaft gespeichert bzw. – soweit vorhanden – gekürzt/aggregiert."
+            ]
+        },
+        {
+            "heading": "7. Betroffenenrechte",
+            "paragraphs": [
+                "Sie haben nach der DSGVO insbesondere folgende Rechte (sofern die jeweiligen Voraussetzungen vorliegen):"
+            ],
+            "bullets": [
+                "Recht auf Auskunft (Art. 15), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung (Art. 18), Datenübertragbarkeit (Art. 20).",
+                "Recht auf Widerspruch gegen Verarbeitungen auf Grundlage berechtigter Interessen (Art. 21).",
+                "Recht auf Widerruf erteilter Einwilligungen (Art. 7 Abs. 3) mit Wirkung für die Zukunft."
+            ],
+            "contactLine": "Zur Ausübung wenden Sie sich an:"
+        },
+        {
+            "heading": "8. Beschwerderecht",
+            "paragraphs": [
+                "Sie haben das Recht, Beschwerde bei der Österreichischen Datenschutzbehörde einzulegen:"
+            ],
+            "authority": {
+                "name": "Österreichische Datenschutzbehörde",
+                "address": "Barichgasse 40–42, 1030 Wien",
+                "url": "https://www.dsb.gv.at"
+            }
+        },
+        {
+            "heading": "9. Sicherheit der Verarbeitung",
+            "paragraphs": [
+                "Wir treffen angemessene technische und organisatorische Maßnahmen (z. B. TLS-Verschlüsselung, Zugriffsbeschränkungen, Least-Privilege, regelmäßige Updates), um personenbezogene Daten zu schützen."
+            ]
+        },
+        {
+            "heading": "10. Änderungen dieser Datenschutzerklärung",
+            "paragraphs": [
+                "Wir passen diese Erklärung an, wenn sich Rechtslage, Dienste oder Verarbeitungen ändern. Die jeweils aktuelle Fassung ist hier abrufbar."
+            ],
+            "versionLabel": "Version",
+            "version": "15.10.2025"
+        }
+    ],
+    "ui": {
+        "cookieSettings": "Cookie-Einstellungen"
+    }
+}

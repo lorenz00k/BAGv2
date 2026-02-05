@@ -1,0 +1,40 @@
+{
+    "title": "Impressum",
+    "sections": [
+        {
+            "heading": "Medieninhaber & Diensteanbieter (§ 5 ECG, § 25 MedienG)",
+            "lines": [
+                "Lorenz Klemm, Lennard Baur",
+                "Fünfhausgasse 5, 1150 Wien, Österreich"
+            ],
+            "emailLabel": "E-Mail",
+            "email": "betriebsanlage.check@gmx.at"
+        },
+        {
+            "heading": "Verantwortlich für den Inhalt",
+            "lines": [
+                "Lorenz Klemm, Lennard Baur"
+            ]
+        },
+        {
+            "heading": "Blattlinie (§ 25 Abs. 4 MedienG)",
+            "paragraphs": [
+                "Informationen zur Betriebsanlagengenehmigung, insbesondere Orientierung für Gründer:innen und KMU; Bereitstellung eines unverbindlichen Checks."
+            ],
+            "note": "(Nicht periodisches Online-Medium.)"
+        },
+        {
+            "heading": "Haftungsausschluss",
+            "paragraphs": [
+                "Alle Inhalte wurden sorgfältig erstellt. Es wird keine Gewähr für Richtigkeit, Vollständigkeit und Aktualität übernommen.",
+                "Die Informationen stellen keine Rechtsberatung dar und ersetzen keine individuelle behördliche oder rechtliche Beratung."
+            ]
+        },
+        {
+            "heading": "Anschrift für Zustellungen",
+            "lines": [
+                "Mechitaristengasse 2, 1070 Wien, Österreich"
+            ]
+        }
+    ]
+}

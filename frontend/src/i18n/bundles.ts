@@ -88,6 +88,12 @@ export const messageBundles: Record<string, Loader> = {
             }
         }) as AbstractIntlMessages,
 
+    legal: async (l) =>
+        ({
+            privacy: (await import(`@/messages/${l}/legal/privacy.json`)).default,
+            imprint: (await import(`@/messages/${l}/legal/imprint.json`)).default,
+        }) as AbstractIntlMessages,
+
     seo: async (l) =>
         ({
             routes: (await import(`@/messages/${l}/seo/routes.json`)).default
