@@ -27,14 +27,6 @@ export interface ZoningInfo {
   found: boolean;
 }
 
-export interface BuildingPlanInfo {
-  bauklasse?: string; // "III" = 3 Vollgeschosse
-  bebauungsdichte?: number; // 60 = max 60% Grundfläche
-  bauhoehe?: number; // Meter
-  details: string;
-  found: boolean;
-}
-
 export interface NoiseInfo {
   level?: number; // dB(A)
   source?: string; // "Straße", "Bahn", "Flughafen"
@@ -43,21 +35,51 @@ export interface NoiseInfo {
   found: boolean;
 }
 
-export interface TransitStop {
-  type: "ubahn" | "tram" | "bus";
-  line: string; // "U3", "6", "13A"
-  name: string;
+export interface EnergyPlanInfo {
+  zone?: string; // "Fernwärmepflicht", "Keine Beschränkungen"
+  restrictions?: string[]; // ["Gas verboten", "Fernwärme Pflicht"]
+  details: string;
+  found: boolean;
+}
+
+export interface FloodRiskInfo {
+  riskLevel?: string; // "HQ30", "HQ100", "HQ300"
+  inFloodZone: boolean;
+  details: string;
+  found: boolean;
+}
+
+export interface WaterProtectionInfo {
+  protectionZone?: string; // "Schutzgebiet", "Schongebiet"
+  restrictions?: string[]; // ["Ölabscheider Pflicht"]
+  details: string;
+  found: boolean;
+}
+
+export interface LoadingZone {
+  type: string; // "Ladezone", "Lieferzone"
   distance: number; // Meter
   coordinates: Coordinates;
 }
 
-// Full Check Response
+export interface TrafficZoneInfo {
+  inPedestrianZone: boolean;
+  inMeetingZone: boolean;
+  restrictions?: string; // "Zufahrt nur 06:00-10:00"
+  details: string;
+  found: boolean;
+}
+
+// ViennaGISResult erweitern
 export interface ViennaGISResult {
   found: boolean;
   address?: Address;
   pois: POI[];
-  zoning?: ZoningInfo;
-  buildingPlan?: BuildingPlanInfo;
-  noise?: NoiseInfo;
-  transit: TransitStop[];
+  zoning: ZoningInfo | undefined;
+  noise: NoiseInfo | undefined;
+  energyPlan: EnergyPlanInfo | undefined;     
+  floodRisk: FloodRiskInfo | undefined;      
+  waterProtection: WaterProtectionInfo | undefined; 
+  loadingZones: LoadingZone[];                 
+  trafficZones: TrafficZoneInfo | undefined;   
 }

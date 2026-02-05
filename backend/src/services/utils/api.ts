@@ -72,7 +72,7 @@ export function buildWFSUrl(params: {
   url.searchParams.set("srsName", srsName);
 
   if (bbox) {
-    url.searchParams.set("bbox", bbox);
+    url.searchParams.set("bbox", `${bbox},${srsName}`);
   }
 
   return url.toString();
@@ -87,7 +87,10 @@ export function createBBox(
   lat: number,
   bufferMeters: number = 5
 ): string {
-  const latBuffer = bufferMeters / 111_320;
-  const lngBuffer = bufferMeters / (111_320 * Math.cos((lat * Math.PI) / 180));
+  // Präzisere Berechnung für größere Radien
+  // 1 Grad Breite ≈ 111 km
+  // 1 Grad Länge ≈ 111 km * cos(latitude)
+  const latBuffer = bufferMeters / 111000; // Meter → Grad Breite
+  const lngBuffer = bufferMeters / (111000 * Math.cos((lat * Math.PI) / 180)); // Meter → Grad Länge
   return `${lng - lngBuffer},${lat - latBuffer},${lng + lngBuffer},${lat + latBuffer}`;
 }

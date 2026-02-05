@@ -12,6 +12,7 @@ import user from "./routes/user.js";
 import { cleanupExpiredSessions } from "./utils/session.js";
 import { globalRateLimiter } from "./middleware/rate-limit.js";
 import checksRouter from "./routes/checks.js"; 
+import viennagis from "./routes/viennagis.js"; 
 
 config();
 
@@ -29,6 +30,7 @@ app.use(globalRateLimiter);
 
 app.route("/api/user", user);  
 app.route("/api/checks", checksRouter);
+app.route("/api/viennagis", viennagis); 
 
 //error handel
 app.onError(errorHandler);
