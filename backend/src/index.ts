@@ -4,6 +4,7 @@ import { Hono } from "hono";
 
 //Importiert deine Route (.js weil ES Modules das braucht, auch wenn die Datei .ts heißt)
 import health from "./routes/health.js";
+import auth from "./routes/auth.js";
 import { logger } from "./middleware/logger.js";
 import { corsMiddleware } from "./middleware/cors.js";
 import { errorHandler } from "./middleware/error-handler.js";
@@ -18,6 +19,7 @@ const app = new Hono();
 //Middleware einsetzten
 app.use(logger);
 app.use(corsMiddleware);
+app.route("/api/auth", auth); 
 
 //error handel
 app.onError(errorHandler);
