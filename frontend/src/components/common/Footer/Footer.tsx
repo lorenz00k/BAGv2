@@ -1,29 +1,27 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { useTranslations } from "next-intl";
+import Link from "next/link"
+import { useTranslations } from "next-intl"
 
-import type { Locale } from "@/i18n/locales";
-import { secondaryLinks } from "@/navigation/nav";
-import { Button } from "@/components/ui/Button";
+import type { Locale } from "@/i18n/locales"
+import { SECONDARY_NAV, href } from "@/navigation/nav"
+import { Button } from "@/components/ui/Button"
 
-import styles from "./Footer.module.css";
+import styles from "./Footer.module.css"
 
 declare global {
     interface Window {
-        showCookieSettings?: () => void;
+        showCookieSettings?: () => void
     }
 }
 
 interface FooterProps {
-    locale: Locale;
+    locale: Locale
 }
 
 export default function Footer({ locale }: FooterProps) {
-    const tFooter = useTranslations("home.footer");
-    const tNav = useTranslations("nav");
-
-    const links = secondaryLinks(locale);
+    const tFooter = useTranslations("components.footer")
+    const tNav = useTranslations("common.items")
 
     return (
         <footer className={styles.footer}>
@@ -34,9 +32,13 @@ export default function Footer({ locale }: FooterProps) {
                 </div>
 
                 <div className={styles.links}>
-                    {links.map((l) => (
-                        <Link key={l.href} href={l.href} className={styles.link}>
-                            {tNav(l.labelKey)}
+                    {SECONDARY_NAV.map((item) => (
+                        <Link
+                            key={item.key}
+                            href={href(locale, item.key)}
+                            className={styles.link}
+                        >
+                            {tNav(item.labelKey)}
                         </Link>
                     ))}
 
@@ -47,10 +49,10 @@ export default function Footer({ locale }: FooterProps) {
                         onClick={() => window.showCookieSettings?.()}
                         className={styles.link}
                     >
-                        {tFooter("cookie")}
+                        {tFooter("links.cookieSettings")}
                     </Button>
                 </div>
             </div>
         </footer>
-    );
+    )
 }

@@ -27,7 +27,7 @@ export default function BrandLink({
             className={clsx("flex items-center gap-2 min-w-0", className)}
         >
             <Image
-                src="/icon.svg"
+                src="/assets/icons/icon.svg"
                 alt=""
                 width={28}
                 height={28}

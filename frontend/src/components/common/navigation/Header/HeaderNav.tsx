@@ -24,7 +24,6 @@ interface HeaderNavProps {
 export default function HeaderNav({ locale }: HeaderNavProps) {
     const tItems = useTranslations("common.items");
     const tNav = useTranslations("common.navigation");
-    console.log("HeaderNav locale:", locale);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const closeSidebar = useCallback(() => setIsSidebarOpen(false), []);
@@ -44,7 +43,7 @@ export default function HeaderNav({ locale }: HeaderNavProps) {
                     <div className="flex min-w-0 flex-shrink-0 items-center">
                         <Link href={`/${locale}`} className="flex items-center gap-2">
                             <Image
-                                src="/icon.svg"
+                                src="/assets/icons/icon.svg"
                                 alt=""
                                 width={28}
                                 height={28}

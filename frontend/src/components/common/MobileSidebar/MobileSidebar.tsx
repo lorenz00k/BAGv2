@@ -119,7 +119,7 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
                             tabIndex={open ? 0 : -1}
                         >
                             <Image
-                                src="/icon.svg"
+                                src="/assets/icons/icon.svg"
                                 alt=""
                                 width={32}
                                 height={32}
@@ -130,7 +130,6 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
                                 }}
                             />
                             <div>
-                                {/* falls das bei dir unter item.bac liegt -> hier wieder tItem("bac") */}
                                 <div className={styles.brandTitle}>{tItems("app")}</div>
                                 <div className={styles.brandSub}>{tNav("navigation")}</div>
                             </div>

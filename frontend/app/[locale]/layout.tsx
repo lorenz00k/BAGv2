@@ -8,9 +8,22 @@ import { locales } from "@/i18n/locales";
 import { ROUTES } from "@/navigation/routes"
 
 import Footer from "@/components/common/Footer/Footer";
-import "@/styles/globals.css";
+import type { Metadata } from "next"
 
-export default async function RootLayout({
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ locale: Locale }>
+}): Promise<Metadata> {
+    const { locale } = await params
+    if (!locales.includes(locale)) notFound()
+
+    return {
+        manifest: `/${locale}/manifest.webmanifest`,
+    }
+}
+
+export default async function LocaleLayout({
     children,
     params,
 }: {
@@ -25,16 +38,12 @@ export default async function RootLayout({
 
 
     return (
-        <html lang={locale}>
-            <body>
-                <NextIntlClientProvider locale={locale} messages={messages}>
-                    <HeaderNav locale={locale} />
+        <NextIntlClientProvider locale={locale} messages={messages}>
+            <HeaderNav locale={locale} />
 
-                    {children}
-                    {/* <Footer locale={locale} />*/}
+            {children}
+            <Footer locale={locale} />
 
-                </NextIntlClientProvider>
-            </body>
-        </html>
+        </NextIntlClientProvider>
     );
 }
