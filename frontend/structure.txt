@@ -19,7 +19,8 @@
 │   │   │   └── gastroAi
 │   │   │       └── page.tsx
 │   │   └── page.tsx
-│   └── layout.tsx
+│   ├── layout.tsx
+│   └── page.tsx
 ├── eslint.config.mjs
 ├── middleware.ts
 ├── next-env.d.ts
@@ -5931,6 +5932,94 @@
 │   │   ├── test
 │   │   │   └── index.js
 │   │   └── tsconfig.json
+│   ├── autoprefixer
+│   │   ├── LICENSE
+│   │   ├── README.md
+│   │   ├── bin
+│   │   │   └── autoprefixer
+│   │   ├── data
+│   │   │   └── prefixes.js
+│   │   ├── lib
+│   │   │   ├── at-rule.js
+│   │   │   ├── autoprefixer.d.ts
+│   │   │   ├── autoprefixer.js
+│   │   │   ├── brackets.js
+│   │   │   ├── browsers.js
+│   │   │   ├── declaration.js
+│   │   │   ├── hacks
+│   │   │   │   ├── align-content.js
+│   │   │   │   ├── align-items.js
+│   │   │   │   ├── align-self.js
+│   │   │   │   ├── animation.js
+│   │   │   │   ├── appearance.js
+│   │   │   │   ├── autofill.js
+│   │   │   │   ├── backdrop-filter.js
+│   │   │   │   ├── background-clip.js
+│   │   │   │   ├── background-size.js
+│   │   │   │   ├── block-logical.js
+│   │   │   │   ├── border-image.js
+│   │   │   │   ├── border-radius.js
+│   │   │   │   ├── break-props.js
+│   │   │   │   ├── cross-fade.js
+│   │   │   │   ├── display-flex.js
+│   │   │   │   ├── display-grid.js
+│   │   │   │   ├── file-selector-button.js
+│   │   │   │   ├── filter-value.js
+│   │   │   │   ├── filter.js
+│   │   │   │   ├── flex-basis.js
+│   │   │   │   ├── flex-direction.js
+│   │   │   │   ├── flex-flow.js
+│   │   │   │   ├── flex-grow.js
+│   │   │   │   ├── flex-shrink.js
+│   │   │   │   ├── flex-spec.js
+│   │   │   │   ├── flex-wrap.js
+│   │   │   │   ├── flex.js
+│   │   │   │   ├── fullscreen.js
+│   │   │   │   ├── gradient.js
+│   │   │   │   ├── grid-area.js
+│   │   │   │   ├── grid-column-align.js
+│   │   │   │   ├── grid-end.js
+│   │   │   │   ├── grid-row-align.js
+│   │   │   │   ├── grid-row-column.js
+│   │   │   │   ├── grid-rows-columns.js
+│   │   │   │   ├── grid-start.js
+│   │   │   │   ├── grid-template-areas.js
+│   │   │   │   ├── grid-template.js
+│   │   │   │   ├── grid-utils.js
+│   │   │   │   ├── image-rendering.js
+│   │   │   │   ├── image-set.js
+│   │   │   │   ├── inline-logical.js
+│   │   │   │   ├── intrinsic.js
+│   │   │   │   ├── justify-content.js
+│   │   │   │   ├── mask-border.js
+│   │   │   │   ├── mask-composite.js
+│   │   │   │   ├── order.js
+│   │   │   │   ├── overscroll-behavior.js
+│   │   │   │   ├── pixelated.js
+│   │   │   │   ├── place-self.js
+│   │   │   │   ├── placeholder-shown.js
+│   │   │   │   ├── placeholder.js
+│   │   │   │   ├── print-color-adjust.js
+│   │   │   │   ├── text-decoration-skip-ink.js
+│   │   │   │   ├── text-decoration.js
+│   │   │   │   ├── text-emphasis-position.js
+│   │   │   │   ├── transform-decl.js
+│   │   │   │   ├── user-select.js
+│   │   │   │   └── writing-mode.js
+│   │   │   ├── info.js
+│   │   │   ├── old-selector.js
+│   │   │   ├── old-value.js
+│   │   │   ├── prefixer.js
+│   │   │   ├── prefixes.js
+│   │   │   ├── processor.js
+│   │   │   ├── resolution.js
+│   │   │   ├── selector.js
+│   │   │   ├── supports.js
+│   │   │   ├── transition.js
+│   │   │   ├── utils.js
+│   │   │   ├── value.js
+│   │   │   └── vendor.js
+│   │   └── package.json
 │   ├── available-typed-arrays
 │   │   ├── CHANGELOG.md
 │   │   ├── LICENSE
@@ -6175,6 +6264,18 @@
 │   │   │   ├── stringify.js
 │   │   │   └── utils.js
 │   │   └── package.json
+│   ├── browserslist
+│   │   ├── LICENSE
+│   │   ├── README.md
+│   │   ├── browser.js
+│   │   ├── cli.js
+│   │   ├── error.d.ts
+│   │   ├── error.js
+│   │   ├── index.d.ts
+│   │   ├── index.js
+│   │   ├── node.js
+│   │   ├── package.json
+│   │   └── parse.js
 │   ├── buffer
 │   │   ├── AUTHORS.md
 │   │   ├── LICENSE
@@ -6355,6 +6456,7 @@
 │   │   │   │   ├── css-gencontent.js
 │   │   │   │   ├── css-gradients.js
 │   │   │   │   ├── css-grid-animation.js
+│   │   │   │   ├── css-grid-lanes.js
 │   │   │   │   ├── css-grid.js
 │   │   │   │   ├── css-hanging-punctuation.js
 │   │   │   │   ├── css-has.js
@@ -11469,6 +11571,19 @@
 │   │   │   ├── index.js
 │   │   │   └── set.js
 │   │   └── tsconfig.json
+│   ├── electron-to-chromium
+│   │   ├── LICENSE
+│   │   ├── README.md
+│   │   ├── chromium-versions.js
+│   │   ├── chromium-versions.json
+│   │   ├── full-chromium-versions.js
+│   │   ├── full-chromium-versions.json
+│   │   ├── full-versions.js
+│   │   ├── full-versions.json
+│   │   ├── index.js
+│   │   ├── package.json
+│   │   ├── versions.js
+│   │   └── versions.json
 │   ├── emoji-regex
 │   │   ├── LICENSE-MIT.txt
 │   │   ├── README.md
@@ -11497,6 +11612,7 @@
 │   │   ├── lib
 │   │   │   ├── AliasFieldPlugin.js
 │   │   │   ├── AliasPlugin.js
+│   │   │   ├── AliasUtils.js
 │   │   │   ├── AppendPlugin.js
 │   │   │   ├── CachedInputFileSystem.js
 │   │   │   ├── CloneBasenamePlugin.js
@@ -11515,6 +11631,7 @@
 │   │   │   ├── ModulesInHierachicDirectoriesPlugin.js
 │   │   │   ├── ModulesInHierarchicalDirectoriesPlugin.js
 │   │   │   ├── ModulesInRootPlugin.js
+│   │   │   ├── ModulesUtils.js
 │   │   │   ├── NextPlugin.js
 │   │   │   ├── ParsePlugin.js
 │   │   │   ├── PnpPlugin.js
@@ -11527,6 +11644,7 @@
 │   │   │   ├── SymlinkPlugin.js
 │   │   │   ├── SyncAsyncFileSystemDecorator.js
 │   │   │   ├── TryNextPlugin.js
+│   │   │   ├── TsconfigPathsPlugin.js
 │   │   │   ├── UnsafeCachePlugin.js
 │   │   │   ├── UseFilePlugin.js
 │   │   │   ├── createInnerContext.js
@@ -11536,6 +11654,7 @@
 │   │   │   ├── index.js
 │   │   │   └── util
 │   │   │       ├── entrypoints.js
+│   │   │       ├── fs.js
 │   │   │       ├── identifier.js
 │   │   │       ├── memoize.js
 │   │   │       ├── module-browser.js
@@ -14307,6 +14426,20 @@
 │   │   │   ├── es6.js
 │   │   │   └── index.js
 │   │   └── tsconfig.json
+│   ├── escalade
+│   │   ├── dist
+│   │   │   ├── index.js
+│   │   │   └── index.mjs
+│   │   ├── index.d.mts
+│   │   ├── index.d.ts
+│   │   ├── license
+│   │   ├── package.json
+│   │   ├── readme.md
+│   │   └── sync
+│   │       ├── index.d.mts
+│   │       ├── index.d.ts
+│   │       ├── index.js
+│   │       └── index.mjs
 │   ├── escape-string-regexp
 │   │   ├── index.d.ts
 │   │   ├── index.js
@@ -16211,6 +16344,32 @@
 │   │   ├── test
 │   │   │   └── test.js
 │   │   └── tsconfig.json
+│   ├── fraction.js
+│   │   ├── CHANGELOG.md
+│   │   ├── LICENSE
+│   │   ├── README.md
+│   │   ├── dist
+│   │   │   ├── fraction.js
+│   │   │   ├── fraction.min.js
+│   │   │   └── fraction.mjs
+│   │   ├── examples
+│   │   │   ├── angles.js
+│   │   │   ├── approx.js
+│   │   │   ├── egyptian.js
+│   │   │   ├── hesse-convergence.js
+│   │   │   ├── integrate.js
+│   │   │   ├── ratio-chain.js
+│   │   │   ├── rational-pow.js
+│   │   │   ├── tape-measure.js
+│   │   │   ├── toFraction.js
+│   │   │   └── valueOfPi.js
+│   │   ├── fraction.d.mts
+│   │   ├── fraction.d.ts
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   └── fraction.js
+│   │   └── tests
+│   │       └── fraction.test.js
 │   ├── framer-motion
 │   │   ├── LICENSE.md
 │   │   ├── README.md
@@ -31134,6 +31293,15 @@
 │   │   ├── browser.js
 │   │   ├── index.js
 │   │   └── package.json
+│   ├── node-releases
+│   │   ├── LICENSE
+│   │   ├── README.md
+│   │   ├── data
+│   │   │   ├── processed
+│   │   │   │   └── envs.json
+│   │   │   └── release-schedule
+│   │   │       └── release-schedule.json
+│   │   └── package.json
 │   ├── object-assign
 │   │   ├── index.js
 │   │   ├── license
@@ -34875,6 +35043,17 @@
 │   │   │   ├── warning.d.ts
 │   │   │   └── warning.js
 │   │   └── package.json
+│   ├── postcss-value-parser
+│   │   ├── LICENSE
+│   │   ├── README.md
+│   │   ├── lib
+│   │   │   ├── index.d.ts
+│   │   │   ├── index.js
+│   │   │   ├── parse.js
+│   │   │   ├── stringify.js
+│   │   │   ├── unit.js
+│   │   │   └── walk.js
+│   │   └── package.json
 │   ├── prebuild-install
 │   │   ├── CHANGELOG.md
 │   │   ├── CONTRIBUTING.md
@@ -36583,9 +36762,9 @@
 │   │   ├── LICENSE
 │   │   ├── README.md
 │   │   ├── dist
+│   │   │   ├── chunk-CT46QCH7.mjs
 │   │   │   ├── chunk-GFBUASX3.mjs
 │   │   │   ├── chunk-HTB5LLOP.mjs
-│   │   │   ├── chunk-OQ4W6SLL.mjs
 │   │   │   ├── colors-b_6i0Oi7.d.ts
 │   │   │   ├── colors.d.mts
 │   │   │   ├── colors.d.ts
@@ -36609,7 +36788,7 @@
 │   │   │   ├── plugin.mjs
 │   │   │   ├── resolve-config-BIFUA2FY.d.ts
 │   │   │   ├── resolve-config-QUZ9b-Gn.d.mts
-│   │   │   └── types-WlZgYgM8.d.mts
+│   │   │   └── types-CJYAW1ql.d.mts
 │   │   ├── index.css
 │   │   ├── package.json
 │   │   ├── preflight.css
@@ -37282,6 +37461,15 @@
 │   │   ├── index.d.ts
 │   │   ├── index.js
 │   │   └── package.json
+│   ├── update-browserslist-db
+│   │   ├── LICENSE
+│   │   ├── README.md
+│   │   ├── check-npm-version.js
+│   │   ├── cli.js
+│   │   ├── index.d.ts
+│   │   ├── index.js
+│   │   ├── package.json
+│   │   └── utils.js
 │   ├── uri-js
 │   │   ├── LICENSE
 │   │   ├── README.md
@@ -37525,6 +37713,7 @@
 │       └── readme.md
 ├── package-lock.json
 ├── package.json
+├── postcss.config.js
 ├── public
 │   ├── assets
 │   │   ├── fonts
@@ -37640,6 +37829,7 @@
 │   └── types
 │       └── readMe.md
 ├── structure.txt
+├── tailwind.config.js
 └── tsconfig.json
 
-3022 directories, 34621 files
+3044 directories, 34789 files

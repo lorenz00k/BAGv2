@@ -12,7 +12,7 @@ import LanguageSwitcher from "../navigation/LanguageSwitcher";
 import type { Locale } from "@/i18n/locales";
 
 import { Button } from "@/components/ui/Button";
-import { primaryLinks, secondaryLinks } from "@/lib/config/nav";
+import { PRIMARY_NAV, SECONDARY_NAV, href } from "@/navigation/nav";
 import { useIsActivePath } from "@/components/hooks/useIsActivePath";
 
 interface MobileSidebarProps {
@@ -37,10 +37,9 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
     const tItems = useTranslations("common.items")
     const drawerRef = useRef<HTMLDivElement | null>(null);
     const lastFocusedElement = useRef<HTMLElement | null>(null);
-    const pathname = usePathname();
 
-    const primary = useMemo(() => primaryLinks(locale), [locale]);
-    const secondary = useMemo(() => secondaryLinks(locale), [locale]);
+    const primary = useMemo(() => PRIMARY_NAV, []);
+    const secondary = useMemo(() => SECONDARY_NAV, []);
 
     useEffect(() => {
         if (!open) return;
@@ -170,11 +169,12 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
 
                     <nav className={styles.nav}>
                         {primary.map((link) => {
-                            const active = isActive(link.href);
+                            const linkHref = href(locale, link.key);
+                            const active = isActive(linkHref);
                             return (
                                 <Link
-                                    key={link.href}
-                                    href={link.href}
+                                    key={link.key}
+                                    href={linkHref}
                                     onClick={onClose}
                                     aria-current={active ? "page" : undefined}
                                     className={`${styles.item} ${active ? styles.active : ""}`}
@@ -194,11 +194,12 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
 
                     <nav className={styles.nav}>
                         {secondary.map((link) => {
-                            const active = isActive(link.href);
+                            const linkHref = href(locale, link.key);
+                            const active = isActive(linkHref);
                             return (
                                 <Link
-                                    key={link.href}
-                                    href={link.href}
+                                    key={link.key}
+                                    href={linkHref}
                                     onClick={onClose}
                                     aria-current={active ? "page" : undefined}
                                     className={`${styles.item} ${styles["item--secondary"]} ${active ? styles.active : ""}`}

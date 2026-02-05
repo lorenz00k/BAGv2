@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import type { Locale } from "@/i18n/locales";
-import { primaryLinks } from "@/lib/config/nav";
+import { PRIMARY_NAV, href } from "@/navigation/nav";
 import { useIsActivePath } from "@/components/hooks/useIsActivePath";
 
 import { Button } from "@/components/ui/Button";
@@ -24,12 +24,13 @@ interface HeaderNavProps {
 export default function HeaderNav({ locale }: HeaderNavProps) {
     const tItems = useTranslations("common.items");
     const tNav = useTranslations("common.navigation");
+    console.log("HeaderNav locale:", locale);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const closeSidebar = useCallback(() => setIsSidebarOpen(false), []);
 
     const isActive = useIsActivePath(locale);
-    const links = useMemo(() => primaryLinks(locale), [locale]);
+    const links = useMemo(() => PRIMARY_NAV, []);
 
     useEffect(() => {
         if (!isSidebarOpen) return;
@@ -64,17 +65,17 @@ export default function HeaderNav({ locale }: HeaderNavProps) {
                         aria-label={tNav("aria.primaryMenu")}
                     >
                         {links.map((link) => {
-                            const active = isActive(link.href);
+                            const linkHref = href(locale, link.key);
+                            const active = isActive(linkHref);
                             return (
                                 <Link
-                                    key={link.href}
-                                    href={link.href}
+                                    key={link.key}
+                                    href={linkHref}
                                     className={`${styles.navLink} ${active ? styles.navLinkActive : styles.navLinkInactive
                                         }`}
                                     aria-current={active ? "page" : undefined}
                                 >
-                                    {/* labelKey now points to common.items */}
-                                    {tItems(link.labelKey.replace("item.", ""))}
+                                    {tItems(link.labelKey)}
                                 </Link>
                             );
                         })}

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import type { Locale } from "@/i18n/locales";
-import { secondaryLinks } from "@/lib/config/nav";
+import { secondaryLinks } from "@/navigation/nav";
 import { Button } from "@/components/ui/Button";
 
 import styles from "./Footer.module.css";
