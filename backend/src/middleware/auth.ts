@@ -20,7 +20,7 @@ export async function authMiddleware(c: Context<{ Variables: Variables }>, next:
   const session = await validateSession(sessionId);
   
   if (!session) {
-    return c.json({ error: "Invalid or expired session" }, 401);
+    return c.json({ error: "Unauthorized" }, 401);
   }
   
   // Session in Context speichern für spätere Nutzung

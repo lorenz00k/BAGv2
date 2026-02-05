@@ -1,24 +1,23 @@
 import { cors } from "hono/cors";
 
-const allowedOrigins = [
-  "http://localhost:5173", // Vite Dev Server
-  "http://localhost:3001", // Falls anderer Port
-];
-
 export const corsMiddleware = cors({
-  //Welche Domains dürfen zugreifen
   origin: (origin) => {
-    // Kein Origin = Server-to-Server Request, erlauben
-    if (!origin) return "*";
-
-    // Prüfen ob Origin erlaubt ist
-    if (allowedOrigins.includes(origin)) {
+    // Erlaubte Origins (später aus .env)
+    const allowedOrigins = [
+      "http://localhost:5173", // Vite Dev
+      "http://localhost:3001", // Alternative
+      "https://betriebsanlage-check.at", // Production
+    ];
+    
+    // Während Development: auch localhost ohne Port erlauben
+    if (process.env.NODE_ENV === "development" && origin?.startsWith("http://localhost")) {
       return origin;
     }
-
-    return null; // Blockieren
+    
+    return allowedOrigins.includes(origin || "") ? origin : allowedOrigins[0];
   },
+  credentials: true,
   allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
+  maxAge: 86400,
 });

@@ -8,6 +8,10 @@ import auth from "./routes/auth.js";
 import { logger } from "./middleware/logger.js";
 import { corsMiddleware } from "./middleware/cors.js";
 import { errorHandler } from "./middleware/error-handler.js";
+import user from "./routes/user.js";
+import { cleanupExpiredSessions } from "./utils/session.js";
+import { globalRateLimiter } from "./middleware/rate-limit.js";
+import checksRouter from "./routes/checks.js"; 
 
 config();
 
@@ -20,12 +24,29 @@ const app = new Hono();
 app.use(logger);
 app.use(corsMiddleware);
 app.route("/api/auth", auth); 
+app.use(globalRateLimiter); 
+
+
+app.route("/api/user", user);  
+app.route("/api/checks", checksRouter);
 
 //error handel
 app.onError(errorHandler);
 
 //Alles in health.ts ist jetzt unter /health erreichbar
 app.route("/health", health);
+
+// Cleanup beim Start
+cleanupExpiredSessions()
+  .then((count) => console.log(`Cleaned up ${count} expired sessions`))
+  .catch((err) => console.error("Cleanup error:", err));
+
+// Cleanup alle 24 Stunden
+setInterval(() => {
+  cleanupExpiredSessions()
+    .then((count) => console.log(`Cleaned up ${count} expired sessions`))
+    .catch((err) => console.error("Cleanup error:", err));
+}, 24 * 60 * 60 * 1000);
 
 //Route definieren: Definiert: Bei GET-Request auf "/" führe diese Funktion aus
 // c = Das "Context"-Objekt – enthält Request-Infos und Response-Methoden

@@ -1,22 +1,26 @@
 import { db } from "../db/index.js";
 import { sessions } from "../db/schema/index.js";
-import { eq } from "drizzle-orm";  // ← gt entfernt
+import { eq } from "drizzle-orm";
+import { randomBytes } from "crypto";
+import { lt } from "drizzle-orm";
 
 const SESSION_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 Tage
 
+function generateSessionId(): string {
+  return randomBytes(32).toString("base64url");  // ← 256 bits, URL-safe
+}
+
 export async function createSession(userId: string): Promise<string> {
+  const sessionId = generateSessionId();
   const expiresAt = new Date(Date.now() + SESSION_DURATION);
   
-  const [session] = await db
-    .insert(sessions)
-    .values({ userId, expiresAt })
-    .returning({ id: sessions.id });
+  await db.insert(sessions).values({
+    id: sessionId,  // ← Manuell gesetzt
+    userId,
+    expiresAt,
+  });
   
-  if (!session) {  // ← Safety check
-    throw new Error("Failed to create session");
-  }
-  
-  return session.id;
+  return sessionId;
 }
 
 export async function validateSession(sessionId: string) {
@@ -33,6 +37,16 @@ export async function validateSession(sessionId: string) {
   }
   
   return session;
+}
+
+// Löscht alle abgelaufenen Sessions
+export async function cleanupExpiredSessions(): Promise<number> {
+  const result = await db
+    .delete(sessions)
+    .where(lt(sessions.expiresAt, new Date()))
+    .returning({ id: sessions.id });
+  
+  return result.length;
 }
 
 export async function deleteSession(sessionId: string): Promise<void> {
