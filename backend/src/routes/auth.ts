@@ -4,8 +4,14 @@ import { users } from "../db/schema/index.js";
 import { registerSchema, loginSchema } from "../types/auth.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
 import { eq } from "drizzle-orm";
+import { setCookie } from "hono/cookie";
+import { createSession } from "../utils/session.js";
+import { deleteCookie } from "hono/cookie";
+import { deleteSession } from "../utils/session.js";
+import { authMiddleware } from "../middleware/auth.js";
+import type { Variables } from "../types/hono.js"; 
 
-const auth = new Hono();
+const auth = new Hono<{ Variables: Variables }>();
 
 // POST /api/auth/register
 auth.post("/register", async (c) => {
@@ -43,13 +49,12 @@ auth.post("/register", async (c) => {
   }
 });
 
-// POST /api/auth/login
+// POST /api/auth/login (ERSETZEN)
 auth.post("/login", async (c) => {
   try {
     const body = await c.req.json();
     const data = loginSchema.parse(body);
 
-    // Find user
     const [user] = await db
       .select()
       .from(users)
@@ -60,11 +65,22 @@ auth.post("/login", async (c) => {
       return c.json({ error: "Invalid credentials" }, 401);
     }
 
-    // Verify password
     const valid = await verifyPassword(user.passwordHash, data.password);
     if (!valid) {
       return c.json({ error: "Invalid credentials" }, 401);
     }
+
+    // Session erstellen
+    const sessionId = await createSession(user.id);
+    
+    // Cookie setzen
+    setCookie(c, "session_id", sessionId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax",
+      maxAge: 30 * 24 * 60 * 60, // 30 Tage
+      path: "/",
+    });
 
     return c.json({
       user: {
@@ -78,6 +94,16 @@ auth.post("/login", async (c) => {
     }
     return c.json({ error: "Internal server error" }, 500);
   }
+});
+
+// POST /api/auth/logout
+auth.post("/logout", authMiddleware, async (c) => {
+  const sessionId = c.get("sessionId");
+  
+  await deleteSession(sessionId);
+  deleteCookie(c, "session_id");
+  
+  return c.json({ message: "Logged out" });
 });
 
 export default auth;
