@@ -1,3 +1,4 @@
+<<<<<<< ours
 # dependencies
 node_modules/
 
@@ -24,3 +25,28 @@ pnpm-debug.log*
 coverage/
 *.tsbuildinfo
 
+=======
+# Dependencies
+node_modules/
+
+# Build Output
+dist/
+
+# Environment Variables (wichtig für Security!)
+.env
+.env.local
+.env.production
+
+# Logs
+logs/
+*.log
+
+# OS-Dateien
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+>>>>>>> theirs

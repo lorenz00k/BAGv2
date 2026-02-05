@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1770231673759,
+      "tag": "0000_moaning_forge",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770305017950,
+      "tag": "0001_nostalgic_reaper",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770307606089,
+      "tag": "0002_lumpy_veda",
+      "breakpoints": true
+    }
+  ]
+}
