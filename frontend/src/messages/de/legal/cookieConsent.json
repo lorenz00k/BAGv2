@@ -1,0 +1,11 @@
+{
+    "title": "Cookie-Einstellungen",
+    "description": "Wir verwenden <strong>Google Analytics</strong> nur nach Ihrer Einwilligung. Ohne Zustimmung bleibt Analytics blockiert. Details in unserer <privacy>Datenschutzerklärung</privacy>.",
+    "analyticsTitle": "Analyse (Google Analytics)",
+    "analyticsDesc": "Hilft uns zu verstehen, wie die Website genutzt wird.",
+    "necessaryAlwaysOn": "Notwendige Cookies sind immer aktiv.",
+    "onlyNecessary": "Nur notwendig",
+    "save": "Speichern",
+    "acceptAll": "Alle akzeptieren",
+    "hint": "Sie können Ihre Auswahl später jederzeit über „Cookie-Einstellungen“ im Footer ändern."
+}

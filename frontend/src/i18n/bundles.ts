@@ -92,6 +92,7 @@ export const messageBundles: Record<string, Loader> = {
         ({
             privacy: (await import(`@/messages/${l}/legal/privacy.json`)).default,
             imprint: (await import(`@/messages/${l}/legal/imprint.json`)).default,
+            cookieConsent: (await import(`@/messages/${l}/legal/cookieConsent.json`)).default,
         }) as AbstractIntlMessages,
 
     seo: async (l) =>

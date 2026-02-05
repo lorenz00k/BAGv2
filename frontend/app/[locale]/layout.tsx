@@ -5,10 +5,10 @@ import { notFound } from 'next/navigation';
 import { getMessages } from "next-intl/server";
 import type { Locale } from "@/i18n/locales";
 import { locales } from "@/i18n/locales";
-import { ROUTES } from "@/navigation/routes"
 
 import Footer from "@/components/common/Footer/Footer";
 import type { Metadata } from "next"
+import CookieConsentMount from "@/components/common/cookie/CookieConsentMount";
 
 export async function generateMetadata({
     params,
@@ -42,7 +42,10 @@ export default async function LocaleLayout({
             <HeaderNav locale={locale} />
 
             {children}
+
             <Footer locale={locale} />
+
+            <CookieConsentMount locale={locale} />
 
         </NextIntlClientProvider>
     );

@@ -42,15 +42,18 @@ export default function Footer({ locale }: FooterProps) {
                         </Link>
                     ))}
 
-                    <Button
+                    <button
                         type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => window.showCookieSettings?.()}
-                        className={styles.link}
+                        onClick={() => {
+                            console.log("cookie settings click")
+                            window.showCookieSettings?.()
+                        }
+                        }
+                        className={`${styles.link} ${styles.linkButton}`}
                     >
+
                         {tFooter("links.cookieSettings")}
-                    </Button>
+                    </button>
                 </div>
             </div>
         </footer>

@@ -2,6 +2,9 @@
 
 import "@/styles/globals.css"
 import { ICONS } from "@/seo/icons"
+import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
+import Script from "next/script"
 
 export const metadata = {
     icons: {
@@ -15,7 +18,25 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html>
-            <body>{children}</body>
+            <head>
+                <Script id="ga-consent-default" strategy="beforeInteractive">
+                    {`
+                        window.dataLayer = window.dataLayer || [];
+                        function gtag(){dataLayer.push(arguments);}
+                        gtag('consent', 'default', {
+                        'ad_storage': 'denied',
+                        'analytics_storage': 'denied',
+                        'ad_user_data': 'denied',
+                        'ad_personalization': 'denied'
+                        });
+          `         }
+                </Script>
+            </head>
+            <body>
+                {children}
+                <Analytics />
+                <SpeedInsights />
+            </body>
         </html>
     )
 }

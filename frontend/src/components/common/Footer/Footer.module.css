@@ -27,8 +27,25 @@
     text-decoration-color: color-mix(in srgb, var(--color-fg-subtle) 60%, transparent);
 }
 
-.link:hover,
-.link:focus-visible {
-    color: var(--color-accent-strong);
-    text-decoration-color: currentColor;
+
+.linkButton {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    /* oder var(--link-color) */
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.linkLike:hover {
+    text-decoration-thickness: 2px;
+}
+
+.linkLike:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
 }
