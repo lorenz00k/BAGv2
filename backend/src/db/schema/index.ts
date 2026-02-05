@@ -16,7 +16,7 @@ export const checks = pgTable("checks", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id")
     .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),  // ← Foreign Key! ✅
+    .references(() => users.id, { onDelete: "cascade" }), 
   
   status: text("status", { enum: ["draft", "completed"] })
     .notNull()
