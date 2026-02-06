@@ -60,8 +60,9 @@ export function buildWFSUrl(params: {
   dataset: string;
   bbox?: string;
   srsName?: string;
+  cqlFilter?: string;
 }): string {
-  const { dataset, bbox, srsName = "EPSG:4326" } = params;
+  const { dataset, bbox, srsName = "EPSG:4326", cqlFilter } = params;
 
   const url = new URL("https://data.wien.gv.at/daten/geo");
   url.searchParams.set("service", "WFS");
@@ -73,6 +74,10 @@ export function buildWFSUrl(params: {
 
   if (bbox) {
     url.searchParams.set("bbox", `${bbox},${srsName}`);
+  }
+
+  if(cqlFilter){
+    url.searchParams.set("cql_filter", cqlFilter);
   }
 
   return url.toString();

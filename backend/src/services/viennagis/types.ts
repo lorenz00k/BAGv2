@@ -23,6 +23,8 @@ export interface POI {
 export interface ZoningInfo {
   widmung: string; // "Wohngebiet", "Mischgebiet", etc.
   widmungCode: string; // "W", "G", "GB"
+  bauklasse?: string;
+  gbInfo?: string;
   details: string;
   found: boolean;
 }
@@ -70,12 +72,20 @@ export interface TrafficZoneInfo {
   found: boolean;
 }
 
+export interface PlanDocumentInfo {
+  pdNummer?: string;        // Plandokument-Nummer, z.B. "8200"
+  url?: string;             // Direkt-Link zum Plandokument
+  details: string;
+  found: boolean;
+}
+
 // ViennaGISResult erweitern
 export interface ViennaGISResult {
   found: boolean;
   address?: Address;
   pois: POI[];
   zoning: ZoningInfo | undefined;
+  planDocument: PlanDocumentInfo | undefined;
   noise: NoiseInfo | undefined;
   energyPlan: EnergyPlanInfo | undefined;     
   floodRisk: FloodRiskInfo | undefined;      

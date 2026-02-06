@@ -7,6 +7,8 @@ interface ZoningFeature {
     WIDMUNG?: string;
     FWIDMTXT?: string;
     BEMERKUNG?: string;
+    BK?: string;
+    GB_INFO?: string;
   };
 }
 
@@ -38,7 +40,7 @@ export async function getZoningInfo(
     };
   }
 
-  const feature = data.features[0];
+  const feature = data.features[0]!;
   const props = feature.properties;
 
   const widmungCode = (props.FWIDMUNG || props.WIDMUNG || "").toString();
@@ -47,6 +49,8 @@ export async function getZoningInfo(
   return {
     widmung,
     widmungCode,
+    bauklasse: props.BK || undefined, 
+    gbInfo: props.GB_INFO || undefined,
     details: props.FWIDMTXT || props.BEMERKUNG || "Keine Details verfügbar",
     found: true,
   };
