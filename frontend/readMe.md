@@ -3,30 +3,30 @@
 # Struktur & Wo kommt was hin:
 
 >## app/ = nur Routing / Pfade / Page-Wrapper (möglichst wenig Logik)
-    - Locale aus Params holen
-    - Feature-Page importieren
-    - <FeaturePage locale={locale} /> rendern
+>> - Locale aus Params holen
+- Feature-Page importieren
+- <FeaturePage locale={locale} /> rendern
 
 
 >## src/features/ = Feature-Logik + UI pro Produktbereich (Checker, FAQ, …)
-    Was gehört hier rein?
-    - Page-Komponenten für das Feature (z. B. ComplianceCheckerPage.tsx)
-    - Steps/Flows (Formular-Schritte)
-    - Feature-spezifische Helper, Types, Hooks
-    - Feature-spezifische API-Clients (für Backend!)
+Was gehört hier rein?
+- Page-Komponenten für das Feature (z. B. ComplianceCheckerPage.tsx)
+- Steps/Flows (Formular-Schritte)
+- Feature-spezifische Helper, Types, Hooks
+- Feature-spezifische API-Clients (für Backend!)
 
 
 >## src/components/ = wiederverwendbare UI/Layouts/Navigation-Komponenten 
-    Regel: Alles, was mehrere Features brauchen (oder “Design System”) gehört hier hin.
+Regel: Alles, was mehrere Features brauchen (oder “Design System”) gehört hier hin.
 
-    - /ui/* (Buttons, Input, Card, ...)
-    - /layout/* (Container, Section, ...)
-    - /navigation/* (MobileSidebar, Header)
-    - /cookie/ cookie consent komponente
+- /ui/* (Buttons, Input, Card, ...)
+- /layout/* (Container, Section, ...)
+- /navigation/* (MobileSidebar, Header)
+- /cookie/ cookie consent komponente
 
 
 >## src/messages/ = Übersetzungen & Content pro Sprache (next-intl)
-    Wichtig: Das ist der Kern eurer “statischen” Inhalte: alles was Text/Content ist, soll hier landen, nicht hardcoded in TSX.
+Wichtig: Das ist der Kern eurer “statischen” Inhalte: alles was Text/Content ist, soll hier landen, nicht hardcoded in TSX.
 
 >## src/i18n/ = next-intl Setup --> Mehrsprachigkeit
     - src/i18n/locales.ts = welche Sprachen es gibt, Default-Locale 
