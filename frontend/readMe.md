@@ -1,48 +1,50 @@
-## Frontend
+# Frontend
 
 # Struktur & Wo kommt was hin:
 
-## app/ = nur Routing / Pfade / Page-Wrapper (möglichst wenig Logik)
-- Locale aus Params holen
-- Feature-Page importieren
-- '<FeaturePage locale={locale} />' rendern
+    ## app/ = nur Routing / Pfade / Page-Wrapper (möglichst wenig Logik)
+    - Locale aus Params holen
+    - Feature-Page importieren
+    - <FeaturePage locale={locale} /> rendern
 
 
-## src/features/ = Feature-Logik + UI pro Produktbereich (Checker, FAQ, …)
-Was gehört hier rein?
-- Page-Komponenten für das Feature (z. B. ComplianceCheckerPage.tsx)
-- Steps/Flows (Formular-Schritte)
-- Feature-spezifische Helper, Types, Hooks
-- Feature-spezifische API-Clients (für Backend!)
+    ## src/features/ = Feature-Logik + UI pro Produktbereich (Checker, FAQ, …)
+    Was gehört hier rein?
+    - Page-Komponenten für das Feature (z. B. ComplianceCheckerPage.tsx)
+    - Steps/Flows (Formular-Schritte)
+    - Feature-spezifische Helper, Types, Hooks
+    - Feature-spezifische API-Clients (für Backend!)
 
 
-## src/components/ = wiederverwendbare UI/Layouts/Navigation-Komponenten 
-Regel: Alles, was mehrere Features brauchen (oder “Design System”) gehört hier hin.
+    ## src/components/ = wiederverwendbare UI/Layouts/Navigation-Komponenten 
+    Regel: Alles, was mehrere Features brauchen (oder “Design System”) gehört hier hin.
 
-- /ui/* (Buttons, Input, Card, ...)
-- /layout/* (Container, Section, ...)
-- /navigation/* (MobileSidebar, Header)
-- /cookie/ cookie consent komponente
+    - /ui/* (Buttons, Input, Card, ...)
+    - /layout/* (Container, Section, ...)
+    - /navigation/* (MobileSidebar, Header)
+    - /cookie/ cookie consent komponente
 
 
-## src/messages/ = Übersetzungen & Content pro Sprache (next-intl)
-Wichtig: Das ist der Kern eurer “statischen” Inhalte: alles was Text/Content ist, soll hier landen, nicht hardcoded in TSX.
+    ## src/messages/ = Übersetzungen & Content pro Sprache (next-intl)
+    Wichtig: Das ist der Kern eurer “statischen” Inhalte: alles was Text/Content ist, soll hier landen, nicht hardcoded in TSX.
 
-## src/i18n/ = next-intl Setup --> Mehrsprachigkeit
-- src/i18n/locales.ts = welche Sprachen es gibt, Default-Locale 
-- src/i18n/bundles.ts = welche “Namespaces” pro Page/Feature geladen werden 
-- src/i18n/request.ts = next-intl request config (Message Loading)
+    ## src/i18n/ = next-intl Setup --> Mehrsprachigkeit
+    - src/i18n/locales.ts = welche Sprachen es gibt, Default-Locale 
+    - src/i18n/bundles.ts = welche “Namespaces” pro Page/Feature geladen werden 
+    - src/i18n/request.ts = next-intl request config (Message Loading)
 
-## src/navigation/ = zentrale Routen/Link-Builder
-- src/navigation/nav.ts (Navigation-Items / Menüs) 
-- src/navigation/routes.ts (Route-Definitionen) 
-- src/navigation/route-alias.ts (Aliases / Hrefs)
+    ## src/navigation/ = zentrale Routen/Link-Builder
+    - src/navigation/nav.ts (Navigation-Items / Menüs) 
+    - src/navigation/routes.ts (Route-Definitionen) 
+    - src/navigation/route-alias.ts (Aliases / Hrefs)
 
-## src/seo/ + src/messages/**/seo/routes.json = SEO-Metadaten pro Route
+    ## src/seo/ + src/messages/**/seo/routes.json = SEO-Metadaten pro Route
 
-## Sytling: gloabl vs component level
-Global: Tokens, Resets, Layout-Grundregeln → src/styles/*
-Komponenten-spezifisch: *.module.css direkt neben der Komponente
+    ## Sytling: gloabl vs component level
+    Global: Tokens, Resets, Layout-Grundregeln → src/styles/*
+    Komponenten-spezifisch: *.module.css direkt neben der Komponente
+
+
 
 # Wie neue Seite hinzufügen?
     z.b neue Feature-Seite: /tools/foo
