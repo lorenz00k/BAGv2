@@ -1,5 +1,5 @@
 import type { PlanDocumentInfo } from "./types.js";
-import { fetchViennaOGD, buildWFSUrl } from "../utils/api.js";
+import { fetchViennaOGD, buildWFSUrl, createBBox } from "../utils/api.js";
 
 interface PlanDocumentFeature {
   properties: {
@@ -20,9 +20,10 @@ export async function getPlanDocumentInfo(
   lat: number,
   lng: number
 ): Promise<PlanDocumentInfo> {
+  const bbox = createBBox(lng, lat, 5);
   const url = buildWFSUrl({
     dataset: "PLANUNGASTOGD",
-    cqlFilter: `INTERSECTS(SHAPE, POINT(${lng} ${lat}))`,
+    bbox,
   });
 
   const data = await fetchViennaOGD<PlanDocumentResponse>(

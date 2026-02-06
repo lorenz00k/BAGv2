@@ -40,7 +40,7 @@ export async function getEnergyPlanInfo(
     };
   }
 
-  const feature = data.features[0];
+  const feature = data.features[0]!;
   const props = feature.properties;
 
   const zone = props.ZONE || props.TYP || props.BEZEICHNUNG;

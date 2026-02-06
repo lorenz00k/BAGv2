@@ -1,5 +1,5 @@
 import type { RealnutzungInfo } from "./types.js";
-import { fetchViennaOGD, buildWFSUrl } from "../utils/api.js";
+import { fetchViennaOGD, buildWFSUrl, createBBox } from "../utils/api.js";
 
 interface RealnutzungFeature {
   properties: {
@@ -21,9 +21,10 @@ export async function getRealnutzungInfo(
   lat: number,
   lng: number
 ): Promise<RealnutzungInfo> {
+  const bbox = createBBox(lng, lat, 5);
   const url = buildWFSUrl({
     dataset: "REALNUT2022OGD",
-    cqlFilter: `INTERSECTS(SHAPE, POINT(${lng} ${lat}))`,
+    bbox,
   });
 
   const data = await fetchViennaOGD<RealnutzungResponse>(

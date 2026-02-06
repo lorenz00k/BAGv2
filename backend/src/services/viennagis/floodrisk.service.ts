@@ -1,6 +1,5 @@
 import type { FloodRiskInfo } from "./types.js";
-// import { fetchViennaOGD, buildWFSUrl, createBBBox} from "../utils/api.js"
-import { buildWFSUrl, createBBox, fetchViennaOGD } from "../utils/api.js";
+import { fetchViennaOGD, buildWFSUrl, createBBox } from "../utils/api.js";
 
 interface FloodRiskFeature {
   properties: {
@@ -42,7 +41,7 @@ export async function getFloodRiskInfo(
     };
   }
 
-  const feature = data.features[0];
+  const feature = data.features[0]!;
   const props = feature.properties;
 
   const riskLevel = props.HQ || props.ZONE || props.GEFAHR;

@@ -37,7 +37,7 @@ export async function getNoiseInfo(
     };
   }
 
-  const feature = data.features[0];
+  const feature = data.features[0]!;
   const props = feature.properties;
 
   // Parse noise level (prefer LDEN, fallback to LNIGHT)
