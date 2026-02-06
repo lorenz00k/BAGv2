@@ -79,6 +79,16 @@ export interface PlanDocumentInfo {
   found: boolean;
 }
 
+export interface RealnutzungInfo {
+  category?: string;        // NUTZUNG_L1: "Baulandnutzung"
+  usage?: string;           // NUTZUNG_L2: "Industrie- und Gewerbenutzung"
+  usageDetail?: string;     // NUTZUNG_L3: "Industrie, produzierendes Gewerbe"
+  sensitivity: "hoch" | "mittel" | "gering";
+  sensitivityReason: string;
+  details: string;
+  found: boolean;
+}
+
 // ViennaGISResult erweitern
 export interface ViennaGISResult {
   found: boolean;
@@ -87,7 +97,8 @@ export interface ViennaGISResult {
   zoning: ZoningInfo | undefined;
   planDocument: PlanDocumentInfo | undefined;
   noise: NoiseInfo | undefined;
-  energyPlan: EnergyPlanInfo | undefined;     
+  energyPlan: EnergyPlanInfo | undefined;   
+  realnutzung: RealnutzungInfo | undefined;  
   floodRisk: FloodRiskInfo | undefined;      
   waterProtection: WaterProtectionInfo | undefined; 
   loadingZones: LoadingZone[];                 
