@@ -23,7 +23,7 @@ export async function getRealnutzungInfo(
 ): Promise<RealnutzungInfo> {
   const bbox = createBBox(lng, lat, 5);
   const url = buildWFSUrl({
-    dataset: "REALNUT2022OGD",
+    dataset: "REALNUT2024OGD",
     bbox,
   });
 
