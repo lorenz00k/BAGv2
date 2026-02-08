@@ -1,12 +1,12 @@
-import type { ZoningInfo } from "./types.js";
+import type { ZoningInfo, SuitabilityRisk, DetailedSuitability} from "./types.js";
 import { fetchViennaOGD, buildWFSUrl, createBBox } from "../utils/api.js";
 
 interface ZoningFeature {
   properties: {
-    WIDMUNG?: string;           // "GBGV5"
-    WIDMUNG_TXT?: string;       // "Gemischtes Baugebiet-Geschäftsviertel Bauklasse 5"
-    WIDMUNGSKLASSE?: string;    // "GBGV"
-    WIDMUNGSKLASSE_TXT?: string; // "Gemischtes Baugebiet-Geschäftsviertel"
+    WIDMUNG?: string;           // z.B. "GB II g"
+    WIDMUNG_TXT?: string;       // Volltext
+    WIDMUNGSKLASSE?: string;    // Grobe Klasse
+    WIDMUNGSKLASSE_TXT?: string; 
     BEZIRK?: string;
   };
 }
@@ -16,13 +16,14 @@ interface ZoningResponse {
 }
 
 /**
- * Get zoning information for a location
+ * Get zoning information for a location with expert analysis
  */
 export async function getZoningInfo(
   lat: number,
   lng: number
 ): Promise<ZoningInfo> {
-  const bbox = createBBox(lng, lat, 5); // 5 Meter Buffer
+  // Wir nutzen einen kleinen Buffer, um auch Grenzlagen zu erkennen
+  const bbox = createBBox(lng, lat, 5); 
   const url = buildWFSUrl({
     dataset: "GENFLWIDMUNGOGD",
     bbox,
@@ -36,58 +37,83 @@ export async function getZoningInfo(
       widmungCode: "",
       details: "Für diese Adresse sind keine Flächenwidmungsdaten verfügbar.",
       found: false,
+      risk: "medium"
     };
   }
 
-  const feature = data.features[0]!;
-  const props = feature.properties;
+  // Check auf Grenzlage (mehrere unterschiedliche Widmungen im Radius)
+  const uniqueWidmungen = new Set(data.features.map(f => f.properties.WIDMUNG));
+  const isBoundary = uniqueWidmungen.size > 1;
 
-  const widmungCode = props.WIDMUNG || "";
-  const widmung = props.WIDMUNGSKLASSE_TXT || interpretWidmung(props.WIDMUNGSKLASSE || widmungCode);
+  // Wir analysieren das primäre (erste) Feature
+  const primaryFeature = data.features[0]!;
+  const props = primaryFeature.properties;
+  const rawCode = props.WIDMUNG || "";
+  
+  const analysis = analyzeSuitability(rawCode);
 
   return {
-    widmung,
-    widmungCode,
+    widmung: analysis.label,
+    widmungCode: rawCode,
     details: props.WIDMUNG_TXT || "Keine Details verfügbar",
     found: true,
+    risk: analysis.risk,
+    bauklasse: analysis.bauklasse,
+    bauweise: analysis.bauweise,
+    note: isBoundary 
+      ? `ACHTUNG: Grenzlage! ${analysis.note}` 
+      : analysis.note,
+    isBoundary
   };
 }
 
 /**
- * Fallback: Translate zoning codes to human-readable format
+ * Experten-Logik zur Analyse der Wiener Widmungscodes
  */
-function interpretWidmung(code: string): string {
-  const widmungen: Record<string, string> = {
-    W: "Wohngebiet",
-    WA: "Allgemeines Wohngebiet",
-    WR: "Reines Wohngebiet",
-    G: "Gemischtes Gebiet",
-    GM: "Gemischtes Gebiet",
-    GB: "Betriebsbaugebiet",
-    GBGV: "Gemischtes Baugebiet-Geschäftsviertel",
-    I: "Industriegebiet",
-    IG: "Industriegebiet",
-    EKZ: "Einkaufszentrum",
-    PARK: "Parkanlage",
-    SPO: "Sportanlage",
-    "GF-BD": "Grünfläche - Baudenkmal",
-    GF: "Grünfläche",
-    LW: "Land- und Forstwirtschaft",
-    V: "Verkehrsfläche",
-    S: "Sondergebiet",
+function analyzeSuitability(fullCode: string): DetailedSuitability {
+  const parts = fullCode.split(" ");
+  const baseCode = parts[0] || "";
+  
+  // Extraktion der Bauklasse (I-VI)
+  const bauklasse = parts.find(p => /^(I|II|III|IV|V|VI)$/.test(p)) || "k.A.";
+  
+  // Extraktion der Bauweise (g = geschlossen, o = offen, k = gekuppelt, ek = einzeln)
+  const bauweiseMap: Record<string, string> = {
+    "g": "geschlossen",
+    "o": "offen",
+    "k": "gekuppelt",
+    "ek": "einzeln"
+  };
+  const bwKey = parts.find(p => ["g", "o", "k", "ek"].includes(p));
+  const bauweise = bwKey ? (bauweiseMap[bwKey] ?? "k.A.") : "k.A.";
+
+  const mapping: Record<string, { label: string, risk: SuitabilityRisk, note: string }> = {
+    "W":    { label: "Wohngebiet", risk: "high", note: "Hohe Sensibilität. Nur Betriebe erlaubt, die Nachbarn nicht stören." },
+    "WA":   { label: "Allgemeines Wohngebiet", risk: "high", note: "Wohnfokus. Gewerbe darf keine Emissionen verursachen." },
+    "WR":   { label: "Reines Wohngebiet", risk: "high", note: "Gewerbe fast unmöglich, außer Nahversorgung." },
+    "GB":   { label: "Gemischtes Baugebiet", risk: "low", note: "Ideal. Betriebe und Wohnungen sind gleichrangig." },
+    "GBGV": { label: "Geschäftsviertel", risk: "low", note: "Hervorragend für Handel. Erdgeschossnutzung oft gewerblich Pflicht." },
+    "BB":   { label: "Betriebsbaugebiet", risk: "low", note: "Optimal für Gewerbe. Kaum Einschränkungen durch Anrainer." },
+    "IG":   { label: "Industriegebiet", risk: "low", note: "Maximaler Spielraum für laute oder produzierende Betriebe." },
+    "G":    { label: "Gartensiedlung", risk: "high", note: "Sehr restriktiv. Meist nur hobbymäßige Nutzung erlaubt." },
+    "OEZ":  { label: "Öffentliche Zwecke", risk: "medium", note: "Abhängig von der Art der Einrichtung (z.B. Kirche, Amt)." },
+    "Ekl":  { label: "Kleingartengebiet", risk: "high", note: "Gewerbebetrieb rechtlich fast immer ausgeschlossen." },
+    "S":    { label: "Sondergebiet", risk: "medium", note: "Hängt vom spezifischen Plandokument ab." }
   };
 
-  // Exact match
-  if (widmungen[code]) {
-    return widmungen[code];
-  }
-
-  // Partial match (e.g. "GBGV5" starts with "GBGV")
-  for (const [key, value] of Object.entries(widmungen)) {
-    if (code.startsWith(key)) {
-      return value;
+  // Suche nach dem besten Match im Mapping (Prefix-Suche)
+  let info = { label: fullCode, risk: "medium" as SuitabilityRisk, note: "Einzelfallprüfung durch Experten empfohlen." };
+  
+  for (const [key, value] of Object.entries(mapping)) {
+    if (baseCode.startsWith(key)) {
+      info = value;
+      break;
     }
   }
 
-  return code || "Unbekannt";
+  return {
+    ...info,
+    bauklasse,
+    bauweise
+  };
 }

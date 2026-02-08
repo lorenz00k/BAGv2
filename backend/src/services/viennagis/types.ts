@@ -25,7 +25,27 @@ export interface ZoningInfo {
   widmungCode: string; // "GBGV5"
   details: string;     // "Gemischtes Baugebiet-Geschäftsviertel Bauklasse 5"
   found: boolean;
+  risk: SuitabilityRisk;
+  bauklasse?: string;
+  bauweise?: string;
+  note?: string;
+  isBoundary?: boolean;
 }
+
+
+
+/**
+ * Interface für die erweiterte Analyse
+ */
+export interface DetailedSuitability {
+  label: string;
+  risk: SuitabilityRisk;
+  note: string;
+  bauklasse: string;
+  bauweise: string;
+}
+
+
 
 export interface NoiseInfo {
   level?: number | undefined; // dB(A)
@@ -87,6 +107,17 @@ export interface RealnutzungInfo {
   details: string;
   found: boolean;
 }
+
+export interface AddressSuggestion {
+  fullAddress: string;  // "Mariahilfer Straße 20"
+  street: string;       // "Mariahilfer Straße"
+  houseNumber: string;  // "20"
+  postalCode: string;   // "1070"
+  district: string;     // "07"
+  coordinates: Coordinates;
+}
+
+export type SuitabilityRisk = 'low' | 'medium' | 'high';
 
 // ViennaGISResult erweitern
 export interface ViennaGISResult {

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { performFullCheck } from "../services/viennagis/index.js";
+import { performFullCheck, autocompleteAddress } from "../services/viennagis/index.js";
 import { rateLimiter } from "hono-rate-limiter";
 import pino from "pino"; 
 
@@ -30,6 +30,32 @@ const viennagisRateLimiter = rateLimiter({
 // Validation Schema
 const checkSchema = z.object({
   address: z.string().min(3, "Address too short").max(200, "Address too long"),
+});
+
+// Validation Schema for autocomplete
+const autocompleteSchema = z.object({
+  q: z.string().min(2, "Query too short").max(100, "Query too long"),
+});
+
+/**
+ * GET /api/viennagis/autocomplete?q=Mariahilf
+ * Returns address suggestions for autocomplete
+ */
+viennagis.get("/autocomplete", viennagisRateLimiter, async (c) => {
+  try {
+    const { q } = autocompleteSchema.parse({ q: c.req.query("q") });
+
+    const suggestions = await autocompleteAddress(q);
+
+    return c.json({ suggestions });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return c.json({ error: "Invalid input", issues: error.issues }, 400);
+    }
+
+    logger.error({ error }, "Autocomplete failed");
+    return c.json({ error: "Internal server error" }, 500);
+  }
 });
 
 /**

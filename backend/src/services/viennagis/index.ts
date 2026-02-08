@@ -91,6 +91,7 @@ export async function performFullCheck(
 }
 
 // Re-export all services
+export { autocompleteAddress } from "./autocomplete.service.js";
 export { searchAddress } from "./address.service.js";
 export { getNearbyPOIs } from "./poi.service.js";
 export { getZoningInfo } from "./zoning.service.js";
