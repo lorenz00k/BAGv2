@@ -21,11 +21,9 @@ export interface POI {
 }
 
 export interface ZoningInfo {
-  widmung: string; // "Wohngebiet", "Mischgebiet", etc.
-  widmungCode: string; // "W", "G", "GB"
-  bauklasse?: string | undefined;
-  gbInfo?: string | undefined;
-  details: string;
+  widmung: string;     // "Gemischtes Baugebiet-Geschäftsviertel"
+  widmungCode: string; // "GBGV5"
+  details: string;     // "Gemischtes Baugebiet-Geschäftsviertel Bauklasse 5"
   found: boolean;
 }
 
@@ -38,8 +36,9 @@ export interface NoiseInfo {
 }
 
 export interface EnergyPlanInfo {
-  zone?: string | undefined; // "Fernwärmepflicht", "Keine Beschränkungen"
-  restrictions?: string[] | undefined; // ["Gas verboten", "Fernwärme Pflicht"]
+  zone?: string | undefined;          // ERPLABEL, z.B. "7/001/1"
+  planUrl?: string | undefined;       // Link zum Plan-PDF
+  regulationUrl?: string | undefined; // Link zur Verordnung-PDF
   details: string;
   found: boolean;
 }
@@ -80,9 +79,9 @@ export interface PlanDocumentInfo {
 }
 
 export interface RealnutzungInfo {
-  category?: string | undefined;        // NUTZUNG_L1: "Baulandnutzung"
-  usage?: string | undefined;           // NUTZUNG_L2: "Industrie- und Gewerbenutzung"
-  usageDetail?: string | undefined;     // NUTZUNG_L3: "Industrie, produzierendes Gewerbe"
+  category?: string | undefined;        // NUTZUNG_LEVEL1: "Baulandnutzung"
+  usage?: string | undefined;           // NUTZUNG_LEVEL2: "Geschäfts,- Kern- und Mischnutzung"
+  usageDetail?: string | undefined;     // NUTZUNG_LEVEL3: "Geschäfts-, Kern- u. Mischgebiete"
   sensitivity: "hoch" | "mittel" | "gering";
   sensitivityReason: string;
   details: string;

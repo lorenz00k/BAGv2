@@ -3,11 +3,10 @@ import { fetchViennaOGD, buildWFSUrl, createBBox } from "../utils/api.js";
 
 interface EnergyPlanFeature {
   properties: {
-    ZONE?: string;
-    TYP?: string;
-    BEZEICHNUNG?: string;
-    BESCHREIBUNG?: string;
-    BEMERKUNG?: string;
+    ERPLABEL?: string;    // "7/001/1"
+    GEBID?: number;       // Gebiets-ID
+    WEBLINK_PD?: string;  // Link zum Plan-PDF
+    WEBLINK_VO?: string;  // Link zur Verordnung-PDF
   };
 }
 
@@ -43,43 +42,13 @@ export async function getEnergyPlanInfo(
   const feature = data.features[0]!;
   const props = feature.properties;
 
-  const zone = props.ZONE || props.TYP || props.BEZEICHNUNG;
-  const restrictions = interpretEnergyRestrictions(zone);
-
   return {
-    zone,
-    restrictions,
-    details:
-      props.BESCHREIBUNG ||
-      props.BEMERKUNG ||
-      "Keine weiteren Details verfügbar",
+    zone: props.ERPLABEL,
+    planUrl: props.WEBLINK_PD,
+    regulationUrl: props.WEBLINK_VO,
+    details: props.ERPLABEL
+      ? `Energieraumplan-Zone: ${props.ERPLABEL}`
+      : "Keine weiteren Details verfügbar",
     found: true,
   };
-}
-
-/**
- * Interpret energy zone into restrictions
- */
-function interpretEnergyRestrictions(zone?: string): string[] | undefined {
-  if (!zone) return undefined;
-
-  const restrictions: string[] = [];
-  const zoneLower = zone.toLowerCase();
-
-  if (
-    zoneLower.includes("fernwärme") ||
-    zoneLower.includes("fernwaerme")
-  ) {
-    restrictions.push("Fernwärme-Anschlusspflicht");
-  }
-
-  if (zoneLower.includes("gas") && zoneLower.includes("verbot")) {
-    restrictions.push("Gas-Heizung verboten");
-  }
-
-  if (zoneLower.includes("öl") || zoneLower.includes("oel")) {
-    restrictions.push("Öl-Heizung verboten");
-  }
-
-  return restrictions.length > 0 ? restrictions : undefined;
 }

@@ -3,9 +3,9 @@ import { fetchViennaOGD, buildWFSUrl, createBBox } from "../utils/api.js";
 
 interface RealnutzungFeature {
   properties: {
-    NUTZUNG_L1?: string;
-    NUTZUNG_L2?: string;
-    NUTZUNG_L3?: string;
+    NUTZUNG_LEVEL1?: string;
+    NUTZUNG_LEVEL2?: string;
+    NUTZUNG_LEVEL3?: string;
   };
 }
 
@@ -45,16 +45,16 @@ export async function getRealnutzungInfo(
   const feature = data.features[0]!;
   const props = feature.properties;
 
-  const nutzungL3 = props.NUTZUNG_L3 ?? "";
+  const nutzungL3 = props.NUTZUNG_LEVEL3 ?? "";
   const { sensitivity, sensitivityReason } = assessSensitivity(nutzungL3);
 
   return {
-    ...(props.NUTZUNG_L1 != null && { category: props.NUTZUNG_L1 }),
-    ...(props.NUTZUNG_L2 != null && { usage: props.NUTZUNG_L2 }),
-    ...(props.NUTZUNG_L3 != null && { usageDetail: props.NUTZUNG_L3 }),
+    ...(props.NUTZUNG_LEVEL1 != null && { category: props.NUTZUNG_LEVEL1 }),
+    ...(props.NUTZUNG_LEVEL2 != null && { usage: props.NUTZUNG_LEVEL2 }),
+    ...(props.NUTZUNG_LEVEL3 != null && { usageDetail: props.NUTZUNG_LEVEL3 }),
     sensitivity,
     sensitivityReason,
-    details: [props.NUTZUNG_L1, props.NUTZUNG_L2, props.NUTZUNG_L3]
+    details: [props.NUTZUNG_LEVEL1, props.NUTZUNG_LEVEL2, props.NUTZUNG_LEVEL3]
       .filter(Boolean)
       .join(" → ") || "Keine Details verfügbar",
     found: true,

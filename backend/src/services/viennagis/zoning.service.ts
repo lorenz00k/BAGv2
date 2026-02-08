@@ -3,12 +3,11 @@ import { fetchViennaOGD, buildWFSUrl, createBBox } from "../utils/api.js";
 
 interface ZoningFeature {
   properties: {
-    FWIDMUNG?: string;
-    WIDMUNG?: string;
-    FWIDMTXT?: string;
-    BEMERKUNG?: string;
-    BK?: string;
-    GB_INFO?: string;
+    WIDMUNG?: string;           // "GBGV5"
+    WIDMUNG_TXT?: string;       // "Gemischtes Baugebiet-Geschäftsviertel Bauklasse 5"
+    WIDMUNGSKLASSE?: string;    // "GBGV"
+    WIDMUNGSKLASSE_TXT?: string; // "Gemischtes Baugebiet-Geschäftsviertel"
+    BEZIRK?: string;
   };
 }
 
@@ -43,21 +42,19 @@ export async function getZoningInfo(
   const feature = data.features[0]!;
   const props = feature.properties;
 
-  const widmungCode = (props.FWIDMUNG || props.WIDMUNG || "").toString();
-  const widmung = interpretWidmung(widmungCode);
+  const widmungCode = props.WIDMUNG || "";
+  const widmung = props.WIDMUNGSKLASSE_TXT || interpretWidmung(props.WIDMUNGSKLASSE || widmungCode);
 
   return {
     widmung,
     widmungCode,
-    bauklasse: props.BK || undefined, 
-    gbInfo: props.GB_INFO || undefined,
-    details: props.FWIDMTXT || props.BEMERKUNG || "Keine Details verfügbar",
+    details: props.WIDMUNG_TXT || "Keine Details verfügbar",
     found: true,
   };
 }
 
 /**
- * Translate zoning codes to human-readable format
+ * Fallback: Translate zoning codes to human-readable format
  */
 function interpretWidmung(code: string): string {
   const widmungen: Record<string, string> = {
@@ -67,6 +64,7 @@ function interpretWidmung(code: string): string {
     G: "Gemischtes Gebiet",
     GM: "Gemischtes Gebiet",
     GB: "Betriebsbaugebiet",
+    GBGV: "Gemischtes Baugebiet-Geschäftsviertel",
     I: "Industriegebiet",
     IG: "Industriegebiet",
     EKZ: "Einkaufszentrum",
@@ -84,7 +82,7 @@ function interpretWidmung(code: string): string {
     return widmungen[code];
   }
 
-  // Partial match (e.g. "WA1" starts with "WA")
+  // Partial match (e.g. "GBGV5" starts with "GBGV")
   for (const [key, value] of Object.entries(widmungen)) {
     if (code.startsWith(key)) {
       return value;
