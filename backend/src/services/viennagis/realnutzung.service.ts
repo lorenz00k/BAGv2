@@ -62,7 +62,8 @@ export async function getRealnutzungInfo(
 }
 
 /**
- * Assess environmental sensitivity based on actual land use.
+ * Assess environmental sensitivity based on actual land use (NUTZUNG_LEVEL3).
+ * Categories based on RNK 2022 dataset documentation.
  */
 function assessSensitivity(nutzungL3: string): {
   sensitivity: "hoch" | "mittel" | "gering";
@@ -70,25 +71,62 @@ function assessSensitivity(nutzungL3: string): {
 } {
   const lower = nutzungL3.toLowerCase();
 
-  if (lower.includes("wohnen") || lower.includes("wohngebiet")) {
-    return {
-      sensitivity: "hoch",
-      sensitivityReason:
-        "Wohnnutzung im Umfeld – erhöhte Anforderungen an Lärm- und Geruchsschutz.",
-    };
+  // HOCH: Schutzbedürftige Nutzungen (Wohnen, Bildung, Gesundheit, Erholung)
+  const highKeywords = [
+    "wohn",          // Wohn(misch)gebiet (alle Dichten)
+    "bildung",       // Schulen, Universitäten
+    "gesundheit",    // Krankenhäuser, Pflegeeinrichtungen
+    "einsatzorg",    // Einsatzorganisationen (Rettung, Feuerwehr)
+    "friedhof",      // Friedhöfe
+    "park, grün",    // Parks, Grünanlagen
+    "wiese",         // Wiesen
+    "wald",          // Waldflächen
+  ];
+
+  for (const kw of highKeywords) {
+    if (lower.includes(kw)) {
+      return {
+        sensitivity: "hoch",
+        sensitivityReason:
+          `Sensible Nutzung im Umfeld (${nutzungL3}) – erhöhte Anforderungen an Lärm-, Geruchs- und Emissionsschutz.`,
+      };
+    }
   }
 
-  if (lower.includes("industrie") || lower.includes("gewerbe")) {
-    return {
-      sensitivity: "gering",
-      sensitivityReason:
-        "Industrie-/Gewerbenutzung – Betriebsanlage ist voraussichtlich gebietsüblich.",
-    };
+  // GERING: Gewerblich/industrielle Nutzungen
+  const lowKeywords = [
+    "industrie",       // Industrie, produzierendes Gewerbe
+    "gewerbe",         // Gewerbe, Großhandel
+    "kläranlage",      // Kläranlage, Deponie
+    "deponie",         // Deponien
+    "energieversorg",  // Energieversorgung, Rundfunkanlagen
+    "wasserversorg",   // Wasserversorgung
+    "bahnhö",          // Bahnhöfe, Bahnanlagen
+    "bahnanlagen",     // Bahnanlagen
+    "transport",       // Transport und Logistik
+    "logistik",        // Logistik inkl. Lager
+    "transformations", // Transformationsfläche, Baustelle
+    "baustelle",       // Baustellen
+    "materialgewinn",  // Materialgewinnung
+    "militär",         // Militärische Anlagen
+    "parkplä",         // Parkplätze, Parkhäuser
+    "parkhäu",         // Parkhäuser
+  ];
+
+  for (const kw of lowKeywords) {
+    if (lower.includes(kw)) {
+      return {
+        sensitivity: "gering",
+        sensitivityReason:
+          `Gewerbliche/technische Nutzung (${nutzungL3}) – Betriebsanlage ist voraussichtlich gebietsüblich.`,
+      };
+    }
   }
 
+  // MITTEL: Misch- und Sondernutzungen
   return {
     sensitivity: "mittel",
     sensitivityReason:
-      "Mischnutzung oder unklare Zuordnung – Einzelfallprüfung erforderlich.",
+      `Mischnutzung (${nutzungL3}) – Einzelfallprüfung der Verträglichkeit erforderlich.`,
   };
 }
