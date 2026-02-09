@@ -14,6 +14,9 @@ import type { Locale } from "@/i18n/locales";
 import { Button } from "@/components/ui/Button";
 import { PRIMARY_NAV, SECONDARY_NAV, href } from "@/navigation/nav";
 import { useIsActivePath } from "@/components/hooks/useIsActivePath";
+import SidebarNavLink from "./SidebarNavLink";
+import { SectionSeparator } from "@/components/layout/SectionSeperator";
+import BreakPoint from "../BreakPoint";
 
 interface MobileSidebarProps {
     locale: Locale;
@@ -93,16 +96,12 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
             id="mobile-sidebar"
         >
             {/* Backdrop: UI Button, aber neutralisiert */}
-            <Button
-                variant="secondary"
+            <button
+                type="button"
                 aria-label={tNav("menu.close")}
                 onClick={onClose}
                 tabIndex={open ? 0 : -1}
-                className={[
-                    styles.backdrop,
-                    // Button.tsx bringt Padding/Inline-Flex mit -> hier bewusst neutralisieren
-                    "p-0 m-0 border-0 rounded-none shadow-none bg-transparent hover:bg-transparent",
-                ].join(" ")}
+                className={styles.backdrop}
             />
 
             <div
@@ -131,21 +130,18 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
                             />
                             <div>
                                 <div className={styles.brandTitle}>{tItems("app")}</div>
-                                <div className={styles.brandSub}>{tNav("navigation")}</div>
+
                             </div>
                         </Link>
 
                         {/* Close: UI Button (icon) + overrides */}
                         <Button
                             variant="secondary"
+                            size="icon"
                             onClick={onClose}
                             aria-label={tNav("menu.close")}
                             tabIndex={open ? 0 : -1}
-                            className={[
-                                styles.close,
-                                // klein machen
-                                "p-2 w-auto h-auto",
-                            ].join(" ")}
+                            className={styles.close}
                         >
                             <svg
                                 className="h-5 w-5"
@@ -160,7 +156,7 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
                         </Button>
                     </div>
 
-                    <div className={styles.divider} />
+                    <SectionSeparator />
                 </div>
 
                 <div className={styles.content}>
@@ -171,23 +167,21 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
                             const linkHref = href(locale, link.key);
                             const active = isActive(linkHref);
                             return (
-                                <Link
+                                <SidebarNavLink
                                     key={link.key}
                                     href={linkHref}
+                                    active={active}
                                     onClick={onClose}
                                     aria-current={active ? "page" : undefined}
-                                    className={`${styles.item} ${active ? styles.active : ""}`}
                                     tabIndex={open ? 0 : -1}
                                 >
                                     <span>{tItems(link.labelKey.replace("item.", ""))}</span>
-                                </Link>
+                                </SidebarNavLink>
                             );
                         })}
                     </nav>
-
-                    <div className={styles.spacer} />
-                    <div className={styles.divider} style={{ margin: "0 12px" }} />
-                    <div className={styles.spacer} />
+                    <BreakPoint />
+                    <SectionSeparator />
 
                     <div className={styles.sectionLabel}>{tNav("menu.more")}</div>
 
@@ -210,7 +204,7 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
                         })}
                     </nav>
                 </div>
-
+                <BreakPoint />
                 <div className={styles.footer}>
                     <div className={styles.footerInner}>
                         <LanguageSwitcher direction="up" />
