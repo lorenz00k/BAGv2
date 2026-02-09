@@ -1,90 +1,155 @@
-:root {
-    color-scheme: light;
-    /* Core palette */
-    --color-bg: #e9eff3;
-    --color-surface: #ffffff;
-    --color-surface-muted: #f1f3f8;
-    --color-fg: #1f2430;
-    --color-fg-subtle: #4f5563;
-    --color-muted: #8a92a3;
-    --color-border: #7f8185;
-    --color-accent: #25457f;
-    --color-accent-strong: #1b3562;
-    --color-accent-soft: #dee5ff;
-    --color-success: #2f9a6b;
-    --color-warning: #d77d2f;
+@layer base {
+    :root {
+        color-scheme: light;
+        /* Core palette */
+        --color-bg: #e9eff3;
+        --color-surface: #ffffff;
+        --color-surface-muted: #f1f3f8;
+        --color-fg: #1f2430;
+        --color-fg-subtle: #4f5563;
+        --color-muted: #8a92a3;
+        --color-border: #7f8185;
+        --color-accent: #25457f;
+        --color-accent-strong: #1b3562;
+        --color-accent-soft: #dee5ff;
+        --color-success: #2f9a6b;
+        --color-warning: #d77d2f;
 
-    /* Layout */
-    --container-w: 1200px;
-    --container-padding: clamp(1.25rem, 3vw, 2.5rem);
-    --header-h: 57px;
-    --sticky-gap: 16px;
-    --header-offset: calc(var(--header-h) + var(--sticky-gap));
+        /* Layout */
+        --container-w: 1200px;
+        --container-padding: clamp(1.25rem, 3vw, 2.5rem);
+        --header-h: 57px;
+        --sticky-gap: 16px;
+        --header-offset: calc(var(--header-h) + var(--sticky-gap));
 
-    /* Header Design */
-    --color-header-bg: #0b1b3a;
-    --color-header-bg-glass: rgba(11, 27, 58, 0.75);
-    --color-header-border: rgba(255, 255, 255, 0.10);
-    --color-header-fg: #ffffff;
-    --color-header-fg-muted: rgba(255, 255, 255, 0.72);
+        /* Header Design */
+        --color-header-bg: #0b1b3a;
+        --color-header-bg-glass: rgba(11, 27, 58, 0.75);
+        --color-header-border: rgba(255, 255, 255, 0.10);
+        --color-header-fg: #faf6f6;
+        --color-header-fg-muted: rgba(255, 255, 255, 0.72);
+        /* Header interactive */
+        --color-header-menu-hover-bg: rgba(255, 255, 255, 0.10);
+        --color-header-link-focus-ring: var(--color-focus-ring-inverse);
+        --color-header-link-hover-fg: currentColor;
 
-    /* Hero CTA */
-    --hero-cta-bg: rgba(11, 27, 58, 0.35);
-    --hero-cta-bg-hover: rgba(11, 27, 58, 0.55);
-    --hero-cta-border: rgba(255, 255, 255, 0.28);
-    --hero-cta-border-hover: rgba(255, 255, 255, 0.4);
-    --hero-cta-fg: var(--color-header-fg);
-    --hero-cta-focus: rgba(255, 255, 255, 0.55);
+        /*Mobile sidebar */
+        --color-drawer-backdrop-bg: var(--color-header-bg);
 
-    /* Elevation & radius */
-    --radius-xs: 10px;
-    --radius-sm: 14px;
-    --radius: 18px;
-    --radius-lg: 28px;
-    --shadow-xs: 0 4px 12px -8px rgba(30, 40, 58, 0.22);
-    --shadow-sm: 0 10px 30px -18px rgba(30, 40, 58, 0.22);
-    --shadow: 0 28px 60px -32px rgba(30, 40, 58, 0.28);
+        --color-drawer-surface-bg: var(--color-header-bg);
+        --color-drawer-surface-fg: var(--color-header-fg);
+        --color-drawer-border: var(--color-header-border);
+        --shadow-drawer: var(--shadow);
 
-    /* Motion */
-    --transition-fade: 180ms ease;
-    --transition-move: 260ms ease;
+        --color-drawer-brand-hover-bg: rgba(255, 255, 255, 0.08);
 
-    /* Typography */
-    --font-sans: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-    --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        --color-drawer-close-hover-bg: rgba(255, 255, 255, 0.12);
+        --color-drawer-close-hover-fg: var(--color-header-fg);
 
-    /* Button */
-    --btn-radius: 14px;
-    --btn-pad-y: 0.95rem;
-    --btn-pad-x: 1.4rem;
+        --color-drawer-item-hover-bg: rgba(255, 255, 255, 0.10);
+        --color-drawer-item-active-bg: rgba(255, 255, 255, 0.16);
+        --color-drawer-item-secondary-active-bg: rgba(255, 255, 255, 0.10);
 
-    --btn-primary-bg: var(--color-accent);
-    --btn-primary-bg-hover: var(--color-accent-strong);
-    --btn-primary-fg: #fff;
+        --color-drawer-hint-hover-fg: var(--color-header-fg);
 
-    --btn-secondary-bg: #fff;
-    --btn-secondary-bg-hover: rgba(255, 255, 255, 0.92);
-    --btn-secondary-fg: var(--color-accent-strong);
-    --btn-secondary-border: rgba(255, 255, 255, 0.25);
-}
+        /* Hero */
+        --hero-overlay: rgba(0, 0, 0, 0.45);
 
-html.dark {
-    color-scheme: dark;
-    --color-bg: #11131b;
-    --color-surface: #161a25;
-    --color-surface-muted: #1e2330;
-    --color-fg: #f2f4ff;
-    --color-fg-subtle: #c4c9d8;
-    --color-muted: #7f879a;
-    --color-border: #2e3443;
-    --color-accent: #5c7bff;
-    --color-accent-strong: #4660d6;
-    --color-accent-soft: #1f2a4d;
-    --color-success: #44c08e;
-    --color-warning: #f0a960;
-    --shadow-xs: 0 4px 12px -8px rgba(0, 0, 0, 0.4);
-    --shadow-sm: 0 12px 40px -24px rgba(0, 0, 0, 0.45);
-    --shadow: 0 30px 70px -36px rgba(0, 0, 0, 0.55);
-    --hero-cta-bg: rgba(11, 27, 58, 0.55);
-    --hero-cta-bg-hover: rgba(11, 27, 58, 0.75);
+        --hero-text: rgba(226, 218, 218, 0.96);
+        --hero-text-muted: rgba(255, 255, 255, 0.82);
+
+        --hero-overlay-gradient: radial-gradient(60% 55% at 50% 45%,
+                rgba(0, 0, 0, 0.55),
+                rgba(0, 0, 0, 0.25) 60%,
+                rgba(0, 0, 0, 0.45) 100%);
+
+        /* CTA = helles Glas */
+        --hero-cta-bg: rgba(255, 255, 255, 0.22);
+        --hero-cta-bg-hover: rgba(255, 255, 255, 0.30);
+        --hero-cta-border: rgba(255, 255, 255, 0.30);
+        --hero-cta-border-hover: rgba(255, 255, 255, 0.46);
+        --hero-cta-fg: #ffffff;
+        --hero-cta-focus: rgba(255, 255, 255, 0.60);
+
+        --hero-cta-gloss: rgba(255, 255, 255, 0.18);
+
+        /* Elevation & radius */
+        --radius-xs: 10px;
+        --radius-sm: 14px;
+        --radius: 18px;
+        --radius-lg: 28px;
+        --shadow-xs: 0 4px 12px -8px rgba(30, 40, 58, 0.22);
+        --shadow-sm: 0 10px 30px -18px rgba(30, 40, 58, 0.22);
+        --shadow: 0 28px 60px -32px rgba(30, 40, 58, 0.28);
+
+        /* Motion */
+        --transition-fade: 180ms ease;
+        --transition-move: 260ms ease;
+
+        /* Typography */
+        --font-sans: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+        /* Button */
+        --btn-radius: 14px;
+        --btn-pad-y: 0.95rem;
+        --btn-pad-x: 1.4rem;
+
+        --btn-primary-bg: var(--color-accent);
+        --btn-primary-bg-hover: var(--color-accent-strong);
+        --btn-primary-fg: #fff;
+
+        --btn-secondary-bg: #fff;
+        --btn-secondary-bg-hover: rgba(255, 255, 255, 0.92);
+        --btn-secondary-fg: var(--color-accent-strong);
+        --btn-secondary-border: rgba(255, 255, 255, 0.25);
+
+        /* Focus / Ring */
+        --color-focus-ring: color-mix(in srgb, var(--color-accent) 60%, transparent);
+        --color-focus-ring-inverse: color-mix(in srgb, #fff 30%, transparent);
+
+
+    }
+
+    html.dark {
+        color-scheme: dark;
+        --color-bg: #11131b;
+        --color-surface: #161a25;
+        --color-surface-muted: #1e2330;
+        --color-fg: #f2f4ff;
+        --color-fg-subtle: #c4c9d8;
+        --color-muted: #7f879a;
+        --color-border: #2e3443;
+        --color-accent: #5c7bff;
+        --color-accent-strong: #4660d6;
+        --color-accent-soft: #1f2a4d;
+        --color-success: #44c08e;
+        --color-warning: #f0a960;
+        --shadow-xs: 0 4px 12px -8px rgba(0, 0, 0, 0.4);
+        --shadow-sm: 0 12px 40px -24px rgba(0, 0, 0, 0.45);
+        --shadow: 0 30px 70px -36px rgba(0, 0, 0, 0.55);
+
+
+        /* Hero */
+        --hero-text: rgba(255, 255, 255, 0.97);
+        --hero-text-muted: rgba(255, 255, 255, 0.86);
+
+        --hero-overlay-gradient: radial-gradient(60% 55% at 50% 45%,
+                rgba(0, 0, 0, 0.62),
+                rgba(0, 0, 0, 0.30) 60%,
+                rgba(0, 0, 0, 0.55) 100%);
+
+
+        /* Hero CTA = helles Glas */
+        --hero-cta-bg: rgba(255, 255, 255, 0.18);
+        --hero-cta-bg-hover: rgba(255, 255, 255, 0.26);
+        --hero-cta-border: rgba(255, 255, 255, 0.26);
+        --hero-cta-border-hover: rgba(255, 255, 255, 0.40);
+        --hero-cta-fg: #ffffff;
+        --hero-cta-focus: rgba(255, 255, 255, 0.62);
+
+        --hero-cta-gloss: rgba(255, 255, 255, 0.26);
+        --hero-cta-inner: rgba(255, 255, 255, 0.18);
+        --hero-cta-noise: rgba(255, 255, 255, 0.06);
+    }
 }
