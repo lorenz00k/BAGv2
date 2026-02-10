@@ -1,7 +1,9 @@
-import type { NoiseInfo } from "./types.js";
+import type { NoiseInfo, SuitabilityRisk } from "./types.js";
 import { fetchViennaOGD, buildWFSUrl, createBBox } from "../utils/api.js";
+import { extractGeometry } from "../utils/geometry.js";
 
 interface NoiseFeature {
+  geometry?: { type?: string; coordinates?: unknown };
   properties: {
     LDEN?: string | number; // Day-Evening-Night noise level
     LNIGHT?: string | number; // Night noise level
@@ -32,6 +34,7 @@ export async function getNoiseInfo(
 
   if (!data || !data.features || data.features.length === 0) {
     return {
+      risk: 'low',
       details: "Für diese Adresse sind keine Lärmdaten verfügbar.",
       found: false,
     };
@@ -39,6 +42,7 @@ export async function getNoiseInfo(
 
   const feature = data.features[0]!;
   const props = feature.properties;
+  const geometry = extractGeometry(feature);
 
   // Parse noise level (prefer LDEN, fallback to LNIGHT)
   const levelStr = props.LDEN || props.LNIGHT;
@@ -50,7 +54,12 @@ export async function getNoiseInfo(
   // Categorize noise level
   const category = level ? categorizeNoise(level) : undefined;
 
+  // Derive risk from noise level
+  const risk = deriveNoiseRisk(level);
+
   return {
+    ...(geometry && { geometry }),
+    risk,
     level,
     source,
     category,
@@ -107,4 +116,14 @@ function buildNoiseDescription(
 
   const sourceStr = source ? ` durch ${source}` : "";
   return `Lärmbelastung: ${level} dB(A)${sourceStr}`;
+}
+
+/**
+ * Derive suitability risk from noise level
+ */
+function deriveNoiseRisk(level?: number): SuitabilityRisk {
+  if (level == null) return 'low';
+  if (level < 55) return 'low';
+  if (level < 65) return 'medium';
+  return 'high';
 }

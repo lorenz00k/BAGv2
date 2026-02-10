@@ -100,6 +100,7 @@ export { getNoiseInfo } from "./noise.service.js";
 export { getEnergyPlanInfo } from "./energyplan.service.js";
 export { getRealnutzungInfo } from "./realnutzung.service.js";
 export { getFloodRiskInfo } from "./floodrisk.service.js";
+export { formatResultForUI } from "./aggregator.js";
 
 // Export types
 export * from "./types.js";

@@ -1,7 +1,9 @@
-// Core Types
+// Frontend mirror of backend/src/services/viennagis/types.ts
+// Keep in sync with backend types.
+
 export interface Coordinates {
-  lng: number; // WGS84 Longitude
-  lat: number; // WGS84 Latitude
+  lng: number;
+  lat: number;
 }
 
 export interface Address {
@@ -13,15 +15,26 @@ export interface Address {
   coordinates: Coordinates;
 }
 
+export interface AddressSuggestion {
+  fullAddress: string;
+  street: string;
+  houseNumber: string;
+  postalCode: string;
+  district: string;
+  coordinates: Coordinates;
+}
+
+export type SuitabilityRisk = "low" | "medium" | "high";
+
 // GeoJSON types (RFC 7946)
 export interface GeoJSONPoint {
   type: 'Point';
-  coordinates: [number, number]; // [lng, lat]
+  coordinates: [number, number];
 }
 
 export interface GeoJSONPolygon {
   type: 'Polygon';
-  coordinates: number[][][]; // array of linear rings
+  coordinates: number[][][];
 }
 
 export interface GeoJSONMultiPolygon {
@@ -35,15 +48,15 @@ export interface POI {
   geometry?: GeoJSONGeometry;
   type: "krankenhaus" | "religion" | "kindergarten" | "schule" | "friedhof";
   name: string;
-  distance: number; // Meter
+  distance: number;
   coordinates: Coordinates;
 }
 
 export interface ZoningInfo {
   geometry?: GeoJSONGeometry;
-  widmung: string;     // "Gemischtes Baugebiet-Geschäftsviertel"
-  widmungCode: string; // "GBGV5"
-  details: string;     // "Gemischtes Baugebiet-Geschäftsviertel Bauklasse 5"
+  widmung: string;
+  widmungCode: string;
+  details: string;
   found: boolean;
   risk: SuitabilityRisk;
   bauklasse?: string;
@@ -52,27 +65,12 @@ export interface ZoningInfo {
   isBoundary?: boolean;
 }
 
-
-
-/**
- * Interface für die erweiterte Analyse
- */
-export interface DetailedSuitability {
-  label: string;
-  risk: SuitabilityRisk;
-  note: string;
-  bauklasse: string;
-  bauweise: string;
-}
-
-
-
 export interface NoiseInfo {
   geometry?: GeoJSONGeometry;
   risk?: SuitabilityRisk;
-  level?: number | undefined; // dB(A)
-  source?: string | undefined; // "Straße", "Bahn", "Flughafen"
-  category?: string | undefined; // "gering", "mittel", "hoch"
+  level?: number;
+  source?: string;
+  category?: string;
   details: string;
   found: boolean;
 }
@@ -80,9 +78,9 @@ export interface NoiseInfo {
 export interface EnergyPlanInfo {
   geometry?: GeoJSONGeometry;
   risk?: SuitabilityRisk;
-  zone?: string | undefined;          // ERPLABEL, z.B. "7/001/1"
-  planUrl?: string | undefined;       // Link zum Plan-PDF
-  regulationUrl?: string | undefined; // Link zur Verordnung-PDF
+  zone?: string;
+  planUrl?: string;
+  regulationUrl?: string;
   details: string;
   found: boolean;
 }
@@ -90,37 +88,37 @@ export interface EnergyPlanInfo {
 export interface FloodRiskInfo {
   geometry?: GeoJSONGeometry;
   risk?: SuitabilityRisk;
-  riskLevel?: string | undefined; // "HQ30", "HQ100", "HQ300"
+  riskLevel?: string;
   inFloodZone: boolean;
   details: string;
   found: boolean;
 }
 
 export interface WaterProtectionInfo {
-  protectionZone?: string | undefined; // "Schutzgebiet", "Schongebiet"
-  restrictions?: string[] | undefined; // ["Ölabscheider Pflicht"]
+  protectionZone?: string;
+  restrictions?: string[];
   details: string;
   found: boolean;
 }
 
 export interface LoadingZone {
-  type: string; // "Ladezone", "Lieferzone"
-  distance: number; // Meter
+  type: string;
+  distance: number;
   coordinates: Coordinates;
 }
 
 export interface TrafficZoneInfo {
   inPedestrianZone: boolean;
   inMeetingZone: boolean;
-  restrictions?: string | undefined; // "Zufahrt nur 06:00-10:00"
+  restrictions?: string;
   details: string;
   found: boolean;
 }
 
 export interface PlanDocumentInfo {
   geometry?: GeoJSONGeometry;
-  pdNummer?: string | undefined;        // Plandokument-Nummer, z.B. "8200"
-  url?: string | undefined;             // Direkt-Link zum Plandokument
+  pdNummer?: string;
+  url?: string;
   details: string;
   found: boolean;
 }
@@ -128,25 +126,14 @@ export interface PlanDocumentInfo {
 export interface RealnutzungInfo {
   geometry?: GeoJSONGeometry;
   risk?: SuitabilityRisk;
-  category?: string | undefined;        // NUTZUNG_LEVEL1: "Baulandnutzung"
-  usage?: string | undefined;           // NUTZUNG_LEVEL2: "Geschäfts,- Kern- und Mischnutzung"
-  usageDetail?: string | undefined;     // NUTZUNG_LEVEL3: "Geschäfts-, Kern- u. Mischgebiete"
+  category?: string;
+  usage?: string;
+  usageDetail?: string;
   sensitivity: "hoch" | "mittel" | "gering";
   sensitivityReason: string;
   details: string;
   found: boolean;
 }
-
-export interface AddressSuggestion {
-  fullAddress: string;  // "Mariahilfer Straße 20"
-  street: string;       // "Mariahilfer Straße"
-  houseNumber: string;  // "20"
-  postalCode: string;   // "1070"
-  district: string;     // "07"
-  coordinates: Coordinates;
-}
-
-export type SuitabilityRisk = 'low' | 'medium' | 'high';
 
 // Aggregator types
 export type TrafficLightColor = 'green' | 'yellow' | 'red' | 'gray';
@@ -183,7 +170,6 @@ export interface AggregatedResult {
   pois: POI[];
 }
 
-// ViennaGISResult erweitern
 export interface ViennaGISResult {
   found: boolean;
   address?: Address;

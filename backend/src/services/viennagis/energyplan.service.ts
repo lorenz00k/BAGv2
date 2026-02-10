@@ -1,7 +1,9 @@
 import type { EnergyPlanInfo } from "./types.js";
 import { fetchViennaOGD, buildWFSUrl, createBBox } from "../utils/api.js";
+import { extractGeometry } from "../utils/geometry.js";
 
 interface EnergyPlanFeature {
+  geometry?: { type?: string; coordinates?: unknown };
   properties: {
     ERPLABEL?: string;    // "7/001/1"
     GEBID?: number;       // Gebiets-ID
@@ -34,6 +36,7 @@ export async function getEnergyPlanInfo(
 
   if (!data || !data.features || data.features.length === 0) {
     return {
+      risk: 'medium',
       details: "Für diese Adresse sind keine Energieraumplan-Daten verfügbar.",
       found: false,
     };
@@ -41,8 +44,11 @@ export async function getEnergyPlanInfo(
 
   const feature = data.features[0]!;
   const props = feature.properties;
+  const geometry = extractGeometry(feature);
 
   return {
+    ...(geometry && { geometry }),
+    risk: 'low',
     zone: props.ERPLABEL,
     planUrl: props.WEBLINK_PD,
     regulationUrl: props.WEBLINK_VO,

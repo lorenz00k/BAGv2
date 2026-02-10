@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { performFullCheck, autocompleteAddress } from "../services/viennagis/index.js";
+import { performFullCheck, autocompleteAddress, formatResultForUI } from "../services/viennagis/index.js";
 import { rateLimiter } from "hono-rate-limiter";
 import pino from "pino"; 
 
@@ -68,8 +68,9 @@ viennagis.post("/check", viennagisRateLimiter, async (c) => {
     const { address } = checkSchema.parse(body);
 
     const result = await performFullCheck(address);
+    const aggregated = result.found ? formatResultForUI(result) : undefined;
 
-    return c.json(result);
+    return c.json({ ...result, aggregated });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return c.json({ error: "Invalid input", issues: error.issues }, 400);

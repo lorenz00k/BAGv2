@@ -1,7 +1,9 @@
 import type { PlanDocumentInfo } from "./types.js";
 import { fetchViennaOGD, buildWFSUrl, createBBox } from "../utils/api.js";
+import { extractGeometry } from "../utils/geometry.js";
 
 interface PlanDocumentFeature {
+  geometry?: { type?: string; coordinates?: unknown };
   properties: {
     PD_NUMMER?: string;
     BEZEICHNUNG?: string;
@@ -40,6 +42,7 @@ export async function getPlanDocumentInfo(
 
   const feature = data.features[0]!;
   const props = feature.properties;
+  const geometry = extractGeometry(feature);
 
   const pdNummer = props.PD_NUMMER;
   const url_pd = pdNummer
@@ -47,6 +50,7 @@ export async function getPlanDocumentInfo(
     : undefined;
 
   return {
+    geometry,
     pdNummer,
     url: url_pd,
     details: props.BEZEICHNUNG || props.BEMERKUNG || "Keine Details verfügbar",

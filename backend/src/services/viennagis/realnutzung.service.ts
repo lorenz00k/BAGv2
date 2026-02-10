@@ -1,7 +1,9 @@
-import type { RealnutzungInfo } from "./types.js";
+import type { RealnutzungInfo, SuitabilityRisk } from "./types.js";
 import { fetchViennaOGD, buildWFSUrl, createBBox } from "../utils/api.js";
+import { extractGeometry } from "../utils/geometry.js";
 
 interface RealnutzungFeature {
+  geometry?: { type?: string; coordinates?: unknown };
   properties: {
     NUTZUNG_LEVEL1?: string;
     NUTZUNG_LEVEL2?: string;
@@ -34,6 +36,7 @@ export async function getRealnutzungInfo(
 
   if (!data || !data.features || data.features.length === 0) {
     return {
+      risk: 'medium',
       sensitivity: "mittel",
       sensitivityReason:
         "Keine Realnutzungsdaten verfügbar – manuelle Prüfung empfohlen.",
@@ -44,11 +47,15 @@ export async function getRealnutzungInfo(
 
   const feature = data.features[0]!;
   const props = feature.properties;
+  const geometry = extractGeometry(feature);
 
   const nutzungL3 = props.NUTZUNG_LEVEL3 ?? "";
   const { sensitivity, sensitivityReason } = assessSensitivity(nutzungL3);
+  const risk = sensitivityToRisk(sensitivity);
 
   return {
+    ...(geometry && { geometry }),
+    risk,
     ...(props.NUTZUNG_LEVEL1 != null && { category: props.NUTZUNG_LEVEL1 }),
     ...(props.NUTZUNG_LEVEL2 != null && { usage: props.NUTZUNG_LEVEL2 }),
     ...(props.NUTZUNG_LEVEL3 != null && { usageDetail: props.NUTZUNG_LEVEL3 }),
@@ -129,4 +136,16 @@ function assessSensitivity(nutzungL3: string): {
     sensitivityReason:
       `Mischnutzung (${nutzungL3}) – Einzelfallprüfung der Verträglichkeit erforderlich.`,
   };
+}
+
+/**
+ * Map sensitivity level to suitability risk
+ */
+function sensitivityToRisk(sensitivity: "hoch" | "mittel" | "gering"): SuitabilityRisk {
+  const map: Record<string, SuitabilityRisk> = {
+    hoch: 'high',
+    mittel: 'medium',
+    gering: 'low',
+  };
+  return map[sensitivity] ?? 'medium';
 }

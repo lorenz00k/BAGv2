@@ -1,12 +1,14 @@
 import type { ZoningInfo, SuitabilityRisk, DetailedSuitability} from "./types.js";
 import { fetchViennaOGD, buildWFSUrl, createBBox } from "../utils/api.js";
+import { extractGeometry } from "../utils/geometry.js";
 
 interface ZoningFeature {
+  geometry?: { type?: string; coordinates?: unknown };
   properties: {
     WIDMUNG?: string;           // z.B. "GB II g"
     WIDMUNG_TXT?: string;       // Volltext
     WIDMUNGSKLASSE?: string;    // Grobe Klasse
-    WIDMUNGSKLASSE_TXT?: string; 
+    WIDMUNGSKLASSE_TXT?: string;
     BEZIRK?: string;
   };
 }
@@ -49,10 +51,11 @@ export async function getZoningInfo(
   const primaryFeature = data.features[0]!;
   const props = primaryFeature.properties;
   const rawCode = props.WIDMUNG || "";
-  
   const analysis = analyzeSuitability(rawCode);
+  const geometry = extractGeometry(primaryFeature);
 
   return {
+    ...(geometry && { geometry }),
     widmung: analysis.label,
     widmungCode: rawCode,
     details: props.WIDMUNG_TXT || "Keine Details verfügbar",
@@ -60,8 +63,8 @@ export async function getZoningInfo(
     risk: analysis.risk,
     bauklasse: analysis.bauklasse,
     bauweise: analysis.bauweise,
-    note: isBoundary 
-      ? `ACHTUNG: Grenzlage! ${analysis.note}` 
+    note: isBoundary
+      ? `ACHTUNG: Grenzlage! ${analysis.note}`
       : analysis.note,
     isBoundary
   };
