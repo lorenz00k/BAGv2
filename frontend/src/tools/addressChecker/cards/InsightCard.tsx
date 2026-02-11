@@ -36,14 +36,26 @@ interface InsightCardProps {
   layer: LayerResult;
   /** Called when mouse enters/leaves — for map highlight */
   onHighlight?: (layerId: string | null) => void;
+  /** Called when user expands a card — triggers map fitBounds */
+  onSelect?: (layerId: string | null) => void;
 }
 
 // ── Component ───────────────────────────────────────────────────────────
 
-export default function InsightCard({ layer, onHighlight }: InsightCardProps) {
+export default function InsightCard({
+  layer,
+  onHighlight,
+  onSelect,
+}: InsightCardProps) {
   const [expanded, setExpanded] = useState(false);
 
   if (!layer.available) return null;
+
+  const handleToggle = () => {
+    const next = !expanded;
+    setExpanded(next);
+    onSelect?.(next ? layer.layerId : null);
+  };
 
   return (
     <div
@@ -62,7 +74,7 @@ export default function InsightCard({ layer, onHighlight }: InsightCardProps) {
       {/* ── Header (always visible) ── */}
       <button
         type="button"
-        onClick={() => setExpanded((prev) => !prev)}
+        onClick={handleToggle}
         className={clsx(
           "flex w-full items-center gap-3 p-4 text-left",
           "focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[-3px]",

@@ -12,8 +12,10 @@ import { checkAddress, ApiError } from "@/services/api";
 import type { AddressSuggestion, ViennaGISResult } from "@/types/viennagis";
 
 import AddressSearch from "./AddressSearch";
+import ConflictPanel from "./cards/ConflictPanel";
 import InsightCard from "./cards/InsightCard";
 import OverallRiskBanner from "./cards/OverallRiskBanner";
+import POIList from "./cards/POIList";
 
 // Lazy-load the map (it imports maplibre-gl which is a large client-only lib)
 const GISMap = dynamic(() => import("./map/GISMap"), {
@@ -43,11 +45,11 @@ export default function AddressChecker() {
   const tPage = useTranslations("pages.addressChecker");
   const tSearch = useTranslations("sections.addressChecker.search");
   const tBadges = useTranslations("sections.addressChecker.badges");
-  const tPois = useTranslations("sections.addressChecker.pois");
   const tRisk = useTranslations("sections.addressChecker.risk");
 
   const [state, setState] = useState<State>({ status: "idle" });
   const [highlightedLayer, setHighlightedLayer] = useState<string | null>(null);
+  const [selectedLayer, setSelectedLayer] = useState<string | null>(null);
 
   // ---- shared check logic ----
   const runCheck = useCallback(
@@ -89,6 +91,7 @@ export default function AddressChecker() {
   const handleReset = useCallback(() => {
     setState({ status: "idle" });
     setHighlightedLayer(null);
+    setSelectedLayer(null);
   }, []);
 
   const aggregated =
@@ -150,82 +153,79 @@ export default function AddressChecker() {
         <section className="py-[clamp(1rem,3vw,2rem)]">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(340px,420px)_1fr]">
             {/* ── Left panel: Data ── */}
-            <div className="flex flex-col gap-4 lg:max-h-[calc(100vh-12rem)] lg:overflow-y-auto lg:pr-2">
+            <div className="order-2 flex flex-col gap-4 lg:order-1 lg:max-h-[calc(100vh-12rem)] lg:overflow-y-auto lg:pr-2">
               {/* Address confirmation */}
               {state.data.address && (
-                <Card>
-                  <CardTitle>{state.data.address.fullAddress}</CardTitle>
-                  <CardBody>
-                    {state.data.address.postalCode} Wien,{" "}
-                    {state.data.address.district}. Bezirk
-                  </CardBody>
-                </Card>
+                <div
+                  className="animate-fadeIn"
+                  style={{ animationDelay: "50ms" }}
+                >
+                  <Card>
+                    <CardTitle>{state.data.address.fullAddress}</CardTitle>
+                    <CardBody>
+                      {state.data.address.postalCode} Wien,{" "}
+                      {state.data.address.district}. Bezirk
+                    </CardBody>
+                  </Card>
+                </div>
               )}
 
               {/* Overall risk banner */}
               {aggregated && (
-                <OverallRiskBanner
-                  risk={aggregated.overallRisk}
-                  color={aggregated.overallColor}
-                  label={aggregated.overallLabel}
-                />
+                <div
+                  className="animate-slideUp"
+                  style={{ animationDelay: "120ms" }}
+                >
+                  <OverallRiskBanner
+                    risk={aggregated.overallRisk}
+                    color={aggregated.overallColor}
+                    label={aggregated.overallLabel}
+                  />
+                </div>
+              )}
+
+              {/* Conflict warnings */}
+              {aggregated && aggregated.conflicts.length > 0 && (
+                <div
+                  className="animate-slideUp"
+                  style={{ animationDelay: "180ms" }}
+                >
+                  <ConflictPanel conflicts={aggregated.conflicts} />
+                </div>
               )}
 
               {/* Layer insight cards */}
               {aggregated && (
                 <div className="flex flex-col gap-3">
-                  <h2 className="text-[clamp(1.1rem,2vw,1.35rem)] font-semibold text-(--color-fg)">
+                  <h2
+                    className="animate-fadeIn text-[clamp(1.1rem,2vw,1.35rem)] font-semibold text-(--color-fg)"
+                    style={{ animationDelay: "220ms" }}
+                  >
                     {tRisk("title")}
                   </h2>
-                  {aggregated.layers.map((layer) => (
-                    <InsightCard
+                  {aggregated.layers.map((layer, i) => (
+                    <div
                       key={layer.layerId}
-                      layer={layer}
-                      onHighlight={setHighlightedLayer}
-                    />
+                      className="animate-slideUp"
+                      style={{ animationDelay: `${260 + i * 60}ms` }}
+                    >
+                      <InsightCard
+                        layer={layer}
+                        onHighlight={setHighlightedLayer}
+                        onSelect={setSelectedLayer}
+                      />
+                    </div>
                   ))}
                 </div>
               )}
 
-              {/* Nearby POIs */}
-              {state.data.pois.length > 0 && (
-                <div>
-                  <h2 className="mb-2 text-[clamp(1.1rem,2vw,1.35rem)] font-semibold text-(--color-fg)">
-                    {tPois("title")}
-                  </h2>
-                  <div className="grid gap-2">
-                    {state.data.pois.map((poi) => (
-                      <Card
-                        key={`${poi.name}-${poi.distance}`}
-                        variant="subtle"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <span className="font-medium text-(--color-fg)">
-                              {poi.name}
-                            </span>
-                            <span className="ml-2 text-sm text-(--color-muted)">
-                              {tPois(`categories.${poi.type}`)}
-                            </span>
-                          </div>
-                          <span className="text-sm font-medium text-(--color-accent)">
-                            {poi.distance}m
-                          </span>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {state.data.pois.length === 0 && (
-                <div>
-                  <h2 className="mb-2 text-[clamp(1.1rem,2vw,1.35rem)] font-semibold text-(--color-fg)">
-                    {tPois("title")}
-                  </h2>
-                  <p className="text-(--color-muted)">{tPois("empty")}</p>
-                </div>
-              )}
+              {/* Nearby POIs / Schutzobjekte */}
+              <div
+                className="animate-fadeIn"
+                style={{ animationDelay: "550ms" }}
+              >
+                <POIList pois={state.data.pois} />
+              </div>
 
               {/* Disclaimer + Actions */}
               <p className="text-xs text-(--color-muted)">
@@ -239,10 +239,11 @@ export default function AddressChecker() {
             </div>
 
             {/* ── Right panel: Map ── */}
-            <div className="sticky top-4 h-[calc(100vh-12rem)] min-h-[400px] rounded-lg border border-[color-mix(in_srgb,var(--color-border)_70%,transparent)] shadow-[var(--shadow-xs)]">
+            <div className="animate-scaleIn order-1 h-[min(50vh,360px)] rounded-lg border border-[color-mix(in_srgb,var(--color-border)_70%,transparent)] shadow-[var(--shadow-xs)] lg:order-2 lg:sticky lg:top-4 lg:h-[calc(100vh-12rem)]">
               <GISMap
                 data={aggregated}
                 highlightedLayer={highlightedLayer}
+                selectedLayer={selectedLayer}
                 className="h-full w-full rounded-lg"
               />
             </div>

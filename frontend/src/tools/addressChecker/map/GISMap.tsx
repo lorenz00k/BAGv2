@@ -4,12 +4,13 @@ import { useEffect, useRef, useCallback } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import type { AggregatedResult } from "@/types/viennagis";
+import type { AggregatedResult, GeoJSONGeometry } from "@/types/viennagis";
 import { RISK_COLORS, HIGHLIGHT_COLORS } from "./layerStyles";
 import {
   buildLayerFeatures,
   buildPOIFeatures,
 } from "./buildGeoJSON";
+import MapLegend from "./MapLegend";
 
 // ── Constants ───────────────────────────────────────────────────────────
 
@@ -41,10 +42,14 @@ const MAP_STYLE = {
 
 // ── Props ───────────────────────────────────────────────────────────────
 
+const FIT_PADDING = 60;
+
 interface GISMapProps {
   data: AggregatedResult | undefined;
   /** layerId of the currently highlighted layer (hover/select) */
   highlightedLayer?: string | null;
+  /** layerId to fly-to / fitBounds — set on InsightCard click */
+  selectedLayer?: string | null;
   className?: string;
 }
 
@@ -53,6 +58,7 @@ interface GISMapProps {
 export default function GISMap({
   data,
   highlightedLayer,
+  selectedLayer,
   className,
 }: GISMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -217,15 +223,75 @@ export default function GISMap({
     }
   }, [highlightedLayer, data]);
 
+  // ---- Fly to selected layer bounds ----
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !data || !selectedLayer) return;
+
+    const layer = data.layers.find((l) => l.layerId === selectedLayer);
+    if (!layer?.geometry) return;
+
+    const bounds = geometryBounds(layer.geometry);
+    if (!bounds) return;
+
+    map.fitBounds(bounds, { padding: FIT_PADDING, duration: 800 });
+  }, [selectedLayer, data]);
+
   return (
-    <div
-      ref={containerRef}
-      className={className ?? "h-full w-full min-h-[400px] rounded-lg"}
-    />
+    <div className="relative h-full w-full">
+      <div
+        ref={containerRef}
+        className={className ?? "h-full w-full min-h-[400px] rounded-lg"}
+      />
+      {data && <MapLegend layers={data.layers} />}
+    </div>
   );
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────
+
+/** Compute a LngLatBounds from any GeoJSON geometry. */
+function geometryBounds(
+  geom: GeoJSONGeometry,
+): maplibregl.LngLatBoundsLike | null {
+  const coords: number[][] = [];
+
+  function collect(arr: unknown): void {
+    if (
+      Array.isArray(arr) &&
+      arr.length >= 2 &&
+      typeof arr[0] === "number" &&
+      typeof arr[1] === "number"
+    ) {
+      coords.push(arr as number[]);
+      return;
+    }
+    if (Array.isArray(arr)) {
+      for (const item of arr) collect(item);
+    }
+  }
+
+  collect(geom.coordinates);
+
+  if (coords.length === 0) return null;
+
+  let minLng = Infinity;
+  let minLat = Infinity;
+  let maxLng = -Infinity;
+  let maxLat = -Infinity;
+
+  for (const [lng, lat] of coords) {
+    if (lng < minLng) minLng = lng;
+    if (lat < minLat) minLat = lat;
+    if (lng > maxLng) maxLng = lng;
+    if (lat > maxLat) maxLat = lat;
+  }
+
+  return [
+    [minLng, minLat],
+    [maxLng, maxLat],
+  ];
+}
 
 /** Remove all GIS sources/layers so we can re-add fresh data. */
 function cleanupSources(map: maplibregl.Map) {
