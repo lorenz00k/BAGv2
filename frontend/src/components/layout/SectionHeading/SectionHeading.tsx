@@ -1,7 +1,7 @@
 import { BreakText } from "@/components/common/BreakText";
 import styles from "./SectionHeading.module.css";
 
-type HeadingTag = "h2" | "h3" | "h4";
+type HeadingTag = "h1" | "h2" | "h3" | "h4";
 
 type SectionHeadingProps = {
     id?: string;

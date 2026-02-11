@@ -1,0 +1,88 @@
+.accordion {
+    margin-top: 18px;
+    display: grid;
+    gap: 14px;
+}
+
+.item {
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+    background: var(--color-surface);
+    overflow: hidden;
+}
+
+.trigger {
+    width: 100%;
+    text-align: left;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+}
+
+.trigger:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--color-accent) 55%, transparent);
+    outline-offset: 3px;
+    border-radius: 14px;
+}
+
+@media (min-width: 768px) {
+    .trigger {
+        padding: 20px 22px;
+    }
+}
+
+.question {
+    font-size: 18px;
+    line-height: 1.35;
+    font-weight: 700;
+    color: var(--color-fg);
+}
+
+.chevron {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+    color: var(--color-accent);
+    transition: transform var(--transition-move);
+}
+
+.chevronOpen {
+    transform: rotate(180deg);
+}
+
+.collapse {
+    max-height: 0;
+    opacity: 0;
+    transition: max-height var(--transition-move), opacity var(--transition-fade);
+}
+
+.expand {
+    max-height: 1000px;
+    opacity: 1;
+}
+
+.panel {
+    border-top: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+    padding: 0 18px 18px;
+    color: var(--color-fg-subtle);
+    line-height: 1.7;
+}
+
+@media (min-width: 768px) {
+    .panel {
+        padding: 0 22px 20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .chevron,
+    .collapse {
+        transition: none;
+    }
+}

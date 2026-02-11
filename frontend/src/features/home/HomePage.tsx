@@ -26,7 +26,6 @@ export default function HomePage({ locale }: { locale: string }) {
             <SectionSeparator />
 
             <FounderGuide />
-            <SectionSeparator />
 
             <Container>
                 <CtaPanel
