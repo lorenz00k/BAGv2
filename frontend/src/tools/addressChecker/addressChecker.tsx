@@ -4,10 +4,18 @@ import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import clsx from "clsx";
 import dynamic from "next/dynamic";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  MapPin,
+  Building2,
+  Volume2,
+  Waves,
+  Shield,
+} from "lucide-react";
 
 import { Section } from "@/components/layout/Section";
 import { Button } from "@/components/ui/Button";
-import { Card, CardTitle, CardBody } from "@/components/ui/Card";
+import { Card } from "@/components/ui/Card";
 import { checkAddress, ApiError } from "@/services/api";
 import type { AddressSuggestion, ViennaGISResult } from "@/types/viennagis";
 
@@ -36,6 +44,31 @@ type State =
   | { status: "loading" }
   | { status: "error"; message: string }
   | { status: "success"; data: ViennaGISResult };
+
+// ---------------------------------------------------------------------------
+// Animation variants
+// ---------------------------------------------------------------------------
+
+const gridContainer = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06, delayChildren: 0.2 } },
+};
+
+const gridItem = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
+};
+
+// ---------------------------------------------------------------------------
+// Feature pills config
+// ---------------------------------------------------------------------------
+
+const FEATURES = [
+  { icon: Building2, key: "zoning" },
+  { icon: Volume2, key: "noise" },
+  { icon: Waves, key: "flood" },
+  { icon: Shield, key: "pois" },
+] as const;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -94,162 +127,335 @@ export default function AddressChecker() {
     setSelectedLayer(null);
   }, []);
 
+  // ---- scroll to map when a card is selected ----
+  const handleInsightSelect = useCallback((layerId: string | null) => {
+    setSelectedLayer(layerId);
+    if (layerId) {
+      document.getElementById("gis-map-section")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, []);
+
   const aggregated =
     state.status === "success" ? state.data.aggregated : undefined;
 
   return (
     <main className="mx-auto max-w-[1440px] px-(--container-padding)">
-      {/* ---- Header ---- */}
-      <Section size="compact">
-        <h1 className="text-[clamp(1.6rem,3.5vw,2.4rem)] font-bold tracking-tight text-(--color-fg)">
-          {tPage("title")}
-        </h1>
-        <p className="mt-2 max-w-2xl text-(--color-fg-subtle)">
-          {tPage("description")}
-        </p>
-      </Section>
+      <AnimatePresence mode="wait">
+        {/* ================================================================ */}
+        {/* IDLE STATE — Hero Section                                        */}
+        {/* ================================================================ */}
+        {state.status === "idle" && (
+          <motion.section
+            key="hero"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.35 }}
+            className="relative flex min-h-[calc(100vh-var(--header-h)-8rem)] flex-col items-center justify-center text-center"
+          >
+            {/* Decorative gradient orbs */}
+            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+              <div className="animate-orbPulse absolute -top-24 left-1/4 h-[500px] w-[500px] rounded-full bg-[color-mix(in_srgb,var(--color-accent)_8%,transparent)] blur-[120px]" />
+              <div className="animate-orbPulse absolute -bottom-16 right-1/4 h-[400px] w-[400px] rounded-full bg-[color-mix(in_srgb,var(--color-success)_6%,transparent)] blur-[100px]" style={{ animationDelay: "6s" }} />
+            </div>
 
-      {/* ---- Search ---- */}
-      <Section size="compact">
-        <AddressSearch
-          onSelect={handleSelect}
-          onSearch={handleSearch}
-          isLoading={state.status === "loading"}
-        />
-      </Section>
-
-      {/* ---- Loading ---- */}
-      {state.status === "loading" && (
-        <Section size="compact">
-          <div className="flex items-center gap-3 text-(--color-muted)">
-            <div
-              className={clsx(
-                "h-5 w-5 rounded-full border-2 border-current border-t-transparent",
-                "animate-spin",
-              )}
-              aria-hidden="true"
-            />
-            <span>{tSearch("searching")}</span>
-          </div>
-        </Section>
-      )}
-
-      {/* ---- Error ---- */}
-      {state.status === "error" && (
-        <Section size="compact">
-          <Card>
-            <p className="text-(--color-warning)" role="alert">
-              {state.message}
-            </p>
-            <Button variant="secondary" onClick={handleReset}>
-              {tBadges("newCheck")}
-            </Button>
-          </Card>
-        </Section>
-      )}
-
-      {/* ---- Results: Dashboard Layout ---- */}
-      {state.status === "success" && (
-        <section className="py-[clamp(1rem,3vw,2rem)]">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(340px,420px)_1fr]">
-            {/* ── Left panel: Data ── */}
-            <div className="order-2 flex flex-col gap-4 lg:order-1 lg:max-h-[calc(100vh-12rem)] lg:overflow-y-auto lg:pr-2">
-              {/* Address confirmation */}
-              {state.data.address && (
-                <div
-                  className="animate-fadeIn"
-                  style={{ animationDelay: "50ms" }}
-                >
-                  <Card>
-                    <CardTitle>{state.data.address.fullAddress}</CardTitle>
-                    <CardBody>
-                      {state.data.address.postalCode} Wien,{" "}
-                      {state.data.address.district}. Bezirk
-                    </CardBody>
-                  </Card>
-                </div>
-              )}
-
-              {/* Overall risk banner */}
-              {aggregated && (
-                <div
-                  className="animate-slideUp"
-                  style={{ animationDelay: "120ms" }}
-                >
-                  <OverallRiskBanner
-                    risk={aggregated.overallRisk}
-                    color={aggregated.overallColor}
-                    label={aggregated.overallLabel}
-                  />
-                </div>
-              )}
-
-              {/* Conflict warnings */}
-              {aggregated && aggregated.conflicts.length > 0 && (
-                <div
-                  className="animate-slideUp"
-                  style={{ animationDelay: "180ms" }}
-                >
-                  <ConflictPanel conflicts={aggregated.conflicts} />
-                </div>
-              )}
-
-              {/* Layer insight cards */}
-              {aggregated && (
-                <div className="flex flex-col gap-3">
-                  <h2
-                    className="animate-fadeIn text-[clamp(1.1rem,2vw,1.35rem)] font-semibold text-(--color-fg)"
-                    style={{ animationDelay: "220ms" }}
-                  >
-                    {tRisk("title")}
-                  </h2>
-                  {aggregated.layers.map((layer, i) => (
-                    <div
-                      key={layer.layerId}
-                      className="animate-slideUp"
-                      style={{ animationDelay: `${260 + i * 60}ms` }}
-                    >
-                      <InsightCard
-                        layer={layer}
-                        onHighlight={setHighlightedLayer}
-                        onSelect={setSelectedLayer}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Nearby POIs / Schutzobjekte */}
-              <div
-                className="animate-fadeIn"
-                style={{ animationDelay: "550ms" }}
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center gap-8 px-4">
+              {/* Eyebrow badge */}
+              <motion.span
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0, duration: 0.5 }}
+                className={clsx(
+                  "inline-flex items-center gap-2 rounded-full px-4 py-1.5",
+                  "bg-(--color-surface) text-xs font-semibold text-(--color-accent)",
+                  "shadow-(--shadow-xs) border border-[color-mix(in_srgb,var(--color-accent)_20%,var(--color-border))]",
+                )}
               >
-                <POIList pois={state.data.pois} />
-              </div>
+                <MapPin size={14} />
+                {tPage("hero.badge")}
+              </motion.span>
 
-              {/* Disclaimer + Actions */}
-              <p className="text-xs text-(--color-muted)">
-                {tRisk("disclaimer.text")}
-              </p>
-              <div className="flex flex-wrap gap-3 pb-4">
+              {/* Title */}
+              <motion.h1
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.08, duration: 0.6 }}
+                className="max-w-[20ch] text-[clamp(2rem,5vw,3.5rem)] font-bold leading-[1.08] tracking-tight text-(--color-fg)"
+              >
+                {tPage("title")}
+              </motion.h1>
+
+              {/* Description */}
+              <motion.p
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.16, duration: 0.6 }}
+                className="max-w-[55ch] text-[clamp(1rem,2vw,1.2rem)] leading-relaxed text-(--color-fg-subtle)"
+              >
+                {tPage("description")}
+              </motion.p>
+
+              {/* Feature pills */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.24, duration: 0.5 }}
+                className="flex flex-wrap justify-center gap-3"
+              >
+                {FEATURES.map(({ icon: Icon, key }) => (
+                  <span
+                    key={key}
+                    className={clsx(
+                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1",
+                      "bg-(--color-surface-muted) text-xs font-medium text-(--color-fg-subtle)",
+                    )}
+                  >
+                    <Icon size={13} className="text-(--color-accent)" />
+                    {tPage(`hero.features.${key}`)}
+                  </span>
+                ))}
+              </motion.div>
+
+              {/* Search bar */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35, duration: 0.5 }}
+                className="mt-4 w-full max-w-[640px]"
+              >
+                <AddressSearch
+                  onSelect={handleSelect}
+                  onSearch={handleSearch}
+                  isLoading={false}
+                  size="large"
+                />
+              </motion.div>
+            </div>
+          </motion.section>
+        )}
+
+        {/* ================================================================ */}
+        {/* LOADING STATE                                                    */}
+        {/* ================================================================ */}
+        {state.status === "loading" && (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="flex min-h-[calc(100vh-var(--header-h)-8rem)] flex-col items-center justify-center"
+          >
+            <div className="flex items-center gap-3 text-(--color-muted)">
+              <div
+                className={clsx(
+                  "h-5 w-5 rounded-full border-2 border-current border-t-transparent",
+                  "animate-spin",
+                )}
+                aria-hidden="true"
+              />
+              <span>{tSearch("searching")}</span>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ================================================================ */}
+        {/* ERROR STATE                                                      */}
+        {/* ================================================================ */}
+        {state.status === "error" && (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Section size="compact">
+              <Card>
+                <p className="text-(--color-warning)" role="alert">
+                  {state.message}
+                </p>
                 <Button variant="secondary" onClick={handleReset}>
                   {tBadges("newCheck")}
                 </Button>
-              </div>
-            </div>
+              </Card>
+            </Section>
+          </motion.div>
+        )}
 
-            {/* ── Right panel: Map ── */}
-            <div className="animate-scaleIn order-1 h-[min(50vh,360px)] rounded-lg border border-[color-mix(in_srgb,var(--color-border)_70%,transparent)] shadow-[var(--shadow-xs)] lg:order-2 lg:sticky lg:top-4 lg:h-[calc(100vh-12rem)]">
-              <GISMap
-                data={aggregated}
-                highlightedLayer={highlightedLayer}
-                selectedLayer={selectedLayer}
-                className="h-full w-full rounded-lg"
+        {/* ================================================================ */}
+        {/* SUCCESS STATE — Results Dashboard                                */}
+        {/* ================================================================ */}
+        {state.status === "success" && (
+          <motion.div
+            key="results"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {/* ---- 1. Sticky compact search bar ---- */}
+            <div
+              className={clsx(
+                "sticky top-[var(--header-h)] z-30 -mx-(--container-padding) px-(--container-padding)",
+                "border-b border-[color-mix(in_srgb,var(--color-border)_50%,transparent)]",
+                "bg-[color-mix(in_srgb,var(--color-bg)_85%,transparent)] backdrop-blur-md",
+                "py-3",
+              )}
+            >
+              <AddressSearch
+                onSelect={handleSelect}
+                onSearch={handleSearch}
+                isLoading={false}
+                size="compact"
               />
             </div>
-          </div>
-        </section>
-      )}
+
+            {/* ---- 2. Summary strip ---- */}
+            <section className="py-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                {/* Address */}
+                {state.data.address && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 }}
+                  >
+                    <h2 className="text-[clamp(1.2rem,2.5vw,1.6rem)] font-bold text-(--color-fg)">
+                      {state.data.address.fullAddress}
+                    </h2>
+                    <p className="text-sm text-(--color-fg-subtle)">
+                      {state.data.address.postalCode} Wien,{" "}
+                      {state.data.address.district}. Bezirk
+                    </p>
+                  </motion.div>
+                )}
+
+                {/* Risk banner (compact) */}
+                {aggregated && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.12 }}
+                  >
+                    <OverallRiskBanner
+                      risk={aggregated.overallRisk}
+                      color={aggregated.overallColor}
+                      label={aggregated.overallLabel}
+                      variant="compact"
+                    />
+                  </motion.div>
+                )}
+
+                {/* Actions */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="flex gap-3"
+                >
+                  <Button variant="secondary" size="sm" onClick={handleReset}>
+                    {tBadges("newCheck")}
+                  </Button>
+                </motion.div>
+              </div>
+            </section>
+
+            {/* ---- 3. Conflict warnings ---- */}
+            {aggregated && aggregated.conflicts.length > 0 && (
+              <motion.section
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.18 }}
+                className="pb-4"
+              >
+                <ConflictPanel conflicts={aggregated.conflicts} />
+              </motion.section>
+            )}
+
+            {/* ---- 4. Map section ---- */}
+            <motion.section
+              id="gis-map-section"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.15, duration: 0.5 }}
+              className="pb-8"
+            >
+              <div className="h-[clamp(360px,55vh,600px)] overflow-hidden rounded-(--radius) border border-[color-mix(in_srgb,var(--color-border)_70%,transparent)] shadow-(--shadow-sm)">
+                <GISMap
+                  data={aggregated}
+                  highlightedLayer={highlightedLayer}
+                  selectedLayer={selectedLayer}
+                  className="h-full w-full"
+                />
+              </div>
+            </motion.section>
+
+            {/* ---- 5. Analysis grid ---- */}
+            {aggregated && (
+              <section className="pb-8">
+                <h2 className="mb-5 text-[clamp(1.1rem,2vw,1.35rem)] font-semibold text-(--color-fg)">
+                  {tRisk("title")}
+                </h2>
+
+                <motion.div
+                  variants={gridContainer}
+                  initial="hidden"
+                  animate="show"
+                  className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+                >
+                  {aggregated.layers.map((layer) => (
+                    <motion.div key={layer.layerId} variants={gridItem}>
+                      <InsightCard
+                        layer={layer}
+                        onHighlight={setHighlightedLayer}
+                        onSelect={handleInsightSelect}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </section>
+            )}
+
+            {/* ---- 6. POI + Disclaimer ---- */}
+            <section className="pb-12">
+              <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_minmax(300px,400px)]">
+                {/* POI list */}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <POIList pois={state.data.pois} />
+                </motion.div>
+
+                {/* Disclaimer + actions */}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.55 }}
+                  className="flex flex-col gap-4"
+                >
+                  <div className="rounded-(--radius-sm) border border-[color-mix(in_srgb,var(--color-border)_50%,transparent)] bg-(--color-surface-muted) p-5">
+                    <p className="text-xs text-(--color-muted)">
+                      {tRisk("disclaimer.text")}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <Button variant="secondary" onClick={handleReset}>
+                      {tBadges("newCheck")}
+                    </Button>
+                  </div>
+                </motion.div>
+              </div>
+            </section>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

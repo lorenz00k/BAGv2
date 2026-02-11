@@ -61,11 +61,11 @@ export default function InsightCard({
     <div
       className={clsx(
         // base card
-        "rounded-[var(--radius)] border",
+        "h-full rounded-(--radius) border",
         "border-[color-mix(in_srgb,var(--color-border)_70%,transparent)]",
-        "shadow-[var(--shadow-xs)]",
+        "shadow-(--shadow-xs)",
         "[transition:transform_var(--transition-move),box-shadow_var(--transition-move),border-color_var(--transition-fade)]",
-        "hover:shadow-[var(--shadow-sm)]",
+        "hover:shadow-(--shadow-sm)",
         TRAFFIC_LIGHT_BORDER_HOVER[layer.color],
       )}
       onMouseEnter={() => onHighlight?.(layer.layerId)}
@@ -77,9 +77,9 @@ export default function InsightCard({
         onClick={handleToggle}
         className={clsx(
           "flex w-full items-center gap-3 p-4 text-left",
-          "focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[-3px]",
+          "focus-visible:outline-[3px] focus-visible:outline-offset-[-3px]",
           "focus-visible:outline-[color-mix(in_srgb,var(--color-accent)_55%,transparent)]",
-          "rounded-[var(--radius)]",
+          "rounded-(--radius)",
         )}
         aria-expanded={expanded}
       >

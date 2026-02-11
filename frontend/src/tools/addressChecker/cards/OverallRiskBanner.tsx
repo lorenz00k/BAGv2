@@ -13,6 +13,8 @@ interface OverallRiskBannerProps {
   risk: SuitabilityRisk;
   color: TrafficLightColor;
   label: string;
+  /** "default" = full-width banner, "compact" = inline pill */
+  variant?: "default" | "compact";
 }
 
 // ── Styles ──────────────────────────────────────────────────────────────
@@ -62,13 +64,42 @@ export default function OverallRiskBanner({
   risk,
   color,
   label,
+  variant = "default",
 }: OverallRiskBannerProps) {
   const s = BANNER_STYLES[color];
+
+  if (variant === "compact") {
+    return (
+      <div
+        className={clsx(
+          "inline-flex items-center gap-2.5 rounded-full border px-4 py-2",
+          s.bg,
+          s.border,
+        )}
+      >
+        <div
+          className={clsx(
+            "flex h-7 w-7 shrink-0 items-center justify-center rounded-full",
+            "bg-[color-mix(in_srgb,currentColor_12%,transparent)]",
+            s.icon,
+          )}
+        >
+          <RiskIcon risk={risk} />
+        </div>
+        <div className="min-w-0">
+          <p className={clsx("text-sm font-bold leading-tight", s.text)}>
+            {RISK_LABELS[risk]}
+          </p>
+          <p className="text-xs leading-tight text-(--color-fg-subtle)">{label}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
       className={clsx(
-        "flex items-center gap-4 rounded-[var(--radius)] border p-4",
+        "flex items-center gap-4 rounded-(--radius) border p-4",
         s.bg,
         s.border,
       )}

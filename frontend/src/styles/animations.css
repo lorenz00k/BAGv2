@@ -73,3 +73,18 @@
 .animate-scaleIn {
     animation: scaleInSoft 0.35s ease-out both;
 }
+
+@keyframes orbPulse {
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate(10px, -10px) scale(1.05);
+    }
+}
+
+.animate-orbPulse {
+    animation: orbPulse 12s ease-in-out infinite;
+}

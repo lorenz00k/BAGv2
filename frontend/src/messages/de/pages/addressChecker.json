@@ -1,7 +1,16 @@
 {
     "title": "Adressen-Check für Betriebsanlagen",
     "subtitle": "Überprüfen Sie Ihre geplante Betriebsadresse auf potenzielle Probleme",
-    "description": "Wir zeigen Ihnen Kirchen, Krankenhäuser, Schulen und andere relevante Einrichtungen in der Nähe, die bei der Betriebsanlagengenehmigung eine Rolle spielen können.",
+    "description": "Analysieren Sie jeden Standort in Wien auf Widmung, Lärm, Hochwasserrisiko, Schutzobjekte und weitere Faktoren — alles auf Basis offizieller GIS-Daten der Stadt Wien.",
+    "hero": {
+        "badge": "Standortanalyse Wien",
+        "features": {
+            "zoning": "Widmung",
+            "noise": "Lärmpegel",
+            "flood": "Hochwasser",
+            "pois": "Schutzobjekte"
+        }
+    },
     "sections": {
         "search": "addressCheck.search",
         "map": "addressCheck.map",

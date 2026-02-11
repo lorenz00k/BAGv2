@@ -15,12 +15,15 @@ interface AddressSearchProps {
   onSelect: (suggestion: AddressSuggestion) => void;
   onSearch: (query: string) => void;
   isLoading?: boolean;
+  /** "default" = current, "large" = hero, "compact" = sticky bar */
+  size?: "default" | "large" | "compact";
 }
 
 export default function AddressSearch({
   onSelect,
   onSearch,
   isLoading = false,
+  size = "default",
 }: AddressSearchProps) {
   const t = useTranslations("sections.addressChecker.search");
 
@@ -156,9 +159,20 @@ export default function AddressSearch({
   const activeOptionId =
     activeIndex >= 0 ? `address-option-${activeIndex}` : undefined;
 
+  const isLarge = size === "large";
+  const isCompact = size === "compact";
+
   return (
-    <div ref={containerRef} className="relative w-full">
-      <Label htmlFor="address-input">{t("label")}</Label>
+    <div
+      ref={containerRef}
+      className={clsx(
+        "relative w-full",
+        isLarge && "rounded-(--radius) bg-(--color-surface) p-2 shadow-(--shadow-sm) border border-[color-mix(in_srgb,var(--color-border)_50%,transparent)]",
+      )}
+    >
+      <Label htmlFor="address-input" className={isLarge || isCompact ? "sr-only" : undefined}>
+        {t("label")}
+      </Label>
 
       <div className="flex gap-3">
         {/* Combobox input */}
@@ -178,6 +192,10 @@ export default function AddressSearch({
             aria-activedescendant={activeOptionId}
             aria-autocomplete="list"
             disabled={isLoading}
+            className={clsx(
+              isLarge && "!text-lg !py-4 !px-5",
+              isCompact && "!py-2 !text-sm",
+            )}
           />
 
           {/* Spinner inside input */}
@@ -199,6 +217,7 @@ export default function AddressSearch({
         <Button
           type="button"
           disabled={isLoading || query.length < 3}
+          size={isLarge ? "lg" : isCompact ? "sm" : undefined}
           onClick={() => {
             setIsOpen(false);
             onSearch(query);
