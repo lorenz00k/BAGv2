@@ -108,7 +108,27 @@
         --color-focus-ring: color-mix(in srgb, var(--color-accent) 60%, transparent);
         --color-focus-ring-inverse: color-mix(in srgb, #fff 30%, transparent);
 
+        /* Card icon base */
+        --card-icon-size: 3.5rem;
+        /* 56px */
+        --card-icon-radius: var(--radius-sm);
+        --card-icon-bg: var(--color-accent);
+        --card-icon-fg: #fff;
 
+        /* tones */
+        --card-icon-warm-bg: linear-gradient(135deg,
+                color-mix(in srgb, var(--color-warning) 85%, #ffffff) 0%,
+                var(--color-warning) 100%);
+        --card-icon-warm-fg: #fff;
+
+        --card-icon-accentSoft-bg: color-mix(in srgb, var(--color-accent) 15%, var(--color-surface));
+        --card-icon-accentSoft-fg: var(--color-accent-strong);
+
+        --card-icon-success-bg: color-mix(in srgb, var(--color-success) 18%, var(--color-surface));
+        --card-icon-success-fg: var(--color-success);
+
+        --card-icon-shield-bg: color-mix(in srgb, var(--color-fg) 10%, var(--color-surface));
+        --card-icon-shield-fg: var(--color-fg);
     }
 
     html.dark {

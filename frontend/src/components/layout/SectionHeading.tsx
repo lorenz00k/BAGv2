@@ -1,55 +1,37 @@
-import type { HTMLAttributes } from "react";
-import clsx from "clsx";
-import { BreakText } from "../common/BreakText";
+import { BreakText } from "@/components/common/BreakText";
+import styles from "./SectionHeading.module.css";
 
-export function SectionHeading(props: HTMLAttributes<HTMLDivElement>) {
-    const { className, ...rest } = props;
+type HeadingTag = "h2" | "h3" | "h4";
+
+type SectionHeadingProps = {
+    id?: string;
+    title: string;
+    subtitle?: string;
+    as?: HeadingTag;          // default: h2
+    subtitleAs?: "p" | "h3" | "h4"; // default: p oder h3 (ich würde p nehmen)
+};
+
+export default function SectionHeading({
+    id,
+    title,
+    subtitle,
+    as = "h2",
+    subtitleAs = "p",
+}: SectionHeadingProps) {
+    const TitleTag = as as any;
+    const SubTag = subtitleAs as any;
+
     return (
-        <div
-            className={clsx(
-                "max-w-[150ch] mx-auto text-center grid gap-[0.9rem]",
-                className
+        <div className={styles.heading}>
+            <TitleTag id={id} className={styles.title}>
+                <BreakText className="block">{title}</BreakText>
+            </TitleTag>
+
+            {subtitle && (
+                <SubTag className={styles.subtitle}>
+                    <BreakText className="block">{subtitle}</BreakText>
+                </SubTag>
             )}
-            {...rest}
-        />
-    );
-}
-
-export function SectionTitle(props: HTMLAttributes<HTMLHeadingElement>) {
-    const { className, children, ...rest } = props;
-    return (
-        <h2
-            className={clsx(
-                "text-[clamp(1.8rem,4vw,2.6rem)] leading-[1.15] font-bold",
-                className
-            )}
-            {...rest}
-        >
-            <BreakText>{children}</BreakText>
-        </h2 >
-    );
-}
-
-export function SectionCopy(props: HTMLAttributes<HTMLParagraphElement>) {
-    const { className, children, ...rest } = props;
-    return (
-        <p
-            className={clsx("max-w-[65ch] mx-auto text-[var(--color-fg-subtle)]", className)}
-            {...rest}
-        >
-            <BreakText>{children}</BreakText>
-        </p>
-    );
-}
-
-export function SectionSubtitle(props: HTMLAttributes<HTMLParagraphElement>) {
-    const { className, children, ...rest } = props;
-    return (
-        <p
-            className={clsx("mt-[0.9rem] max-w-[55ch] mx-auto text-[var(--color-fg-subtle)]", className)}
-            {...rest}
-        >
-            <BreakText>{children}</BreakText>
-        </p>
+        </div>
     );
 }

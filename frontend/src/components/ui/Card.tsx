@@ -41,21 +41,14 @@ export type CardIconProps = React.HTMLAttributes<HTMLDivElement> & {
 
 const iconBase =
     "w-14 h-14 rounded-[var(--radius-sm)] grid place-items-center " +
-    "bg-[var(--color-accent)] text-white shadow-[var(--shadow-xs)]";
+    "bg-[var(--card-icon-bg)] text-[var(--card-icon-fg)] shadow-[var(--shadow-xs)]";
 
 const iconTones: Record<IconTone, string> = {
     default: "",
-    warm:
-        "bg-[linear-gradient(135deg,color-mix(in_srgb,var(--color-warning)_85%,#ffffff)_0%,var(--color-warning)_100%)]",
-    accentSoft:
-        "bg-[color-mix(in_srgb,var(--color-accent)_15%,var(--color-surface))] " +
-        "text-[var(--color-accent-strong)]",
-    success:
-        "bg-[color-mix(in_srgb,var(--color-success)_18%,var(--color-surface))] " +
-        "text-[var(--color-success)]",
-    shield:
-        "bg-[color-mix(in_srgb,var(--color-fg)_10%,var(--color-surface))] " +
-        "text-[var(--color-fg)]",
+    warm: "bg-[var(--card-icon-warm-bg)] text-[var(--card-icon-warm-fg)]",
+    accentSoft: "bg-[var(--card-icon-accentSoft-bg)] text-[var(--card-icon-accentSoft-fg)]",
+    success: "bg-[var(--card-icon-success-bg)] text-[var(--card-icon-success-fg)]",
+    shield: "bg-[var(--card-icon-shield-bg)] text-[var(--card-icon-shield-fg)]",
 };
 
 export const CardIcon = React.forwardRef<HTMLDivElement, CardIconProps>(

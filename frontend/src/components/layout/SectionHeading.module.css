@@ -1,0 +1,14 @@
+.heading {
+    text-align: center;
+    margin: 0 auto;
+    max-width: 52rem;
+}
+
+.title {
+    margin: 0;
+}
+
+.subtitle {
+    margin: 0.75rem 0 0;
+    opacity: 0.8;
+}
