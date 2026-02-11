@@ -129,6 +129,10 @@
 
         --card-icon-shield-bg: color-mix(in srgb, var(--color-fg) 10%, var(--color-surface));
         --card-icon-shield-fg: var(--color-fg);
+
+        /* Section Seperator */
+        --separator-color: color-mix(in srgb, var(--color-fg) 18%, transparent);
+        --separator-height: 1px;
     }
 
     html.dark {
@@ -171,5 +175,8 @@
         --hero-cta-gloss: rgba(255, 255, 255, 0.26);
         --hero-cta-inner: rgba(255, 255, 255, 0.18);
         --hero-cta-noise: rgba(255, 255, 255, 0.06);
+
+        /* Section seperator */
+        --separator-color: color-mix(in srgb, white 16%, transparent);
     }
 }

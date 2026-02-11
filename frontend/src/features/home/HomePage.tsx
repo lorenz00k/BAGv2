@@ -1,7 +1,11 @@
 "use client"
 
+import { Container } from "@/components/layout/Container"
 import Hero from "./components/Hero"
 import SellingPoints from "./components/SellingPoints"
+import { Section } from "@/components/layout/Section"
+import DocumentTeaser from "./components/DocumentTeaser"
+import { SectionSeparator } from "@/components/layout/SectionSeperator"
 
 
 export default function HomePage({ locale }: { locale: string }) {
@@ -9,7 +13,11 @@ export default function HomePage({ locale }: { locale: string }) {
         <>
             <Hero locale={locale} />
             {/* später: Feature cards / sections */}
-            <SellingPoints locale={locale} />
+
+            <SellingPoints />
+            <SectionSeparator />
+            <DocumentTeaser locale={locale} />
+
         </>
     )
 }

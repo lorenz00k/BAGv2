@@ -1,0 +1,56 @@
+.documentTeaser {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    /* Bild ruhig groß */
+    gap: clamp(1rem, 2vw, 1.25rem);
+    align-items: center;
+}
+
+.content {
+    min-width: 0;
+}
+
+.media {
+    min-width: 0;
+    justify-self: end;
+    width: 100%;
+    max-width: 720px;
+    /* begrenzt Bild wie im Screenshot */
+}
+
+.mediaFrame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    /* “teaser”-look */
+    border-radius: 28px;
+    /* großer Radius wie Screenshot */
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.image {
+    object-fit: cover;
+}
+
+/* Mobile */
+@media (max-width: 820px) {
+    .documentTeaser {
+        grid-template-columns: 1fr;
+    }
+
+    .media {
+        display: none
+    }
+
+    .mediaFrame {
+        aspect-ratio: 4 / 3;
+        border-radius: var(--radius-lg);
+    }
+}
+
+@media (min-width: 1100px) {
+    .content {
+        max-width: 70ch;
+    }
+}

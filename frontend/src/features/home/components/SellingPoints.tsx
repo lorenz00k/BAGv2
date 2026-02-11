@@ -8,6 +8,7 @@ import { BreakText } from "@/components/common/BreakText";
 import styles from "./SellingPoints.module.css";
 import { Card, CardBody, CardIcon, CardTitle } from "@/components/ui/Card";
 import { Container } from "@/components/layout/Container";
+import { Section } from "@/components/layout/Section";
 
 export default function SellingPoints() {
     const t = useTranslations("sections.approvalSeo");
@@ -37,7 +38,7 @@ export default function SellingPoints() {
     ] as const;
 
     return (
-        <section className={styles.section} aria-labelledby="selling-points-title">
+        <Section aria-labelledby="selling-points-title">
             <Container>
                 <div className={styles.heading}>
                     <SectionHeading
@@ -68,6 +69,6 @@ export default function SellingPoints() {
                     </AutoGrid>
                 </div>
             </Container>
-        </section>
+        </Section>
     );
 }

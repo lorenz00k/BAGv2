@@ -5,7 +5,7 @@ export function SectionSeparator({ className, ...props }: HTMLAttributes<HTMLDiv
     return (
         <div
             className={clsx(
-                "h-px bg-[rgba(31,36,48,0.08)] w-[min(var(--container-w),100%)] mx-auto",
+                "w-[min(var(--container-w),100%)] mx-auto bg-[var(--separator-color)] h-[var(--separator-height)]",
                 className
             )}
             {...props}
