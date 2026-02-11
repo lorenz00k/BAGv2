@@ -40,15 +40,13 @@ export default function SellingPoints() {
     return (
         <Section aria-labelledby="selling-points-title">
             <Container>
-                <div className={styles.heading}>
-                    <SectionHeading
-                        id="selling-points-title"
-                        title={t("heading")}
-                        subtitle={t("intro")}
-                        as="h2"          // optional, ist eh default
-                        subtitleAs="p"   // optional, ist eh default
-                    />
-                </div>
+                <SectionHeading
+                    id="selling-points-title"
+                    title={t("heading")}
+                    subtitle={t("intro")}
+                    as="h2"          // optional, ist eh default
+                    subtitleAs="p"   // optional, ist eh default
+                />
                 <div className={styles.grid}>
                     <AutoGrid min="14rem">
                         {items.map(({ key, Icon, tone, title, body }) => (
