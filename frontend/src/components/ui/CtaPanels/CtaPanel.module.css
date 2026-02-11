@@ -1,0 +1,32 @@
+.panel {
+    margin-top: clamp(1.5rem, 4vw, 2.5rem);
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border-radius: 20px;
+
+    background: var(--color-surface, rgba(255, 255, 255, 0.7));
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.18));
+    box-shadow: var(--shadow, 0 20px 50px rgba(0, 0, 0, 0.10));
+
+    text-align: center;
+}
+
+.title {
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.text {
+    margin-top: 0.75rem;
+    opacity: 0.85;
+}
+
+.panel :global(a),
+.panel :global(button) {
+    margin-top: 1.25rem;
+}
+
+/* Optional: etwas bessere Lesbarkeit bei sehr langen Strings */
+.text {
+    overflow-wrap: anywhere;
+}

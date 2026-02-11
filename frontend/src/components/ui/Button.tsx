@@ -2,7 +2,7 @@ import * as React from "react";
 import clsx from "clsx";
 import { Slot } from "@radix-ui/react-slot";
 
-type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "next" | "previous";
+type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "heroCta" | "next" | "previous";
 type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -53,6 +53,24 @@ const variants: Record<ButtonVariant, string> = {
         "bg-transparent text-[var(--color-foreground)] border-transparent shadow-none " +
         "enabled:hover:bg-[color-mix(in_srgb,var(--color-accent-soft)_70%,transparent)] " +
         "enabled:hover:text-[var(--color-accent-strong)]",
+
+    heroCta:
+        "relative overflow-hidden " +
+        "bg-[var(--hero-cta-bg)] !text-[var(--hero-cta-fg)] " +
+        "border border-[var(--hero-cta-border)] " +
+        "shadow-[0_18px_55px_-28px_rgba(0,0,0,0.45)] " +
+        "supports-[backdrop-filter]:backdrop-blur-xl " +
+        "[-webkit-backdrop-filter:blur(18px)] [backdrop-filter:blur(18px)] " +
+        // sichtbarer Glas-Glanz
+        "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] " +
+        "before:pointer-events-none before:opacity-90 " +
+        "before:bg-[linear-gradient(to_bottom,var(--hero-cta-gloss),rgba(255,255,255,0.06)_55%,transparent)] " +
+        // Innenkante für “Glas”
+        "after:content-[''] after:absolute after:inset-[1px] after:rounded-[calc(var(--btn-radius)-2px)] " +
+        "after:pointer-events-none after:border after:border-[var(--hero-cta-inner)] after:opacity-80 " +
+        "enabled:hover:bg-[var(--hero-cta-bg-hover)] " +
+        "enabled:hover:border-[var(--hero-cta-border-hover)] " +
+        "focus-visible:outline-[var(--hero-cta-focus)]",
 
     // behält dein Verhalten
     next: primaryLike + " enabled:hover:-translate-y-[1px]",

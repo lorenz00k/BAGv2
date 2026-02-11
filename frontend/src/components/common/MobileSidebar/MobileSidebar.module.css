@@ -1,34 +1,23 @@
-/* ===========================
-   Mobile Sidebar (Drawer)
-   =========================== */
-
 .mobileSidebar {
     position: fixed;
     inset: 0;
     z-index: 60;
-}
-
-.mobileSidebar a:hover,
-.mobileSidebar a:focus-visible {
-    color: inherit;
-}
-
-.mobileSidebar[aria-hidden="true"] {
     pointer-events: none;
+}
+
+.open {}
+
+.mobileSidebar.open {
+    pointer-events: auto;
 }
 
 .backdrop {
     position: absolute;
     inset: 0;
-    background: var(--color-header-bg);
+    background: var(--color-drawer-backdrop-bg);
     opacity: 0;
-    backdrop-filter: none;
     transition: opacity var(--transition-fade);
-}
-
-
-.mobileSidebar.open .backdrop {
-    opacity: 1;
+    pointer-events: none;
 }
 
 .drawer {
@@ -37,6 +26,8 @@
     right: 0;
     height: 100dvh;
     width: min(22rem, 88vw);
+    transform: translateX(100%);
+    transition: transform var(--transition-move);
 
     display: flex;
     flex-direction: column;
@@ -45,31 +36,64 @@
     color: var(--color-header-fg);
     border-left: 1px solid var(--color-header-border);
     box-shadow: var(--shadow);
+}
 
-    padding-top: max(16px, env(safe-area-inset-top));
-    padding-bottom: max(16px, env(safe-area-inset-bottom));
-
-    transform: translateX(100%);
-    transition: transform var(--transition-move);
-
-    background-color: var(--color-header-bg) !important;
-    background-image: none !important;
-
-    /* falls irgendwo glass/blur reinwirkt */
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-
-    /* wichtig: keine opacity am container */
-    opacity: 1 !important;
-
+.mobileSidebar.open .backdrop {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .mobileSidebar.open .drawer {
     transform: translateX(0);
 }
 
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.item {
+    display: flex;
+    /* statt inline */
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    line-height: 1.2;
+    text-decoration: none;
+    color: inherit;
+    background: transparent;
+    transition: background var(--transition-fade);
+}
+
+.item+.item {
+    margin-top: 2px;
+    /* optional, falls du kein gap nutzt */
+}
+
+
+
+.drawerHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+}
+
+.drawerTitle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    color: var(--color-drawer-surface-fg);
+}
+
+
+/* Layout / Spacing */
 .header {
-    padding: 0 16px;
+    padding: 14px 14px 10px;
 }
 
 .topRow {
@@ -82,131 +106,41 @@
 .brand {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 10px;
-    border-radius: var(--radius-sm);
+    gap: 10px;
     text-decoration: none;
     color: inherit;
-    transition: background var(--transition-fade);
-}
-
-.brand:hover {
-    background: rgba(255, 255, 255, 0.10);
+    min-width: 0;
 }
 
 .brandTitle {
-    font-weight: 650;
-    letter-spacing: -0.02em;
-    line-height: 1.05;
-}
-
-.brandSub {
-    margin-top: 2px;
-    font-size: 0.78rem;
-    color: var(--color-header-fg-muted);
-}
-
-.close {
-    width: 40px;
-    height: 40px;
-    border: 0;
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: var(--color-header-fg-muted);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: background var(--transition-fade), color var(--transition-fade);
-}
-
-.close:hover {
-    background: rgba(255, 255, 255, 0.10);
-    color: var(--color-header-fg);
-}
-
-.divider {
-    height: 1px;
-    background: var(--color-header-border);
-    margin-top: 12px;
+    font-weight: 700;
+    line-height: 1.1;
 }
 
 .content {
-    flex: 1;
-    min-height: 0;
+    padding: 12px 14px;
     overflow: auto;
-    padding: 12px 8px;
 }
 
 .sectionLabel {
-    padding: 0 10px 8px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    color: var(--color-header-fg-muted);
+    font-size: 0.85rem;
+    opacity: 0.75;
+    margin: 10px 0 8px;
 }
 
-.nav {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 0 4px;
-}
-
-.item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 12px;
-    border-radius: var(--radius);
-    color: inherit;
-    text-decoration: none;
-    transition: background var(--transition-fade);
-}
-
-.item:hover {
-    background: rgba(255, 255, 255, 0.10);
-}
-
-.item.active {
-    background: rgba(255, 255, 255, 0.16);
-}
-
-.hint {
-    color: var(--color-header-fg-muted);
-    transition: transform var(--transition-fade), color var(--transition-fade);
-}
-
-.item:hover .hint {
-    color: var(--color-header-fg);
-    transform: translateX(2px);
-}
-
-.item--secondary {
-    padding: 10px 12px;
-    font-size: 0.95rem;
-    color: var(--color-header-fg-muted);
-}
-
-.item--secondary:hover {
-    color: var(--color-header-fg);
-}
-
-.item--secondary.active {
-    background: rgba(255, 255, 255, 0.10);
-    color: var(--color-header-fg);
+.close {
+    /* falls Button defaults reinfunken */
+    min-width: unset;
+    min-height: unset;
 }
 
 .footer {
-    padding: 0 16px;
+    margin-top: auto;
+    padding: 12px 14px;
+    border-top: 1px solid var(--color-header-border);
 }
 
 .footerInner {
-    border-top: 1px solid var(--color-header-border);
-    padding-top: 12px;
-}
-
-/* Sidebar-specific focus ring (white-ish, not accent) */
-.mobileSidebar :focus-visible {
-    outline: 3px solid color-mix(in srgb, var(--color-header-fg) 45%, transparent);
-    outline-offset: 3px;
+    display: flex;
+    justify-content: flex-start;
 }
