@@ -1,7 +1,7 @@
 import * as React from "react";
 import clsx from "clsx";
 
-type CardVariant = "default" | "subtle";
+type CardVariant = "default" | "subtle" | "borderless";
 type IconTone = "default" | "warm" | "accentSoft" | "success" | "shield";
 
 export type CardProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -22,12 +22,18 @@ const cardSubtle =
     "shadow-none border-[color-mix(in_srgb,var(--color-border)_60%,transparent)] " +
     "hover:shadow-[var(--shadow-xs)]";
 
+const cardBorderless =
+    "border-0 hover:border-0";
+
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     ({ className, variant = "default", ...props }, ref) => {
         return (
             <div
                 ref={ref}
-                className={clsx(cardBase, variant === "subtle" && cardSubtle, className)}
+                className={clsx(cardBase,
+                    variant === "subtle" && cardSubtle,
+                    variant === "borderless" && cardBorderless,
+                    className)}
                 {...props}
             />
         );

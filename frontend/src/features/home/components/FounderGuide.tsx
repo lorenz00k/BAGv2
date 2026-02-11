@@ -1,7 +1,7 @@
 import BreakPoint from "@/components/common/BreakPoint";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
-import SectionHeading from "@/components/layout/SectionHeading";
+import SectionHeading from "@/components/layout/SectionHeading/SectionHeading";
 import StackedCards from "@/components/ui/StackedCards/StackedCards";
 import { useTranslations } from "next-intl";
 

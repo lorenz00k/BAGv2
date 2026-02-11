@@ -3,9 +3,11 @@ import { getTranslations } from "next-intl/server"
 
 import { Container } from "@/components/layout/Container"
 import { Section } from "@/components/layout/Section"
-import { SectionHeading, SectionTitle, SectionCopy } from "@/components/layout/SectionHeading"
 import { Card } from "@/components/ui/Card"
 import BreakPoint from "@/components/common/BreakPoint"
+import SectionHeading from "@/components/layout/SectionHeading/SectionHeading"
+import { Heading } from "@/components/typography/Heading"
+import { Text } from "@/components/typography/Text"
 
 type ImprintCopy = {
     title: string
@@ -19,14 +21,6 @@ type ImprintCopy = {
     }>
 }
 
-function H2({ children }: { children: React.ReactNode }) {
-    return <h2 className="text-xl font-semibold text-slate-900 mt-10">{children}</h2>
-}
-
-function P({ children }: { children: React.ReactNode }) {
-    return <p className="mt-3 text-[15px] leading-7 text-slate-700">{children}</p>
-}
-
 export default async function ImprintPage() {
     const t = await getTranslations("legal.imprint")
 
@@ -38,54 +32,50 @@ export default async function ImprintPage() {
     const sections = Array.isArray(copy.sections) ? copy.sections : []
 
     return (
-        <Container>
-            <Section>
+
+        <Section>
+            <Container>
                 {/* Außenabstand + max width */}
-                <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-                    <Card>
-                        <div className="p-6 sm:p-10">
-                            {/* eher “legal” => links ausrichten */}
-                            <SectionHeading className="text-left mx-0 max-w-none">
-                                <SectionTitle className="text-left mx-0">{copy.title}</SectionTitle>
-                                <SectionCopy className="text-left mx-0 max-w-[75ch]">
-                                    Angaben gemäß gesetzlichen Informationspflichten.
-                                </SectionCopy>
-                            </SectionHeading>
+                <Card variant="borderless">
+                    <div className="p-6 sm:p-10">
+                        {/* eher “legal” => links ausrichten */}
+                        <SectionHeading title={copy.title} subtitle="Angaben gemäß gesetzlichen Informationspflichten.">
+                        </SectionHeading>
 
-                            <BreakPoint />
+                        <BreakPoint />
 
-                            {sections.map((s, idx) => (
-                                <div key={idx}>
-                                    <H2>{s.heading}</H2>
+                        {sections.map((s, idx) => (
+                            <div key={idx}>
+                                <Heading as="h4">{s.heading}</Heading>
 
-                                    {Array.isArray(s.lines) &&
-                                        s.lines.map((line, i) => <P key={i}>{line}</P>)}
+                                {Array.isArray(s.lines) &&
+                                    s.lines.map((line, i) => <Text key={i}>{line}</Text>)}
 
-                                    {s.email && s.emailLabel ? (
-                                        <P>
-                                            {s.emailLabel}:{" "}
-                                            <a
-                                                href={`mailto:${s.email}`}
-                                                className="underline underline-offset-4 hover:text-slate-900"
-                                            >
-                                                {s.email}
-                                            </a>
-                                        </P>
-                                    ) : null}
+                                {s.email && s.emailLabel ? (
+                                    <Text>
+                                        {s.emailLabel}:{" "}
+                                        <a
+                                            href={`mailto:${s.email}`}
+                                            className="underline underline-offset-4 hover:text-slate-900"
+                                        >
+                                            {s.email}
+                                        </a>
+                                    </Text>
+                                ) : null}
 
-                                    {Array.isArray(s.paragraphs) &&
-                                        s.paragraphs.map((p, i) => <P key={i}>{p}</P>)}
+                                {Array.isArray(s.paragraphs) &&
+                                    s.paragraphs.map((p, i) => <Text key={i}>{p}</Text>)}
 
-                                    {s.note ? <p className="mt-2 text-sm italic text-slate-500">{s.note}</p> : null}
+                                {s.note ? <p className="mt-2 text-sm italic text-slate-500">{s.note}</p> : null}
 
-                                    {/* Spacer zwischen Abschnitten */}
-                                    {idx < sections.length - 1 ? <BreakPoint size="lg" /> : null}
-                                </div>
-                            ))}
-                        </div>
-                    </Card>
-                </div>
-            </Section>
-        </Container>
+                                {/* Spacer zwischen Abschnitten */}
+                                {idx < sections.length - 1 ? <BreakPoint size="lg" /> : null}
+                            </div>
+                        ))}
+                    </div>
+                </Card>
+            </Container>
+        </Section>
+
     )
 }
