@@ -1,1 +1,0 @@
-global TS types -> when API DTOs are generated

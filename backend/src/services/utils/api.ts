@@ -16,11 +16,12 @@ export async function fetchViennaOGD<T>(
   try {
     const response = await fetch(url, {
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      credentials: "include",
     });
 
     if (!response.ok) {
       logger.warn({ status: response.status, context }, "Vienna OGD API error");
-      return null;
+      return null; 
     }
 
     // Check if response is JSON

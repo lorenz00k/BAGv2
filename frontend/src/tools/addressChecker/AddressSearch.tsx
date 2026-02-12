@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
 import { useDebounce } from "@/components/hooks/useDebounce";
-import { autocompleteAddress } from "@/services/api";
 import type { AddressSuggestion } from "@/types/viennagis";
+import { autocompleteAddress } from "@/services/viennagis";
 
 interface AddressSearchProps {
   onSelect: (suggestion: AddressSuggestion) => void;
@@ -167,10 +167,14 @@ export default function AddressSearch({
       ref={containerRef}
       className={clsx(
         "relative w-full",
-        isLarge && "rounded-(--radius) bg-(--color-surface) p-2 shadow-(--shadow-sm) border border-[color-mix(in_srgb,var(--color-border)_50%,transparent)]",
+        isLarge &&
+          "rounded-(--radius) bg-(--color-surface) p-2 shadow-(--shadow-sm) border border-[color-mix(in_srgb,var(--color-border)_50%,transparent)]",
       )}
     >
-      <Label htmlFor="address-input" className={isLarge || isCompact ? "sr-only" : undefined}>
+      <Label
+        htmlFor="address-input"
+        className={isLarge || isCompact ? "sr-only" : undefined}
+      >
         {t("label")}
       </Label>
 
@@ -268,7 +272,9 @@ export default function AddressSearch({
               }}
               onMouseEnter={() => setActiveIndex(index)}
             >
-              <span className="font-medium">{suggestion.street} {suggestion.houseNumber}</span>
+              <span className="font-medium">
+                {suggestion.street} {suggestion.houseNumber}
+              </span>
               <span className="ml-2 text-(--color-muted)">
                 {suggestion.postalCode} Wien
               </span>
@@ -278,11 +284,13 @@ export default function AddressSearch({
       )}
 
       {/* No results message */}
-      {isOpen && suggestions.length === 0 && !isFetching && !error && debouncedQuery.length >= 2 && (
-        <p className="mt-2 text-sm text-(--color-muted)">
-          {t("noResults")}
-        </p>
-      )}
+      {isOpen &&
+        suggestions.length === 0 &&
+        !isFetching &&
+        !error &&
+        debouncedQuery.length >= 2 && (
+          <p className="mt-2 text-sm text-(--color-muted)">{t("noResults")}</p>
+        )}
     </div>
   );
 }

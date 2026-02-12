@@ -16,7 +16,7 @@ import {
 import { Section } from "@/components/layout/Section";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { checkAddress, ApiError } from "@/services/api";
+import { ApiError } from "@/services/api";
 import type { AddressSuggestion, ViennaGISResult } from "@/types/viennagis";
 
 import AddressSearch from "./AddressSearch";
@@ -24,12 +24,13 @@ import ConflictPanel from "./cards/ConflictPanel";
 import InsightCard from "./cards/InsightCard";
 import OverallRiskBanner from "./cards/OverallRiskBanner";
 import POIList from "./cards/POIList";
+import { checkAddress } from "@/services/viennagis";
 
 // Lazy-load the map (it imports maplibre-gl which is a large client-only lib)
 const GISMap = dynamic(() => import("./map/GISMap"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full min-h-[400px] items-center justify-center rounded-lg bg-[var(--color-surface)] text-(--color-muted)">
+    <div className="flex h-full min-h-400 items-center justify-center rounded-lg bg-(--color-surface) text-(--color-muted)">
       Karte wird geladen...
     </div>
   ),
@@ -142,7 +143,7 @@ export default function AddressChecker() {
     state.status === "success" ? state.data.aggregated : undefined;
 
   return (
-    <main className="mx-auto max-w-[1440px] px-(--container-padding)">
+    <main className="mx-auto max-w-1440 px-(--container-padding)">
       <AnimatePresence mode="wait">
         {/* ================================================================ */}
         {/* IDLE STATE — Hero Section                                        */}
@@ -158,8 +159,8 @@ export default function AddressChecker() {
           >
             {/* Decorative gradient orbs */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
-              <div className="animate-orbPulse absolute -top-24 left-1/4 h-[500px] w-[500px] rounded-full bg-[color-mix(in_srgb,var(--color-accent)_8%,transparent)] blur-[120px]" />
-              <div className="animate-orbPulse absolute -bottom-16 right-1/4 h-[400px] w-[400px] rounded-full bg-[color-mix(in_srgb,var(--color-success)_6%,transparent)] blur-[100px]" style={{ animationDelay: "6s" }} />
+              <div className="animate-orbPulse absolute -top-24 left-1/4 h-500 w-500 rounded-full bg-[color-mix(in_srgb,var(--color-accent)_8%,transparent)] blur-[120px]" />
+              <div className="animate-orbPulse absolute -bottom-16 right-1/4 h-400 w-400 rounded-full bg-[color-mix(in_srgb,var(--color-success)_6%,transparent)] blur-[100px]" style={{ animationDelay: "6s" }} />
             </div>
 
             {/* Content */}
@@ -225,7 +226,7 @@ export default function AddressChecker() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.35, duration: 0.5 }}
-                className="mt-4 w-full max-w-[640px]"
+                className="mt-4 w-full max-w-640"
               >
                 <AddressSearch
                   onSelect={handleSelect}
@@ -301,7 +302,7 @@ export default function AddressChecker() {
             {/* ---- 1. Sticky compact search bar ---- */}
             <div
               className={clsx(
-                "sticky top-[var(--header-h)] z-30 -mx-(--container-padding) px-(--container-padding)",
+                "sticky top-(--header-h) z-30 -mx-(--container-padding) px-(--container-padding)",
                 "border-b border-[color-mix(in_srgb,var(--color-border)_50%,transparent)]",
                 "bg-[color-mix(in_srgb,var(--color-bg)_85%,transparent)] backdrop-blur-md",
                 "py-3",
@@ -440,7 +441,7 @@ export default function AddressChecker() {
                   transition={{ delay: 0.55 }}
                   className="flex flex-col gap-4"
                 >
-                  <div className="rounded-(--radius-sm) border border-[color-mix(in_srgb,var(--color-border)_50%,transparent)] bg-(--color-surface-muted) p-5">
+                  <div className="rounded-sm border border-[color-mix(in_srgb,var(--color-border)_50%,transparent)] bg-(--color-surface-muted) p-5">
                     <p className="text-xs text-(--color-muted)">
                       {tRisk("disclaimer.text")}
                     </p>

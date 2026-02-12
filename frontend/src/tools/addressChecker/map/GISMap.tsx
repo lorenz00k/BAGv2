@@ -241,7 +241,7 @@ export default function GISMap({
     <div className="relative h-full w-full">
       <div
         ref={containerRef}
-        className={className ?? "h-full w-full min-h-[400px] rounded-lg"}
+        className={className ?? "h-full w-full min-h-100 rounded-lg"}
       />
       {data && <MapLegend layers={data.layers} />}
     </div>
