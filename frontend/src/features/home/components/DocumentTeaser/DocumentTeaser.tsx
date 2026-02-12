@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl";
 import { href } from "@/navigation/nav";
 import { Locale } from "@/i18n/locales";
 import BreakPoint from "@/components/common/BreakPoint";
+import { Heading } from "@/components/typography/Heading";
 
 export default function DocumentTeaser({ locale }: { locale: string }) {
     const t = useTranslations("components.featureCards");
@@ -19,9 +20,9 @@ export default function DocumentTeaser({ locale }: { locale: string }) {
             <Container>
                 <div className={styles.documentTeaser}>
                     <div className={styles.content}>
-                        <h2 id="documents-teaser-title" className={styles.title}>
+                        <Heading as="h2" id="documents-teaser-title" className={styles.title}>
                             <BreakText className="block">{t("cards.1.title")}</BreakText>
-                        </h2>
+                        </Heading>
                         <BreakPoint />
                         <BreakText className={`${styles.description} block`}>
                             {t("cards.1.description")}

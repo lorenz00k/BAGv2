@@ -8,6 +8,8 @@ import type { Locale } from "@/i18n/locales"
 import { href } from "@/navigation/nav"
 import { Button } from "@/components/ui/Button"
 import { applyGtagConsent, cleanupGaCookiesIfDenied, CONSENT_VERSION, ConsentValue, readStored, writeStored } from "./consentStore"
+import { Heading } from "@/components/typography/Heading"
+import { Text } from "@/components/typography/Text"
 
 
 declare global {
@@ -117,11 +119,11 @@ export default function CookieConsentModal({ locale, onAnalyticsChange }: { loca
 
             {/* Panel */}
             <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-                <h2 id="cookie-consent-title" className="text-lg font-semibold mb-2">
+                <Heading as="h2" id="cookie-consent-title" className="text-lg font-semibold mb-2">
                     {t("title")}
-                </h2>
+                </Heading>
 
-                <p className="text-sm text-gray-700 mb-4">
+                <Text className="text-sm text-gray-700 mb-4">
                     {t.rich("description", {
                         strong: (chunks) => <strong>{chunks}</strong>,
                         privacy: (chunks) => (
@@ -130,7 +132,7 @@ export default function CookieConsentModal({ locale, onAnalyticsChange }: { loca
                             </Link>
                         ),
                     })}
-                </p>
+                </Text>
 
                 {/* Settings block */}
                 <div className="rounded-xl border p-4">
@@ -150,7 +152,7 @@ export default function CookieConsentModal({ locale, onAnalyticsChange }: { loca
                         />
                     </div>
 
-                    <p className="mt-3 text-xs text-gray-500">{t("necessaryAlwaysOn")}</p>
+                    <Text className="mt-3 text-xs text-gray-500">{t("necessaryAlwaysOn")}</Text>
                 </div>
 
                 {/* Actions */}
@@ -168,7 +170,7 @@ export default function CookieConsentModal({ locale, onAnalyticsChange }: { loca
                     </Button>
                 </div>
 
-                <p className="mt-4 text-xs text-gray-500">{t("hint")}</p>
+                <Text className="mt-4 text-xs text-gray-500">{t("hint")}</Text>
             </div>
         </div>
     )

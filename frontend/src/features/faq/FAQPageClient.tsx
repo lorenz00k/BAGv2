@@ -2,8 +2,6 @@
 
 import { useTranslations } from "next-intl"
 import { useMemo, useState } from "react"
-import Link from "next/link"
-import { Locale } from "@/i18n/locales"
 import { Section } from "@/components/layout/Section"
 import { Container } from "@/components/layout/Container"
 import SectionHeading from "@/components/layout/SectionHeading/SectionHeading"
@@ -11,6 +9,7 @@ import StackedCards from "@/components/ui/StackedCards/StackedCards"
 import FAQAccordion, { FAQItem } from "./FAQAccordion"
 import CtaPanel from "@/components/ui/CtaPanels/CtaPanel"
 import BreakPoint from "@/components/common/BreakPoint"
+import { Text } from "@/components/typography/Text"
 
 type Group = { id: string; questions: readonly string[] };
 
@@ -86,9 +85,9 @@ export default function FAQPageClient({ locale, groups }: FAQPageClientProps) {
                             title: g.title,
                             bodyNode: (
                                 <>
-                                    <p style={{ margin: "0.75rem 0 0", opacity: 0.85 }}>
+                                    <Text style={{ margin: "0.75rem 0 0", opacity: 0.85 }}>
                                         {g.description}
-                                    </p>
+                                    </Text>
                                     <FAQAccordion items={g.items} openId={openId} onToggle={toggle} />
                                 </>
                             ),

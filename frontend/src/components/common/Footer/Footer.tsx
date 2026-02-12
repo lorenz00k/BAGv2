@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl"
 
 import type { Locale } from "@/i18n/locales"
 import { SECONDARY_NAV, href } from "@/navigation/nav"
-import { Button } from "@/components/ui/Button"
+import { Text } from "@/components/typography/Text"
 
 import styles from "./Footer.module.css"
 
@@ -27,8 +27,8 @@ export default function Footer({ locale }: FooterProps) {
         <footer className={styles.footer}>
             <div className="site-container">
                 <div className={styles.meta}>
-                    <p>© 2026 {tFooter("copyright")}</p>
-                    <p className="mt-3 text-xs">{tFooter("disclaimer")}</p>
+                    <Text>© 2026 {tFooter("copyright")}</Text>
+                    <Text className="mt-3 text-xs">{tFooter("disclaimer")}</Text>
                 </div>
 
                 <div className={styles.links}>

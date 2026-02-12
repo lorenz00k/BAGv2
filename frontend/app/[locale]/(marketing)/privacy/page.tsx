@@ -114,9 +114,9 @@ export default async function PrivacyPage() {
                                 ) : null}
 
                                 {s.version ? (
-                                    <p className="mt-6 text-sm text-slate-500">
+                                    <Text className="mt-6 text-sm text-slate-500">
                                         {(s.versionLabel ?? "Version")}: {s.version}
-                                    </p>
+                                    </Text>
                                 ) : null}
                             </div>
                         ))}
