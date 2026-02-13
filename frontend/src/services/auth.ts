@@ -25,6 +25,6 @@ export async function logout(): Promise<void>{
 }
 
 export async function getMe(): Promise<AuthUser>{
-    const data = await fetchApi<{user: AuthUser}>("/api/auth/me");
+    const data = await fetchApi<{user: AuthUser}>("/api/user/me");
     return data.user;
 }

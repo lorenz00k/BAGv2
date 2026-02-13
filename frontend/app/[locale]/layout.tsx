@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { getMessages } from "next-intl/server";
 import type { Locale } from "@/i18n/locales";
 import { locales } from "@/i18n/locales";
-import { ROUTES } from "@/navigation/routes"
+import { AuthProvider } from "@/context/AuthContext";
 
 import Footer from "@/components/common/Footer/Footer";
 import type { Metadata } from "next"
@@ -39,11 +39,11 @@ export default async function LocaleLayout({
 
     return (
         <NextIntlClientProvider locale={locale} messages={messages}>
-            <HeaderNav locale={locale} />
-
-            {children}
-            <Footer locale={locale} />
-
+            <AuthProvider>
+                <HeaderNav locale={locale} />
+                {children}
+                <Footer locale={locale} />
+            </AuthProvider>
         </NextIntlClientProvider>
     );
 }

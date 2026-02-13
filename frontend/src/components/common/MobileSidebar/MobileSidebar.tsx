@@ -14,6 +14,7 @@ import type { Locale } from "@/i18n/locales";
 import { Button } from "@/components/ui/Button";
 import { PRIMARY_NAV, SECONDARY_NAV, href } from "@/navigation/nav";
 import { useIsActivePath } from "@/components/hooks/useIsActivePath";
+import { useAuth } from "@/context/AuthContext";
 
 interface MobileSidebarProps {
     locale: Locale;
@@ -34,7 +35,8 @@ const focusableSelectors = [
 
 export default function MobileSidebar({ locale, open, onClose }: MobileSidebarProps) {
     const tNav = useTranslations("common.navigation");
-    const tItems = useTranslations("common.items")
+    const tItems = useTranslations("common.items");
+    const { user, isLoading, logout } = useAuth();
     const drawerRef = useRef<HTMLDivElement | null>(null);
     const lastFocusedElement = useRef<HTMLElement | null>(null);
 
@@ -213,6 +215,36 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
 
                 <div className={styles.footer}>
                     <div className={styles.footerInner}>
+                        {!isLoading && (
+                            <div className="flex w-full items-center justify-between gap-2 px-3 pb-2">
+                                {user ? (
+                                    <>
+                                        <span className="max-w-40 truncate text-sm opacity-70">
+                                            {user.email}
+                                        </span>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => { logout(); onClose(); }}
+                                            tabIndex={open ? 0 : -1}
+                                        >
+                                            Abmelden
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <Link
+                                        href={`/${locale}/login`}
+                                        onClick={onClose}
+                                        tabIndex={open ? 0 : -1}
+                                        className="w-full"
+                                    >
+                                        <Button variant="primary" size="sm" className="w-full">
+                                            Anmelden
+                                        </Button>
+                                    </Link>
+                                )}
+                            </div>
+                        )}
                         <LanguageSwitcher direction="up" />
                     </div>
                 </div>
