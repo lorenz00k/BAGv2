@@ -68,6 +68,7 @@ export default function ConflictPanel({ conflicts }: ConflictPanelProps) {
             key={`${conflict.layers[0]}-${conflict.layers[1]}-${i}`}
             className={clsx(
               "flex items-start gap-3 rounded-[var(--radius-sm)] border p-3",
+              "backdrop-blur-sm shadow-(--shadow-xs)",
               s.bg,
               s.border,
             )}

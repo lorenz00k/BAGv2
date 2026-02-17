@@ -94,7 +94,7 @@ interface POIListProps {
 export default function POIList({ pois }: POIListProps) {
   return (
     <div>
-      <h2 className="mb-2 text-[clamp(1.1rem,2vw,1.35rem)] font-semibold text-(--color-fg)">
+      <h2 className="mb-3 text-[clamp(1rem,1.8vw,1.2rem)] font-semibold text-(--color-fg)">
         Schutzobjekte in der Nähe
       </h2>
 
@@ -103,7 +103,7 @@ export default function POIList({ pois }: POIListProps) {
           Keine Schutzobjekte im Umkreis gefunden.
         </p>
       ) : (
-        <div className="grid gap-1.5 sm:grid-cols-2">
+        <div className="grid gap-2">
           {pois.map((poi) => {
             const meta = POI_META[poi.type];
             return (
@@ -111,8 +111,11 @@ export default function POIList({ pois }: POIListProps) {
                 key={`${poi.name}-${poi.distance}`}
                 className={clsx(
                   "flex items-center gap-3 rounded-sm border px-3 py-2.5",
-                  "border-[color-mix(in_srgb,var(--color-border)_60%,transparent)]",
-                  "bg-(--color-surface)",
+                  "border-[color-mix(in_srgb,var(--color-border)_50%,transparent)]",
+                  "bg-[color-mix(in_srgb,var(--color-surface)_80%,transparent)]",
+                  "backdrop-blur-sm",
+                  "hover:bg-[color-mix(in_srgb,var(--color-surface)_95%,transparent)]",
+                  "transition-colors duration-200",
                 )}
               >
                 <span className="shrink-0 text-(--color-accent)">

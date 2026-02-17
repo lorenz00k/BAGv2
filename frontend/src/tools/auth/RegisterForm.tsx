@@ -46,9 +46,11 @@ export default function RegisterForm() {
   }
 
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-var(--header-h)-8rem)] max-w-md items-center px-(--container-padding)">
+    <main className="mx-auto flex min-h-[calc(100vh-var(--header-h)-8rem)] max-w-md items-center justify-center px-4 py-12">
       <Card className="w-full">
-        <h1 className="text-2xl font-bold text-(--color-fg)">Konto erstellen</h1>
+        <h1 className="text-2xl font-bold text-(--color-fg)">
+          Konto erstellen
+        </h1>
 
         <form onSubmit={handleSubmit} className="grid gap-4">
           <div>
@@ -102,7 +104,10 @@ export default function RegisterForm() {
 
         <p className="mt-4 text-center text-sm text-(--color-fg-subtle)">
           Bereits ein Konto?{" "}
-          <Link href="/login" className="font-medium text-(--color-accent) hover:underline">
+          <Link
+            href="/login"
+            className="font-medium text-(--color-accent) hover:underline"
+          >
             Hier anmelden
           </Link>
         </p>

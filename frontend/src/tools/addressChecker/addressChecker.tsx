@@ -50,14 +50,14 @@ type State =
 // Animation variants
 // ---------------------------------------------------------------------------
 
-const gridContainer = {
+const cardStack = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.06, delayChildren: 0.2 } },
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } },
 };
 
-const gridItem = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
+const cardItem = {
+  hidden: { opacity: 0, x: 20 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
 };
 
 // ---------------------------------------------------------------------------
@@ -128,14 +128,19 @@ export default function AddressChecker() {
     setSelectedLayer(null);
   }, []);
 
-  // ---- scroll to map when a card is selected ----
+  // ---- scroll to map when a card is selected (mobile only) ----
   const handleInsightSelect = useCallback((layerId: string | null) => {
     setSelectedLayer(layerId);
     if (layerId) {
-      document.getElementById("gis-map-section")?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+      // On mobile/tablet the map is stacked above → scroll to it.
+      // On desktop (lg+) the map is sticky and already visible.
+      const isMobile = window.matchMedia("(max-width: 1023px)").matches;
+      if (isMobile) {
+        document.getElementById("gis-map-section")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
     }
   }, []);
 
@@ -236,6 +241,34 @@ export default function AddressChecker() {
                 />
               </motion.div>
             </div>
+
+            {/* ── Motivation CTA section ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="relative z-10 mx-auto mt-20 mb-12 max-w-3xl px-4"
+            >
+              <div
+                className={clsx(
+                  "rounded-(--radius) border p-8",
+                  "border-[color-mix(in_srgb,var(--color-border)_40%,transparent)]",
+                  "bg-[color-mix(in_srgb,var(--color-surface)_70%,transparent)]",
+                  "backdrop-blur-sm shadow-(--shadow-xs)",
+                )}
+              >
+                <h2 className="mb-4 text-lg font-semibold text-(--color-fg)">
+                  {tPage("cta.title")}
+                </h2>
+                <div className="space-y-3 text-sm leading-relaxed text-(--color-fg-subtle)">
+                  <p>{tPage("cta.text1")}</p>
+                  <p>{tPage("cta.text2")}</p>
+                  <p className="font-medium text-(--color-fg)">
+                    {tPage("cta.text3")}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
           </motion.section>
         )}
 
@@ -289,7 +322,7 @@ export default function AddressChecker() {
         )}
 
         {/* ================================================================ */}
-        {/* SUCCESS STATE — Results Dashboard                                */}
+        {/* SUCCESS STATE — Two-Column Dashboard                             */}
         {/* ================================================================ */}
         {state.status === "success" && (
           <motion.div
@@ -304,7 +337,7 @@ export default function AddressChecker() {
               className={clsx(
                 "sticky top-(--header-h) z-30 -mx-(--container-padding) px-(--container-padding)",
                 "border-b border-[color-mix(in_srgb,var(--color-border)_50%,transparent)]",
-                "bg-[color-mix(in_srgb,var(--color-bg)_85%,transparent)] backdrop-blur-md",
+                "bg-[color-mix(in_srgb,var(--color-bg)_90%,transparent)] backdrop-blur-lg",
                 "py-3",
               )}
             >
@@ -352,12 +385,11 @@ export default function AddressChecker() {
                   </motion.div>
                 )}
 
-                {/* Actions */}
+                {/* New Check button */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.2 }}
-                  className="flex gap-3"
                 >
                   <Button variant="secondary" size="sm" onClick={handleReset}>
                     {tBadges("newCheck")}
@@ -366,94 +398,116 @@ export default function AddressChecker() {
               </div>
             </section>
 
-            {/* ---- 3. Conflict warnings ---- */}
+            {/* ---- 3. Conflict warnings (full-width) ---- */}
             {aggregated && aggregated.conflicts.length > 0 && (
               <motion.section
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.18 }}
-                className="pb-4"
+                className="pb-6"
               >
                 <ConflictPanel conflicts={aggregated.conflicts} />
               </motion.section>
             )}
 
-            {/* ---- 4. Map section ---- */}
-            <motion.section
-              id="gis-map-section"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.15, duration: 0.5 }}
-              className="pb-8"
-            >
-              <div className="h-[clamp(360px,55vh,600px)] overflow-hidden rounded-(--radius) border border-[color-mix(in_srgb,var(--color-border)_70%,transparent)] shadow-(--shadow-sm)">
-                <GISMap
-                  data={aggregated}
-                  highlightedLayer={highlightedLayer}
-                  selectedLayer={selectedLayer}
-                  className="h-full w-full"
-                />
-              </div>
-            </motion.section>
-
-            {/* ---- 5. Analysis grid ---- */}
+            {/* ---- 4. TWO-COLUMN DASHBOARD ---- */}
             {aggregated && (
-              <section className="pb-8">
-                <h2 className="mb-5 text-[clamp(1.1rem,2vw,1.35rem)] font-semibold text-(--color-fg)">
-                  {tRisk("title")}
-                </h2>
-
-                <motion.div
-                  variants={gridContainer}
-                  initial="hidden"
-                  animate="show"
-                  className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+              <section className="pb-12">
+                <div
+                  className={clsx(
+                    "grid grid-cols-1 gap-6",
+                    "lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-6",
+                    "xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] xl:gap-8",
+                  )}
                 >
-                  {aggregated.layers.map((layer) => (
-                    <motion.div key={layer.layerId} variants={gridItem}>
-                      <InsightCard
-                        layer={layer}
-                        onHighlight={setHighlightedLayer}
-                        onSelect={handleInsightSelect}
+                  {/* ── LEFT COLUMN: Sticky Map ── */}
+                  <motion.div
+                    id="gis-map-section"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.15, duration: 0.5 }}
+                    className="lg:sticky lg:top-[calc(var(--header-h)+80px)] lg:self-start"
+                  >
+                    <div
+                      className={clsx(
+                        "overflow-hidden rounded-(--radius) shadow-(--shadow-sm)",
+                        "border border-[color-mix(in_srgb,var(--color-border)_50%,transparent)]",
+                        "h-[clamp(350px,50vh,450px)]",
+                        "lg:h-[clamp(500px,60vh,700px)]",
+                      )}
+                    >
+                      <GISMap
+                        data={aggregated}
+                        highlightedLayer={highlightedLayer}
+                        selectedLayer={selectedLayer}
+                        className="h-full w-full"
                       />
+                    </div>
+                  </motion.div>
+
+                  {/* ── RIGHT COLUMN: Scrollable Cards ── */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                    className="flex flex-col gap-6"
+                  >
+                    {/* Section title */}
+                    <h2 className="text-[clamp(1.1rem,2vw,1.35rem)] font-semibold text-(--color-fg)">
+                      {tRisk("title")}
+                    </h2>
+
+                    {/* Insight cards — stacked vertically */}
+                    <motion.div
+                      variants={cardStack}
+                      initial="hidden"
+                      animate="show"
+                      className="flex flex-col gap-4"
+                    >
+                      {aggregated.layers.map((layer) => (
+                        <motion.div key={layer.layerId} variants={cardItem}>
+                          <InsightCard
+                            layer={layer}
+                            onHighlight={setHighlightedLayer}
+                            onSelect={handleInsightSelect}
+                          />
+                        </motion.div>
+                      ))}
                     </motion.div>
-                  ))}
-                </motion.div>
+
+                    {/* POI list */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
+                      className="mt-2"
+                    >
+                      <POIList pois={state.data.pois} />
+                    </motion.div>
+
+                    {/* Disclaimer */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.55 }}
+                    >
+                      <div
+                        className={clsx(
+                          "rounded-sm border p-5",
+                          "border-[color-mix(in_srgb,var(--color-border)_40%,transparent)]",
+                          "bg-[color-mix(in_srgb,var(--color-surface-muted)_70%,transparent)]",
+                          "backdrop-blur-sm",
+                        )}
+                      >
+                        <p className="text-xs text-(--color-muted)">
+                          {tRisk("disclaimer.text")}
+                        </p>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                </div>
               </section>
             )}
-
-            {/* ---- 6. POI + Disclaimer ---- */}
-            <section className="pb-12">
-              <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_minmax(300px,400px)]">
-                {/* POI list */}
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  <POIList pois={state.data.pois} />
-                </motion.div>
-
-                {/* Disclaimer + actions */}
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.55 }}
-                  className="flex flex-col gap-4"
-                >
-                  <div className="rounded-sm border border-[color-mix(in_srgb,var(--color-border)_50%,transparent)] bg-(--color-surface-muted) p-5">
-                    <p className="text-xs text-(--color-muted)">
-                      {tRisk("disclaimer.text")}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-3">
-                    <Button variant="secondary" onClick={handleReset}>
-                      {tBadges("newCheck")}
-                    </Button>
-                  </div>
-                </motion.div>
-              </div>
-            </section>
           </motion.div>
         )}
       </AnimatePresence>

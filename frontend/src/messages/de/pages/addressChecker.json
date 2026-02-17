@@ -17,5 +17,11 @@
         "pois": "addressCheck.pois",
         "risk": "addressCheck.risk",
         "badges": "addressCheck.badges"
+    },
+    "cta": {
+        "title": "Warum ein Standort-Check so wichtig ist",
+        "text1": "In Wien benötigt jede gewerblich genutzte Betriebsstätte eine Genehmigung nach der Gewerbeordnung (§§ 74 ff GewO). Die Bearbeitung durch die MA 36 dauert in der Regel 2 bis 6 Monate. Stimmt die Flächenwidmung nicht mit dem geplanten Verwendungszweck überein, kann der Antrag abgelehnt werden — und der bereits unterschriebene Mietvertrag wird zur Kostenfalle.",
+        "text2": "Seit der Bauordnungsnovelle 2018 ist die gewerbliche Vermietung in reinen Wohngebieten grundsätzlich untersagt. Verstöße können mit Geldstrafen bis zu 50.000 € geahndet werden. Auch Lärmschutzauflagen, Hochwasserzonen und die Nähe zu Schutzobjekten wie Schulen oder Krankenhäusern können den Betrieb einschränken oder zusätzliche Auflagen nach sich ziehen.",
+        "text3": "Ein Standort-Check vor Vertragsabschluss schützt Sie vor unerwarteten Kosten, behördlichen Auflagen und im schlimmsten Fall vor der Schließung Ihres Betriebs."
     }
 }

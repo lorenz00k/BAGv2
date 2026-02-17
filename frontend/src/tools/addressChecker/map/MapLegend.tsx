@@ -1,7 +1,7 @@
 "use client";
 
 import type { LayerResult } from "@/types/viennagis";
-import { RISK_COLORS } from "./layerStyles";
+import { getLayerColor } from "./layerStyles";
 
 // ── Props ───────────────────────────────────────────────────────────────
 
@@ -21,7 +21,7 @@ export default function MapLegend({ layers }: MapLegendProps) {
           <li key={layer.layerId} className="flex items-center gap-2">
             <span
               className="h-3 w-3 shrink-0 rounded-full"
-              style={{ backgroundColor: RISK_COLORS[layer.color].fill }}
+              style={{ backgroundColor: getLayerColor(layer.layerId).fill }}
             />
             <span className="text-xs text-(--color-fg)">{layer.label}</span>
           </li>

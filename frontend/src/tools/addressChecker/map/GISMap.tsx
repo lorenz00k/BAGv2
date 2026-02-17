@@ -5,7 +5,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import type { AggregatedResult, GeoJSONGeometry } from "@/types/viennagis";
-import { RISK_COLORS, HIGHLIGHT_COLORS } from "./layerStyles";
+import { getLayerColor, getLayerHighlightColor, RISK_STROKE_PATTERNS } from "./layerStyles";
 import {
   buildLayerFeatures,
   buildPOIFeatures,
@@ -102,11 +102,12 @@ export default function GISMap({
           data: layerFC as GeoJSON.GeoJSON,
         });
 
-        // One fill + stroke layer per color category
+        // One fill + stroke layer per layer (unique color per layer)
         for (const layer of result.layers) {
           if (!layer.geometry || !layer.available) continue;
 
-          const colors = RISK_COLORS[layer.color];
+          const colors = getLayerColor(layer.layerId);
+          const strokePattern = RISK_STROKE_PATTERNS[layer.risk];
 
           // Fill
           map.addLayer({
@@ -120,7 +121,7 @@ export default function GISMap({
             },
           });
 
-          // Outline
+          // Outline (risk communicated via stroke style)
           map.addLayer({
             id: `layer-stroke-${layer.layerId}`,
             type: "line",
@@ -128,7 +129,10 @@ export default function GISMap({
             filter: ["==", ["get", "layerId"], layer.layerId],
             paint: {
               "line-color": colors.stroke,
-              "line-width": 2,
+              "line-width": strokePattern.width,
+              ...(strokePattern.dashArray
+                ? { "line-dasharray": strokePattern.dashArray as unknown as number[] }
+                : {}),
             },
           });
         }
@@ -209,8 +213,9 @@ export default function GISMap({
 
       const isHighlighted = highlightedLayer === layer.layerId;
       const palette = isHighlighted
-        ? HIGHLIGHT_COLORS[layer.color]
-        : RISK_COLORS[layer.color];
+        ? getLayerHighlightColor(layer.layerId)
+        : getLayerColor(layer.layerId);
+      const strokePattern = RISK_STROKE_PATTERNS[layer.risk];
 
       map.setPaintProperty(fillId, "fill-opacity", palette.fillOpacity);
       map.setPaintProperty(fillId, "fill-color", palette.fill);
@@ -218,7 +223,7 @@ export default function GISMap({
       map.setPaintProperty(
         strokeId,
         "line-width",
-        isHighlighted ? 3.5 : 2,
+        isHighlighted ? strokePattern.width + 1.5 : strokePattern.width,
       );
     }
   }, [highlightedLayer, data]);

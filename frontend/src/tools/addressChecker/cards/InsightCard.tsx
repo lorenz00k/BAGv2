@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import clsx from "clsx";
+import { AnimatePresence, motion } from "framer-motion";
 
 import type {
   LayerResult,
@@ -9,25 +10,17 @@ import type {
   TrafficLightColor,
   FactItem,
 } from "@/types/viennagis";
+import { getLayerColor } from "../map/layerStyles";
 
-// ── Ampel colors ────────────────────────────────────────────────────────
+// ── Ampel colors (kept for expanded-section tinting) ────────────────────
 
 const TRAFFIC_LIGHT_BG: Record<TrafficLightColor, string> = {
   green:
-    "bg-[color-mix(in_srgb,var(--color-success)_14%,var(--color-surface))]",
+    "bg-[color-mix(in_srgb,var(--color-success)_8%,var(--color-surface))]",
   yellow:
-    "bg-[color-mix(in_srgb,var(--color-warning)_14%,var(--color-surface))]",
-  red: "bg-[color-mix(in_srgb,#d64545_14%,var(--color-surface))]",
-  gray: "bg-[color-mix(in_srgb,var(--color-fg)_8%,var(--color-surface))]",
-};
-
-const TRAFFIC_LIGHT_BORDER_HOVER: Record<TrafficLightColor, string> = {
-  green:
-    "hover:border-[color-mix(in_srgb,var(--color-success)_40%,var(--color-border))]",
-  yellow:
-    "hover:border-[color-mix(in_srgb,var(--color-warning)_40%,var(--color-border))]",
-  red: "hover:border-[color-mix(in_srgb,#d64545_40%,var(--color-border))]",
-  gray: "hover:border-[color-mix(in_srgb,var(--color-fg)_20%,var(--color-border))]",
+    "bg-[color-mix(in_srgb,var(--color-warning)_8%,var(--color-surface))]",
+  red: "bg-[color-mix(in_srgb,#d64545_8%,var(--color-surface))]",
+  gray: "bg-[color-mix(in_srgb,var(--color-fg)_5%,var(--color-surface))]",
 };
 
 // ── Props ───────────────────────────────────────────────────────────────
@@ -51,6 +44,8 @@ export default function InsightCard({
 
   if (!layer.available) return null;
 
+  const layerColor = getLayerColor(layer.layerId);
+
   const handleToggle = () => {
     const next = !expanded;
     setExpanded(next);
@@ -60,14 +55,20 @@ export default function InsightCard({
   return (
     <div
       className={clsx(
-        // base card
-        "h-full rounded-(--radius) border",
-        "border-[color-mix(in_srgb,var(--color-border)_70%,transparent)]",
+        // Modern glassmorphic card
+        "relative h-full overflow-hidden rounded-(--radius)",
+        "border border-[color-mix(in_srgb,var(--color-border)_50%,transparent)]",
+        "bg-[color-mix(in_srgb,var(--color-surface)_80%,transparent)]",
+        "backdrop-blur-sm",
         "shadow-(--shadow-xs)",
         "[transition:transform_var(--transition-move),box-shadow_var(--transition-move),border-color_var(--transition-fade)]",
-        "hover:shadow-(--shadow-sm)",
-        TRAFFIC_LIGHT_BORDER_HOVER[layer.color],
+        "hover:shadow-(--shadow-sm) hover:-translate-y-0.5",
+        "hover:border-[color-mix(in_srgb,var(--color-border)_90%,transparent)]",
       )}
+      style={{
+        borderLeftWidth: "4px",
+        borderLeftColor: layerColor.fill,
+      }}
       onMouseEnter={() => onHighlight?.(layer.layerId)}
       onMouseLeave={() => onHighlight?.(null)}
     >
@@ -105,22 +106,33 @@ export default function InsightCard({
         <ChevronIcon expanded={expanded} />
       </button>
 
-      {/* ── Expanded facts ── */}
-      {expanded && layer.facts.length > 0 && (
-        <div
-          className={clsx(
-            "border-t border-[color-mix(in_srgb,var(--color-border)_50%,transparent)]",
-            "px-4 py-3",
-            TRAFFIC_LIGHT_BG[layer.color],
-          )}
-        >
-          <dl className="grid gap-2">
-            {layer.facts.map((fact) => (
-              <FactRow key={fact.label} fact={fact} />
-            ))}
-          </dl>
-        </div>
-      )}
+      {/* ── Expanded facts (animated) ── */}
+      <AnimatePresence initial={false}>
+        {expanded && layer.facts.length > 0 && (
+          <motion.div
+            key="facts"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div
+              className={clsx(
+                "border-t border-[color-mix(in_srgb,var(--color-border)_30%,transparent)]",
+                "px-4 py-3",
+                TRAFFIC_LIGHT_BG[layer.color],
+              )}
+            >
+              <dl className="grid gap-2.5">
+                {layer.facts.map((fact) => (
+                  <FactRow key={fact.label} fact={fact} />
+                ))}
+              </dl>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -180,15 +192,35 @@ function RiskPill({ risk }: { risk: SuitabilityRisk }) {
   );
 }
 
-/** Single fact row inside the expanded section */
+/** URL detection regex */
+const URL_REGEX = /^https?:\/\//i;
+
+/** Single fact row inside the expanded section – renders URLs as clickable links */
 function FactRow({ fact }: { fact: FactItem }) {
+  const isUrl = URL_REGEX.test(fact.value);
+
   return (
     <div className="flex items-baseline gap-2 text-sm">
       <dt className="shrink-0 font-medium text-(--color-fg-subtle)">
         {fact.label}:
       </dt>
-      <dd className="min-w-0 text-(--color-fg)">
-        {fact.value}
+      <dd className="min-w-0 break-words text-(--color-fg)">
+        {isUrl ? (
+          <a
+            href={fact.value}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={clsx(
+              "text-(--color-accent) underline decoration-1 underline-offset-2",
+              "hover:text-(--color-accent-strong) hover:decoration-2",
+              "transition-colors duration-150",
+            )}
+          >
+            {fact.label === "Link" ? "Dokument öffnen ↗" : `${fact.label} öffnen ↗`}
+          </a>
+        ) : (
+          fact.value
+        )}
         {fact.note && (
           <span className="ml-1.5 text-xs text-(--color-muted)">
             ({fact.note})
