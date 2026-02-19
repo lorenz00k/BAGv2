@@ -5,6 +5,8 @@ import { db } from "../db/index.js";
 import { checks } from "../db/schema/index.js";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
+import { complianceInputSchema } from "../types/compliance.js";
+import { evaluateCompliance } from "../services/compliance/index.js";
 
 const checksRouter = new Hono<{ Variables: Variables }>();
 
@@ -112,6 +114,53 @@ checksRouter.patch("/:id", async (c) => {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return c.json({ error: error.issues }, 400);
+    }
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
+
+// POST /api/checks/:id/evaluate - Compliance-Bewertung durchführen
+checksRouter.post("/:id/evaluate", async (c) => {
+  try {
+    const userId = c.get("userId");
+    const checkId = c.req.param("id");
+
+    // Check laden + Ownership prüfen
+    const [check] = await db
+      .select()
+      .from(checks)
+      .where(and(eq(checks.id, checkId), eq(checks.userId, userId)))
+      .limit(1);
+
+    if (!check) {
+      return c.json({ error: "Check not found" }, 404);
+    }
+
+    // FormData validieren
+    const formData = check.formData as Record<string, unknown>;
+    const validatedInput = complianceInputSchema.parse(formData);
+
+    // Compliance evaluieren
+    const result = evaluateCompliance(validatedInput);
+
+    // Ergebnis in DB speichern + Status auf completed
+    const [updated] = await db
+      .update(checks)
+      .set({
+        formData: { ...formData, result },
+        status: "completed",
+        updatedAt: new Date(),
+      })
+      .where(eq(checks.id, checkId))
+      .returning();
+
+    return c.json({ result, check: updated });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return c.json(
+        { error: "Invalid form data", issues: error.issues },
+        400
+      );
     }
     return c.json({ error: "Internal server error" }, 500);
   }

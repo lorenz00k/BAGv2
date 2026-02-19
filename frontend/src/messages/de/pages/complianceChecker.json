@@ -3,6 +3,24 @@
     "title": "Betriebsanlagen checker nach GewO",
     "subtitle": "Führe die strukturierte Prüfung zu Betriebsanlage, Genehmigungspflicht, Unterlagen und Pflichten durch.",
     "progress": "Schritt {current} von {total}",
+    "auth": {
+        "loginRequired": "Login erforderlich",
+        "loginDescription": "Um den Genehmigungs-Check durchzuführen und deine Daten zu speichern, musst du eingeloggt sein.",
+        "loginButton": "Zum Login →"
+    },
+    "navigation": {
+        "back": "← Zurück",
+        "next": "Weiter →",
+        "evaluate": "Jetzt auswerten →",
+        "evaluating": "Auswertung läuft..."
+    },
+    "status": {
+        "saving": "Speichert..."
+    },
+    "errors": {
+        "createFailed": "Fehler beim Erstellen des Checks.",
+        "evaluateFailed": "Fehler bei der Auswertung. Bitte überprüfe deine Eingaben."
+    },
     "sections": {
         "actions": "complianceChecker.actions",
         "form": "complianceChecker.form"

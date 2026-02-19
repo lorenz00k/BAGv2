@@ -41,6 +41,14 @@
             "otherWorkshop": "Andere Werkstatt"
         }
     },
+    "details": {
+        "heading": "Eckdaten deines Betriebs",
+        "helper": "Fläche, Personenanzahl und grundlegende Angaben zur Tätigkeit."
+    },
+    "accommodationDetails": {
+        "heading": "Beherbergungs-Details",
+        "helper": "Zusatzfragen für Unterkünfte, die die Freistellungsvoraussetzungen betreffen."
+    },
     "areaSqm": {
         "label": "Betriebsfläche in m²",
         "placeholder": "z. B. 250"
