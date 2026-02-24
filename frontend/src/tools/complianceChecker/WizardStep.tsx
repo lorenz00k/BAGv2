@@ -36,7 +36,7 @@ export default function WizardStep({
   onFieldChange,
   direction,
 }: WizardStepProps) {
-  const t = useTranslations("sections.complianceChecker");
+  const t = useTranslations("sections.complianceChecker.form");
   const visibleFields = getVisibleFields(step, formData);
 
   return (

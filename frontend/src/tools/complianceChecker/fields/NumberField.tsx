@@ -19,7 +19,7 @@ export default function NumberField({
   labelKey,
   placeholderKey,
 }: NumberFieldProps) {
-  const t = useTranslations("sections.complianceChecker");
+  const t = useTranslations("sections.complianceChecker.form");
 
   return (
     <div className="flex flex-col gap-2">

@@ -16,7 +16,7 @@ export default function BooleanField({
   onChange,
   labelKey,
 }: BooleanFieldProps) {
-  const t = useTranslations("sections.complianceChecker");
+  const t = useTranslations("sections.complianceChecker.form");
 
   return (
     <div className="flex flex-col gap-3">

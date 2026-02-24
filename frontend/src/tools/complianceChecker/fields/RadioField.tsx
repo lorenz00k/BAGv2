@@ -19,7 +19,7 @@ export default function RadioField({
   optionsKey,
   descriptionsKey,
 }: RadioFieldProps) {
-  const t = useTranslations("sections.complianceChecker");
+  const t = useTranslations("sections.complianceChecker.form");
 
   // Get the options object from i18n (e.g. { retail: "Handel", office: "Büro", ... })
   const rawOptions = t.raw(optionsKey) as Record<string, string>;
