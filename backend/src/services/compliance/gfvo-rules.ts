@@ -6,6 +6,7 @@
  *
  * Each rule is a pure predicate — no side effects, no DB access.
  */
+///ajehfsjhdjkfhöksjdhfökajs
 
 import type { ComplianceInput } from "../../types/compliance.js";
 
