@@ -1,0 +1,31 @@
+{
+    "heading": "Brauche ich eine Betriebsanlagengenehmigung?",
+    "subtitle": "Das Wichtigste für Gründer:innen – bevor Sie investieren",
+    "intro": "Eine gewerbliche Betriebsanlage ist jede örtlich gebundene Einrichtung, die der regelmäßigen Ausübung einer gewerblichen Tätigkeit dient. Die Genehmigung gilt für das Objekt – nicht für den Betreiber. Und sie muss vor Errichtung und Betrieb eingeholt werden.",
+    "whenTitle": "Wann ist eine Genehmigung erforderlich?",
+    "whenIntro": "Eine Genehmigung nach §74 Abs. 2 GewO ist erforderlich, wenn Ihre Anlage geeignet ist:",
+    "reasons": [
+        {
+            "title": "Gefahr für Leben & Gesundheit",
+            "text": "Das Leben oder die Gesundheit von Gewerbetreibenden, Nachbarn oder Kunden zu gefährden."
+        },
+        {
+            "title": "Belästigung der Nachbarn",
+            "text": "Nachbarn durch Geruch, Lärm, Rauch, Staub, Erschütterung oder in anderer Weise zu belästigen."
+        },
+        {
+            "title": "Öffentliche Einrichtungen",
+            "text": "Den Betrieb von Kirchen, Schulen, Kranken- oder Kuranstalten in der Nähe zu beeinträchtigen."
+        },
+        {
+            "title": "Verkehrsbeeinträchtigung",
+            "text": "Die Sicherheit, Leichtigkeit und Flüssigkeit des Verkehrs wesentlich zu beeinträchtigen."
+        },
+        {
+            "title": "Gewässerschutz",
+            "text": "Nachteilige Einwirkungen auf die Beschaffenheit der Gewässer herbeizuführen."
+        }
+    ],
+    "warningTitle": "Investieren Sie erst nach der Genehmigung",
+    "warningText": "Ein Mietvertrag oder der Erwerb von Anlagen vor der Genehmigung ist rechtlich nicht erforderlich. Jede Investition vor dem Bescheid erfolgt auf eigenes Risiko – erst im Verfahren wird geprüft, ob Ihre Anlage überhaupt genehmigungsfähig ist."
+}

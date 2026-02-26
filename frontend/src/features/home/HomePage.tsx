@@ -10,6 +10,7 @@ import { Container } from "@/components/layout/Container"
 import Hero from "./components/Hero/Hero"
 import SellingPoints from "./components/SellingPoints/SellingPoints"
 import DocumentTeaser from "./components/DocumentTeaser/DocumentTeaser"
+import GenehmigungInfo from "./components/GenehmigungInfo/GenehmigungInfo"
 
 
 export default function HomePage({ locale }: { locale: string }) {
@@ -20,6 +21,9 @@ export default function HomePage({ locale }: { locale: string }) {
             <Hero locale={locale} />
 
             <SellingPoints />
+            <SectionSeparator />
+
+            <GenehmigungInfo />
             <SectionSeparator />
 
             <DocumentTeaser locale={locale} />

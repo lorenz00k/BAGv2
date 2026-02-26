@@ -57,6 +57,7 @@ export const messageBundles: Record<string, Loader> = {
             approvalFlow: (await import(`@/messages/${l}/sections/approvalFlow.json`)).default,
             approvalSeo: (await import(`@/messages/${l}/sections/approvalSeo.json`)).default,
             founderGuide: (await import(`@/messages/${l}/sections/founderGuide.json`)).default,
+            genehmigungInfo: (await import(`@/messages/${l}/sections/genehmigungInfo.json`)).default,
 
 
             addressChecker: {

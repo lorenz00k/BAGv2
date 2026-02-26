@@ -7,6 +7,7 @@ export const ROUTES = {
     imprint: '/imprint',
     privacy: '/privacy',
     documents: '/documents',
+    grant: '/foerdercheck',
 } as const
 
 export type RouteKey = keyof typeof ROUTES
