@@ -134,6 +134,81 @@
     min-height: unset;
 }
 
+/* ── Expandable sub-nav (Documents) ────────────────────────────── */
+.expandTrigger {
+    width: 100%;
+    cursor: pointer;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+.expandChevron {
+    width: 16px;
+    height: 16px;
+    opacity: 0.5;
+    transition: transform var(--transition-fade);
+    flex-shrink: 0;
+}
+
+.expandChevronOpen {
+    transform: rotate(180deg);
+}
+
+.subNav {
+    margin-top: 4px;
+    margin-left: 12px;
+    padding-left: 12px;
+    border-left: 2px solid var(--color-header-border);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.subItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: inherit;
+    background: transparent;
+    transition: background var(--transition-fade);
+}
+
+.subItem:hover {
+    background: var(--color-header-menu-hover-bg);
+}
+
+.subItemIcon {
+    width: 16px;
+    height: 16px;
+    color: var(--color-accent);
+    flex-shrink: 0;
+}
+
+.subItemLabel {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.subItemDesc {
+    display: block;
+    font-size: 0.75rem;
+    opacity: 0.55;
+    margin-top: 1px;
+    line-height: 1.3;
+}
+
+.active {
+    background: var(--color-accent-soft);
+}
+
 .footer {
     margin-top: auto;
     padding: 12px 14px;

@@ -4,9 +4,9 @@ import React, { useState, useEffect } from "react"
 import clsx from "clsx"
 import {
     FileText, CheckCircle2, Circle, ChevronDown, AlertTriangle,
-    Building2, Shield, Wind, Thermometer, Volume2, Trash2, MapPin,
+    Building2, Wind, Thermometer, Volume2, Trash2, MapPin,
     Flame, Users, Phone, Mail, Info, BookOpen, ArrowRight,
-    ClipboardList, Zap, RotateCcw, Package, Wand2,
+    Zap, RotateCcw, Package, Wand2,
 } from "lucide-react"
 
 import { Section } from "@/components/layout/Section"
@@ -720,6 +720,31 @@ export default function DokumentePageClient({ locale }: { locale: string }) {
                         as="h1"
                         subtitleAs="p"
                     />
+
+                    <BreakPoint size="sm" />
+
+                    {/* ── Wizard Hero Banner ─────────────────────────────── */}
+                    <a
+                        href={`/${locale}/betriebsbeschreibung`}
+                        className="group flex flex-col sm:flex-row sm:items-center gap-5 rounded-[var(--radius)] border-2 border-[color-mix(in_srgb,var(--color-accent)_40%,transparent)] bg-gradient-to-br from-[var(--color-accent-soft)] via-[var(--color-accent-soft)] to-[var(--color-surface)] p-6 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow)] hover:border-[var(--color-accent)] transition-all duration-200 no-underline"
+                    >
+                        <div className="w-14 h-14 rounded-[var(--radius-sm)] bg-[var(--color-accent)] grid place-items-center flex-shrink-0 shadow-[var(--shadow-xs)] group-hover:scale-105 transition-transform duration-200">
+                            <Wand2 className="w-7 h-7 text-white" aria-hidden />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="font-bold text-lg text-slate-900 leading-snug mb-1">
+                                Betriebsbeschreibung automatisch ausfüllen
+                            </p>
+                            <p className="text-sm text-slate-500 leading-5">
+                                Unser Assistent führt Sie in wenigen Minuten durch alle Felder — am Ende laden Sie ein fertiges PDF herunter.
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2 px-5 py-2.5 rounded-[var(--radius-sm)] bg-[var(--color-accent)] text-white text-sm font-semibold shadow-[var(--shadow-xs)] group-hover:bg-[var(--color-accent-strong)] transition-colors whitespace-nowrap flex-shrink-0">
+                            Assistent starten
+                            <ArrowRight className="w-4 h-4" aria-hidden />
+                        </div>
+                    </a>
+
                     <BreakPoint />
                     <ProcessGuide />
                 </Container>
@@ -972,7 +997,7 @@ export default function DokumentePageClient({ locale }: { locale: string }) {
                             )}
                             <div className="mt-5">
                                 <a
-                                    href="https://www.wien.gv.at/kontakte/ma36/index.html"
+                                    href="https://www.wien.gv.at/wirtschaft/betriebsanlagen"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-1.5 text-base text-[var(--color-accent)] hover:underline font-medium"
