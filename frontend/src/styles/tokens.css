@@ -73,6 +73,12 @@
 
         --hero-cta-gloss: rgba(255, 255, 255, 0.18);
 
+        /*CTA Panel */
+        --cta-color-surface: #fff;
+        --cta-color-accent: #1b3562;
+        --cta-color-accent: #25457f;
+        --cta-border-color: #7f8185;
+
         /* Elevation & radius */
         --radius-xs: 10px;
         --radius-sm: 14px;

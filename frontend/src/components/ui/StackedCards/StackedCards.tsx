@@ -7,7 +7,8 @@ import BreakPoint from "@/components/common/BreakPoint";
 
 type Item = {
     title: string;
-    body: string;
+    body?: string;
+    bodyNode?: React.ReactNode;
 };
 
 function cssVar(name: `--${string}`, value: string | number): React.CSSProperties {
@@ -35,9 +36,15 @@ export default function StackedCards({
                         <HeadingTag className={styles.card__title}>
                             <BreakText className="block">{item.title}</BreakText>
                         </HeadingTag>
+
                         <BreakPoint />
+
                         <div className={styles.card__body}>
-                            <BreakText className="block">{item.body}</BreakText>
+                            {item.bodyNode ? (
+                                item.bodyNode
+                            ) : item.body ? (
+                                <BreakText className="block">{item.body}</BreakText>
+                            ) : null}
                         </div>
                     </div>
                 </article>

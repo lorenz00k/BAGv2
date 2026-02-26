@@ -2,9 +2,11 @@ import { getTranslations } from "next-intl/server"
 
 import { Container } from "@/components/layout/Container"
 import { Section } from "@/components/layout/Section"
-import { SectionHeading } from "@/components/layout/SectionHeading"
+import SectionHeading from "@/components/layout/SectionHeading/SectionHeading"
 import { Card } from "@/components/ui/Card"
 import BreakPoint from "@/components/common/BreakPoint"
+import { Heading } from "@/components/typography/Heading"
+import { Text } from "@/components/typography/Text"
 
 type PrivacyCopy = {
     title: string
@@ -28,16 +30,6 @@ type PrivacyCopy = {
     }>
 }
 
-function P({ children }: { children: React.ReactNode }) {
-    return <p className="mt-3 text-[15px] leading-7 text-slate-700">{children}</p>
-}
-function H2({ children }: { children: React.ReactNode }) {
-    return <h2 className="mt-10 text-2xl font-semibold text-slate-900">{children}</h2>
-}
-function H3({ children }: { children: React.ReactNode }) {
-    return <h3 className="mt-6 text-lg font-semibold text-slate-900">{children}</h3>
-}
-
 export default async function PrivacyPage() {
     const t = await getTranslations("legal.privacy")
 
@@ -50,89 +42,88 @@ export default async function PrivacyPage() {
     const sections = Array.isArray(copy.sections) ? copy.sections : []
 
     return (
-        <Container>
-            <Section>
-                {/* Außenabstand + max width */}
-                <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-                    <Card>
-                        {/* Innenabstand */}
-                        <div className="p-6 sm:p-10">
-                            <SectionHeading title={copy.title} />
 
-                            <BreakPoint />
+        <Section>
+            <Container>
+                <Card variant="borderless">
+                    {/* Innenabstand */}
+                    <div className="p-6 sm:p-10">
+                        <SectionHeading title={copy.title} as="h2" />
 
-                            <H2>{copy.controller.heading}</H2>
-                            <P>{copy.controller.name}</P>
-                            <P>{copy.controller.address}</P>
-                            <P>
-                                {copy.controller.emailLabel}:{" "}
-                                <a
-                                    className="underline underline-offset-4 hover:text-slate-900"
-                                    href={`mailto:${copy.controller.email}`}
-                                >
-                                    {copy.controller.email}
-                                </a>
-                            </P>
-                            <P>{copy.controller.dpo}</P>
+                        <BreakPoint />
 
-                            {sections.map((s, idx) => (
-                                <div key={idx}>
-                                    <BreakPoint />
+                        <Heading as="h4">{copy.controller.heading}</Heading>
+                        <Text>{copy.controller.name}</Text>
+                        <Text>{copy.controller.address}</Text>
+                        <Text>
+                            {copy.controller.emailLabel}:{" "}
+                            <a
+                                className="underline underline-offset-4 hover:text-slate-900"
+                                href={`mailto:${copy.controller.email}`}
+                            >
+                                {copy.controller.email}
+                            </a>
+                        </Text>
+                        <Text>{copy.controller.dpo}</Text>
 
-                                    <H2>{s.heading}</H2>
-                                    {s.intro ? <P>{s.intro}</P> : null}
+                        {sections.map((s, idx) => (
+                            <div key={idx}>
+                                <BreakPoint />
+
+                                <Heading as="h4">{s.heading}</Heading>
+                                {s.intro ? <Text>{s.intro}</Text> : null}
 
 
-                                    {Array.isArray(s.paragraphs) && s.paragraphs.map((p, i) => <P key={i}>{p}</P>)}
-                                    {Array.isArray(s.bullets) && s.bullets.length > 0 ? (
+                                {Array.isArray(s.paragraphs) && s.paragraphs.map((p, i) => <Text key={i}>{p}</Text>)}
+                                {Array.isArray(s.bullets) && s.bullets.length > 0 ? (
 
-                                        <ul className="mt-4 list-disc space-y-2 pl-6 text-[15px] leading-7 text-slate-700">
+                                    <ul className="mt-4 list-disc space-y-2 pl-6 text-[15px] leading-7 text-slate-700">
 
-                                            {s.bullets.map((b, i) => (
-                                                <li key={i}>{b}</li>
-                                            ))}
-                                        </ul>
-                                    ) : null}
-
-                                    {Array.isArray(s.subsections) &&
-                                        s.subsections.map((sub, j) => (
-                                            <div key={j}>
-                                                <BreakPoint />
-                                                <H3>{sub.heading}</H3>
-                                                <ul className="mt-3 list-disc space-y-2 pl-6 text-[15px] leading-7 text-slate-700">
-                                                    {sub.bullets.map((b, k) => (
-                                                        <li key={k}>{b}</li>
-                                                    ))}
-                                                </ul>
-                                            </div>
+                                        {s.bullets.map((b, i) => (
+                                            <li key={i}>{b}</li>
                                         ))}
+                                    </ul>
+                                ) : null}
 
-                                    {s.authority ? (
-                                        <div className="mt-4 text-[15px] leading-7 text-slate-700">
-                                            <div className="font-medium text-slate-900">{s.authority.name}</div>
-                                            <div>{s.authority.address}</div>
-                                            <a
-                                                href={s.authority.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="underline underline-offset-4 hover:text-slate-900"
-                                            >
-                                                {s.authority.url}
-                                            </a>
+                                {Array.isArray(s.subsections) &&
+                                    s.subsections.map((sub, j) => (
+                                        <div key={j}>
+                                            <BreakPoint />
+                                            <Heading as="h5">{sub.heading}</Heading>
+                                            <ul className="mt-3 list-disc space-y-2 pl-6 text-[15px] leading-7 text-slate-700">
+                                                {sub.bullets.map((b, k) => (
+                                                    <li key={k}>{b}</li>
+                                                ))}
+                                            </ul>
                                         </div>
-                                    ) : null}
+                                    ))}
 
-                                    {s.version ? (
-                                        <p className="mt-6 text-sm text-slate-500">
-                                            {(s.versionLabel ?? "Version")}: {s.version}
-                                        </p>
-                                    ) : null}
-                                </div>
-                            ))}
-                        </div>
-                    </Card>
-                </div>
-            </Section>
-        </Container>
+                                {s.authority ? (
+                                    <div className="mt-4 text-[15px] leading-7 text-slate-700">
+                                        <div className="font-medium text-slate-900">{s.authority.name}</div>
+                                        <div>{s.authority.address}</div>
+                                        <a
+                                            href={s.authority.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="underline underline-offset-4 hover:text-slate-900"
+                                        >
+                                            {s.authority.url}
+                                        </a>
+                                    </div>
+                                ) : null}
+
+                                {s.version ? (
+                                    <Text className="mt-6 text-sm text-slate-500">
+                                        {(s.versionLabel ?? "Version")}: {s.version}
+                                    </Text>
+                                ) : null}
+                            </div>
+                        ))}
+                    </div>
+                </Card>
+            </Container>
+        </Section>
+
     )
 }

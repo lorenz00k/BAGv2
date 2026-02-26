@@ -5,6 +5,7 @@ import { BreakText } from "@/components/common/BreakText";
 import { ArrowRight } from "lucide-react";
 import styles from "./CtaPanel.module.css";
 import { Button } from "@/components/ui/Button";
+import { Heading } from "@/components/typography/Heading";
 
 type CtaPanelProps = {
     title: string;
@@ -23,9 +24,9 @@ export default function CtaPanel({
 }: CtaPanelProps) {
     return (
         <div className={styles.panel} aria-label={ariaLabel}>
-            <h3 className={styles.title}>
+            <Heading as="h3" className={styles.title}>
                 <BreakText className="block">{title}</BreakText>
-            </h3>
+            </Heading>
 
             <div className={styles.text}>
                 <BreakText className="block">{text}</BreakText>

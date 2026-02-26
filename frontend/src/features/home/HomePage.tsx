@@ -1,8 +1,5 @@
 "use client"
 
-import Hero from "./components/Hero"
-import SellingPoints from "./components/SellingPoints"
-import DocumentTeaser from "./components/DocumentTeaser"
 import { SectionSeparator } from "@/components/layout/SectionSeperator"
 import FounderGuide from "./components/FounderGuide"
 import CtaPanel from "@/components/ui/CtaPanels/CtaPanel"
@@ -10,6 +7,9 @@ import { useTranslations } from "next-intl"
 import { href } from "@/navigation/nav"
 import { Locale } from "@/i18n/locales"
 import { Container } from "@/components/layout/Container"
+import Hero from "./components/Hero/Hero"
+import SellingPoints from "./components/SellingPoints/SellingPoints"
+import DocumentTeaser from "./components/DocumentTeaser/DocumentTeaser"
 
 
 export default function HomePage({ locale }: { locale: string }) {
@@ -26,7 +26,6 @@ export default function HomePage({ locale }: { locale: string }) {
             <SectionSeparator />
 
             <FounderGuide />
-            <SectionSeparator />
 
             <Container>
                 <CtaPanel

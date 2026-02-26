@@ -2,7 +2,7 @@
 import { Zap, Languages, Shield } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import SectionHeading from "@/components/layout/SectionHeading";
+import SectionHeading from "@/components/layout/SectionHeading/SectionHeading";
 import { AutoGrid } from "@/components/common/AutoGrid";
 import { BreakText } from "@/components/common/BreakText";
 import styles from "./SellingPoints.module.css";
