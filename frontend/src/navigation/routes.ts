@@ -6,6 +6,7 @@ export const ROUTES = {
     faq: '/faq',
     imprint: '/imprint',
     privacy: '/privacy',
+    documents: '/documents',
 } as const
 
 export type RouteKey = keyof typeof ROUTES

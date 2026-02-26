@@ -3,10 +3,10 @@ import { ROUTES, type RouteKey } from "./routes";
 
 export type NavLabelKey =
     | "complianceChecker"
-    | "gastroAi"
     | "addressChecker"
     | "faq"
     | "imprint"
+    | "documents"
     | "privacy";
 
 export type NavItem = {
@@ -16,8 +16,8 @@ export type NavItem = {
 
 export const PRIMARY_NAV: NavItem[] = [
     { key: "complianceChecker", labelKey: "complianceChecker" },
-    { key: "gastroAi", labelKey: "gastroAi" },
     { key: "addressChecker", labelKey: "addressChecker" },
+    { key: "documents", labelKey: "documents"},
     { key: "faq", labelKey: "faq" },
 ];
 
