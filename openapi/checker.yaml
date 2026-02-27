@@ -1,0 +1,418 @@
+# ===== contracts for compliance checker =====
+
+openapi: 3.1.0
+
+info:
+  title: BAG Compliance Checker API
+  version: 1.0.0
+  description: >
+    API contract for the compliance checker. Uses an HttpOnly cookie session (sid).
+    Frontend sends stable option IDs; backend returns classification/reason keys.
+
+servers:
+  - url: http://localhost:3001
+    description: Local backend
+
+tags:
+  - name: checker
+    description: Compliance checker session + evaluation endpoints
+
+paths:
+  /v1/checker/session:
+    post:
+      tags: [checker]
+      summary: Create or refresh an anonymous checker session
+      operationId: createOrRefreshCheckerSession
+      description: >
+        Creates a new anonymous session if none exists, otherwise refreshes the current one.
+        Always sets/refreshes the HttpOnly cookie "sid".
+      responses:
+        "200":
+          description: Session created/refreshed
+          headers:
+            Set-Cookie:
+              description: HttpOnly session cookie (sid)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckerState"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /v1/checker/state:
+    get:
+      tags: [checker]
+      summary: Get current checker state (answers + status + optional result)
+      operationId: getCheckerState
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Current state for the session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckerState"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /v1/checker/answers:
+    patch:
+      tags: [checker]
+      summary: Patch answers (partial update, merge semantics)
+      operationId: patchCheckerAnswers
+      description: >
+        Partial update. The backend merges provided keys into the persisted answers object.
+        Keys not present in the request remain unchanged.
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckerAnswersPatch"
+      responses:
+        "200":
+          description: Updated state after merge
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckerState"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /v1/checker/evaluate:
+    post:
+      tags: [checker]
+      summary: Evaluate current answers and return result
+      operationId: evaluateChecker
+      description: >
+        Runs the rule engine on the currently persisted answers, stores the result,
+        and returns the evaluated result (keys only).
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Evaluation result (keys only)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckerResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /v1/checker/session:
+    delete:
+      tags: [checker]
+      summary: Destroy current session (discard answers)
+      operationId: deleteCheckerSession
+      description: >
+        Invalidates the session server-side and clears the sid cookie.
+      security:
+        - sessionCookie: []
+      responses:
+        "204":
+          description: Session deleted
+          headers:
+            Set-Cookie:
+              description: Cleared cookie (sid=; Max-Age=0)
+              schema:
+                type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: sid
+
+  responses:
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+
+    Unauthorized:
+      description: Missing or invalid session cookie
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+
+    NotFound:
+      description: Session not found (expired or unknown)
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+
+    ServerError:
+      description: Unexpected server error
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+
+  schemas:
+    # ===== Enums (stable IDs) =====
+    Sector:
+      type: string
+      enum:
+        - retail
+        - office
+        - gastronomyHotel
+        - accommodation
+        - workshop
+        - warehouse
+        - cosmetics
+        - dataCenter
+        - selfService
+        - other
+
+    HospitalitySubtype:
+      type: string
+      enum:
+        - beherbergung
+        - iceSalon
+        - otherGastro
+
+    WorkshopSubtype:
+      type: string
+      enum:
+        - tailor
+        - shoeService
+        - textilePickup
+        - otherWorkshop
+
+    OperatingPattern:
+      type: string
+      enum:
+        - gfvoWindow
+        - extendedHours
+        - roundTheClock
+
+    ClassificationKey:
+      type: string
+      enum:
+        - noFacility
+        - freistellungGFVO
+        - needsPermit
+        - individualAssessment
+
+    ReasonKey:
+      type: string
+      enum:
+        - externalVentilation
+        - regulatedHazardousStorage
+        - labelledHazardousStorage
+        - musicExclusion
+        - ippcSeveso
+        - noFacilityDefinition
+        - operatingHours
+        - areaExceeded
+        - accommodationBeds
+        - accommodationBuildingUse
+        - accommodationWellness
+        - accommodationMeals
+        - expectedImpairments
+        - individualAssessment
+        - freistellungSummary
+
+    GfvoCategoryKey:
+      type: string
+      enum:
+        - retail
+        - office
+        - warehouse
+        - cosmetics
+        - tailor
+        - textilePickup
+        - accommodation
+        - iceSalon
+        - dataCenter
+        - infrastructureSite
+        - embeddedFacility
+
+    # ===== Core request/response payloads =====
+    CheckerAnswers:
+      type: object
+      description: >
+        Persisted answers for the checker. All fields are optional to support step-wise PATCHing.
+      additionalProperties: false
+      properties:
+        # sector selection
+        sector:
+          $ref: "#/components/schemas/Sector"
+        hospitalitySubtype:
+          $ref: "#/components/schemas/HospitalitySubtype"
+        workshopSubtype:
+          $ref: "#/components/schemas/WorkshopSubtype"
+
+        # numeric inputs
+        areaSqm:
+          type: integer
+          minimum: 0
+        personCount:
+          type: integer
+          minimum: 0
+        bedCount:
+          type: integer
+          minimum: 0
+
+        # activity definition
+        isStationary:
+          type: boolean
+        isOnlyTemporary:
+          type: boolean
+
+        # accommodation specifics
+        buildingUseExclusive:
+          type: boolean
+        hasWellnessFacilities:
+          type: boolean
+        servesFullMeals:
+          type: boolean
+
+        # location / building consent
+        zoningClarified:
+          type: boolean
+        buildingConsentPresent:
+          type: boolean
+
+        # operations / emissions
+        operatingPattern:
+          $ref: "#/components/schemas/OperatingPattern"
+        hasExternalVentilation:
+          type: boolean
+        storesRegulatedHazardous:
+          type: boolean
+        storesLabelledHazardous:
+          type: boolean
+        usesLoudMusic:
+          type: boolean
+        ippcOrSevesoRelevant:
+          type: boolean
+
+        # context / special cases
+        expectedImpairments:
+          type: boolean
+        locatedInInfrastructureSite:
+          type: boolean
+        locatedInApprovedComplex:
+          type: boolean
+        existingPermitHistory:
+          type: boolean
+
+    CheckerAnswersPatch:
+      type: object
+      additionalProperties: false
+      required: [answers]
+      properties:
+        answers:
+          $ref: "#/components/schemas/CheckerAnswers"
+
+    CheckerResult:
+      type: object
+      additionalProperties: false
+      required: [classification, reasons]
+      properties:
+        classification:
+          $ref: "#/components/schemas/ClassificationKey"
+        reasons:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReasonKey"
+        gfvoCategory:
+          description: Present when classification indicates GFVO matching (optional).
+          anyOf:
+            - $ref: "#/components/schemas/GfvoCategoryKey"
+            - type: "null"
+
+    CheckerState:
+      type: object
+      additionalProperties: false
+      required: [sessionId, status, answers, createdAt, updatedAt, expiresAt]
+      properties:
+        sessionId:
+          type: string
+          description: Server-side session identifier (not the cookie value)
+        status:
+          type: string
+          enum: [draft, finished]
+        answers:
+          $ref: "#/components/schemas/CheckerAnswers"
+        result:
+          description: Present after evaluation (optional).
+          anyOf:
+            - $ref: "#/components/schemas/CheckerResult"
+            - type: "null"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+
+    ProblemDetails:
+      type: object
+      additionalProperties: true
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          description: A URI reference that identifies the problem type
+        title:
+          type: string
+          description: Short, human-readable summary
+        status:
+          type: integer
+          description: HTTP status code
+        detail:
+          type: string
+          description: Human-readable explanation specific to this occurrence
+        instance:
+          type: string
+          description: A URI reference that identifies the specific occurrence
+        code:
+          type: string
+          description: Optional application error code
