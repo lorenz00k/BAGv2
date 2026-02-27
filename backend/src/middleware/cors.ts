@@ -14,7 +14,7 @@ export const corsMiddleware = cors({
       return origin;
     }
     
-    return allowedOrigins.includes(origin || "") ? origin : allowedOrigins[0];
+    return allowedOrigins.includes(origin ) ? origin : undefined;
   },
   credentials: true,
   allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
