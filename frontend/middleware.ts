@@ -24,31 +24,44 @@ export default function middleware(req: NextRequest) {
 
     // 2) Jetzt Alias-Handling: Wir nehmen an, Locale ist erstes Segment: "/de/..."
     const segments = pathname.split("/").filter(Boolean) // ["de","compliance-checker"]
-    if (segments.length < 2) return intlResponse
+     const first = segments[0];
+  const hasLocale = !!first && (locales as readonly string[]).includes(first);
 
-    const locale = segments[0]
-    const slug = segments[1]
+  const locale = hasLocale ? first : "de";
+  const slugIndex = hasLocale ? 1 : 0;
+
+  if (segments.length <= slugIndex) return intlResponse;
+
+  const slug = segments[slugIndex];
+  const rest = segments.slice(slugIndex + 1);
 
     // A) Redirect camelCase URL -> kebab-case URL (SEO canonical)
     const kebab = CAMEL_TO_KEBAB[slug]
     if (kebab) {
         const url = req.nextUrl.clone()
-        segments[1] = kebab
-        url.pathname = "/" + segments.join("/")
-        return NextResponse.redirect(url, 308)
+        // Redirect soll die "öffentliche" URL-Struktur beibehalten:
+    // - ohne Locale für default (de)
+    // - mit Locale für nicht-default
+    if (hasLocale) {
+      url.pathname = "/" + [locale, kebab, ...rest].join("/");
+    } else {
+      url.pathname = "/" + [kebab, ...rest].join("/");
     }
 
-    // B) Rewrite kebab-case URL -> camelCase Ordnerroute
-    const camel = KEBAB_TO_CAMEL[slug]
-    if (camel) {
-        const url = req.nextUrl.clone()
-        segments[1] = camel
-        url.pathname = "/" + segments.join("/")
-        return NextResponse.rewrite(url)
-    }
+    return NextResponse.redirect(url, 308);
+  }
 
-    return intlResponse
+  // B) Rewrite kebab-case -> camelCase Ordnerroute (intern immer mit Locale-Segment)
+  const camel = KEBAB_TO_CAMEL[slug];
+  if (camel) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/" + [locale, camel, ...rest].join("/");
+    return NextResponse.rewrite(url);
+  }
+
+  return intlResponse;
 }
+
 
 export const config = {
     matcher: [

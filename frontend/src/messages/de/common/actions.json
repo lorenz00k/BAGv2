@@ -2,6 +2,8 @@
     "navigation": {
         "next": "Weiter",
         "back": "Zurück",
+        "save": "Änderungen speichern",
+        "saving": "Änderungen werden gespeichert...",
         "finish": "Auswertung anzeigen",
         "close": "Schließen"
     },

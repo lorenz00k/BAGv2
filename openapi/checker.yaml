@@ -18,7 +18,7 @@ tags:
     description: Compliance checker session + evaluation endpoints
 
 paths:
-  /v1/checker/session:
+  /api/checker/session:
     post:
       tags: [checker]
       summary: Create or refresh an anonymous checker session
@@ -40,8 +40,27 @@ paths:
                 $ref: "#/components/schemas/CheckerState"
         "500":
           $ref: "#/components/responses/ServerError"
-
-  /v1/checker/state:
+    delete:
+      tags: [checker]
+      summary: Destroy current session (discard answers)
+      operationId: deleteCheckerSession
+      description: >
+        Invalidates the session server-side and clears the sid cookie.
+      security:
+        - sessionCookie: []
+      responses:
+        "204":
+          description: Session deleted
+          headers:
+            Set-Cookie:
+              description: Cleared cookie (sid=; Max-Age=0)
+              schema:
+                type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/checker/state:
     get:
       tags: [checker]
       summary: Get current checker state (answers + status + optional result)
@@ -62,7 +81,7 @@ paths:
         "500":
           $ref: "#/components/responses/ServerError"
 
-  /v1/checker/answers:
+  /api/checker/answers:
     patch:
       tags: [checker]
       summary: Patch answers (partial update, merge semantics)
@@ -94,7 +113,7 @@ paths:
         "500":
           $ref: "#/components/responses/ServerError"
 
-  /v1/checker/evaluate:
+  /api/checker/evaluate:
     post:
       tags: [checker]
       summary: Evaluate current answers and return result
@@ -119,28 +138,7 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/ServerError"
-
-  /v1/checker/session:
-    delete:
-      tags: [checker]
-      summary: Destroy current session (discard answers)
-      operationId: deleteCheckerSession
-      description: >
-        Invalidates the session server-side and clears the sid cookie.
-      security:
-        - sessionCookie: []
-      responses:
-        "204":
-          description: Session deleted
-          headers:
-            Set-Cookie:
-              description: Cleared cookie (sid=; Max-Age=0)
-              schema:
-                type: string
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "500":
-          $ref: "#/components/responses/ServerError"
+    
 
 components:
   securitySchemes:

@@ -27,6 +27,7 @@ app.use(corsMiddleware);
 app.route("/api/auth", auth); 
 app.use(globalRateLimiter); 
 
+app.options("/api/*", (c) => c.body(null, 204));
 
 app.route("/api/user", user);  
 app.route("/api/checks", checksRouter);
