@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
 import { useTranslations } from "next-intl";
+import { ChevronDown, FileText, Wand2 } from "lucide-react";
 
 import type { Locale } from "@/i18n/locales";
 import { PRIMARY_NAV, href } from "@/navigation/nav";
@@ -26,10 +27,24 @@ export default function HeaderNav({ locale }: HeaderNavProps) {
     const tNav = useTranslations("common.navigation");
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isDocsOpen, setIsDocsOpen] = useState(false);
+    const docsRef = useRef<HTMLDivElement>(null);
     const closeSidebar = useCallback(() => setIsSidebarOpen(false), []);
 
     const isActive = useIsActivePath(locale);
     const links = useMemo(() => PRIMARY_NAV, []);
+
+    // Close docs dropdown on outside click
+    useEffect(() => {
+        if (!isDocsOpen) return;
+        const handleClick = (e: MouseEvent) => {
+            if (docsRef.current && !docsRef.current.contains(e.target as Node)) {
+                setIsDocsOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClick);
+        return () => document.removeEventListener("mousedown", handleClick);
+    }, [isDocsOpen]);
 
     useEffect(() => {
         if (!isSidebarOpen) return;
@@ -66,12 +81,58 @@ export default function HeaderNav({ locale }: HeaderNavProps) {
                         {links.map((link) => {
                             const linkHref = href(locale, link.key);
                             const active = isActive(linkHref);
+
+                            if (link.key === "documents") {
+                                const docsActive = active || isActive(`/${locale}/betriebsbeschreibung`);
+                                return (
+                                    <div key={link.key} ref={docsRef} className={styles.dropdownWrapper}>
+                                        <button
+                                            onClick={() => setIsDocsOpen(v => !v)}
+                                            className={`${styles.navLink} ${styles.dropdownTrigger} ${docsActive ? styles.navLinkActive : styles.navLinkInactive}`}
+                                            aria-expanded={isDocsOpen}
+                                            aria-haspopup="menu"
+                                        >
+                                            {tItems(link.labelKey)}
+                                            <ChevronDown className={`${styles.dropdownChevron} ${isDocsOpen ? styles.dropdownChevronOpen : ""}`} />
+                                        </button>
+
+                                        {isDocsOpen && (
+                                            <div className={styles.dropdown} role="menu">
+                                                <Link
+                                                    href={linkHref}
+                                                    role="menuitem"
+                                                    onClick={() => setIsDocsOpen(false)}
+                                                    className={`${styles.dropdownItem} ${isActive(linkHref) ? styles.dropdownItemActive : ""}`}
+                                                >
+                                                    <FileText className={styles.dropdownItemIcon} aria-hidden />
+                                                    <span>
+                                                        <span className={styles.dropdownItemLabel}>Benötigte Unterlagen</span>
+                                                        <span className={styles.dropdownItemDesc}>Checkliste aller Pflichtdokumente</span>
+                                                    </span>
+                                                </Link>
+                                                <Link
+                                                    href={`/${locale}/betriebsbeschreibung`}
+                                                    role="menuitem"
+                                                    onClick={() => setIsDocsOpen(false)}
+                                                    className={`${styles.dropdownItem} ${isActive(`/${locale}/betriebsbeschreibung`) ? styles.dropdownItemActive : ""}`}
+                                                >
+                                                    <Wand2 className={styles.dropdownItemIcon} aria-hidden />
+                                                    <span>
+                                                        <span className={styles.dropdownItemLabel}>Dokumenten-Assistent</span>
+                                                        <span className={styles.dropdownItemDesc}>Betriebsbeschreibung als PDF</span>
+                                                    </span>
+                                                </Link>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
+
                             return (
                                 <Link
                                     key={link.key}
                                     href={linkHref}
-                                    className={`${styles.navLink} ${active ? styles.navLinkActive : styles.navLinkInactive
-                                        }`}
+                                    className={`${styles.navLink} ${active ? styles.navLinkActive : styles.navLinkInactive}`}
                                     aria-current={active ? "page" : undefined}
                                 >
                                     {tItems(link.labelKey)}

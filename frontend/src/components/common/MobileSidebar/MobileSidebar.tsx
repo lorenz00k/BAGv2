@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import styles from "./MobileSidebar.module.css";
@@ -17,6 +16,7 @@ import { useIsActivePath } from "@/components/hooks/useIsActivePath";
 import SidebarNavLink from "./SidebarNavLink";
 import { SectionSeparator } from "@/components/layout/SectionSeperator";
 import BreakPoint from "../BreakPoint";
+import { ChevronDown, FileText, Wand2 } from "lucide-react";
 
 interface MobileSidebarProps {
     locale: Locale;
@@ -40,6 +40,7 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
     const tItems = useTranslations("common.items")
     const drawerRef = useRef<HTMLDivElement | null>(null);
     const lastFocusedElement = useRef<HTMLElement | null>(null);
+    const [isDocsExpanded, setIsDocsExpanded] = useState(false);
 
     const primary = useMemo(() => PRIMARY_NAV, []);
     const secondary = useMemo(() => SECONDARY_NAV, []);
@@ -166,6 +167,55 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
                         {primary.map((link) => {
                             const linkHref = href(locale, link.key);
                             const active = isActive(linkHref);
+
+                            if (link.key === "documents") {
+                                const docsActive = active || isActive(`/${locale}/betriebsbeschreibung`);
+                                return (
+                                    <div key={link.key}>
+                                        <button
+                                            onClick={() => setIsDocsExpanded(v => !v)}
+                                            tabIndex={open ? 0 : -1}
+                                            aria-expanded={isDocsExpanded}
+                                            className={`${styles.item} ${styles.expandTrigger} ${docsActive ? styles.active : ""}`}
+                                        >
+                                            <span>{tItems(link.labelKey.replace("item.", ""))}</span>
+                                            <ChevronDown className={`${styles.expandChevron} ${isDocsExpanded ? styles.expandChevronOpen : ""}`} aria-hidden />
+                                        </button>
+
+                                        {isDocsExpanded && (
+                                            <div className={styles.subNav}>
+                                                <Link
+                                                    href={linkHref}
+                                                    onClick={onClose}
+                                                    tabIndex={open ? 0 : -1}
+                                                    aria-current={isActive(linkHref) ? "page" : undefined}
+                                                    className={`${styles.subItem} ${isActive(linkHref) ? styles.active : ""}`}
+                                                >
+                                                    <FileText className={styles.subItemIcon} aria-hidden />
+                                                    <span>
+                                                        <span className={styles.subItemLabel}>Benötigte Unterlagen</span>
+                                                        <span className={styles.subItemDesc}>Pflichtdokumente-Checkliste</span>
+                                                    </span>
+                                                </Link>
+                                                <Link
+                                                    href={`/${locale}/betriebsbeschreibung`}
+                                                    onClick={onClose}
+                                                    tabIndex={open ? 0 : -1}
+                                                    aria-current={isActive(`/${locale}/betriebsbeschreibung`) ? "page" : undefined}
+                                                    className={`${styles.subItem} ${isActive(`/${locale}/betriebsbeschreibung`) ? styles.active : ""}`}
+                                                >
+                                                    <Wand2 className={styles.subItemIcon} aria-hidden />
+                                                    <span>
+                                                        <span className={styles.subItemLabel}>Dokumenten-Assistent</span>
+                                                        <span className={styles.subItemDesc}>Betriebsbeschreibung als PDF</span>
+                                                    </span>
+                                                </Link>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
+
                             return (
                                 <SidebarNavLink
                                     key={link.key}
