@@ -9,13 +9,22 @@ type Props = {
   answers: Partial<CheckerAnswers>;
   onChange: (key: AnswerKey, value: unknown) => void;
   disabled?: boolean;
+  clearFieldError?: (field: string) => void;
+  getFieldError?: (field: string) => string | null;
 };
 
 function isVisible(field: FieldDef, answers: Partial<CheckerAnswers>) {
   return field.when ? field.when(answers) : true;
 }
 
-export default function StepRenderer({ step, answers, onChange, disabled }: Props) {
+export default function StepRenderer({
+  step,
+  answers,
+  onChange,
+  disabled,
+  clearFieldError,
+  getFieldError,
+}: Props) {
   const form = useTranslations("sections.complianceChecker.form");
 
   const fields = step.fields.filter((f) => isVisible(f, answers));
@@ -32,6 +41,8 @@ export default function StepRenderer({ step, answers, onChange, disabled }: Prop
             value={answers[field.key]}
             onChange={(v) => onChange(field.key, v)}
             disabled={disabled}
+            clearFieldError={clearFieldError}
+            getFieldError={getFieldError}
           />
         </div>
       ))}

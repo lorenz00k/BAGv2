@@ -57,7 +57,15 @@ export default function ComplianceCheckerWizard() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const { status, error, answers, savePatch, runEvaluate } = useComplianceChecker();
+  const {
+    status,
+    error,
+    answers,
+    savePatch,
+    runEvaluate,
+    clearFieldError,
+    getFieldError,
+  } = useComplianceChecker();
 
   const initialStep = useMemo(() => deriveInitialStepIndex(answers), [answers]);
   const [stepIndex, setStepIndex] = useState(initialStep);
@@ -124,6 +132,8 @@ export default function ComplianceCheckerWizard() {
             answers={mergedForRender}
             onChange={(key, value) => setDraft((prev) => ({ ...prev, [key]: value }))}
             disabled={busy}
+            clearFieldError={clearFieldError}
+            getFieldError={getFieldError}
           />
         )}
       </div>

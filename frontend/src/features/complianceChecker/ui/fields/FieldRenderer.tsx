@@ -11,9 +11,18 @@ type Props = {
   value: unknown;
   onChange: (value: unknown) => void;
   disabled?: boolean;
+  clearFieldError?: (field: string) => void;
+  getFieldError?: (field: string) => string | null;
 };
 
-export default function FieldRenderer({ field, value, onChange, disabled }: Props) {
+export default function FieldRenderer({
+  field,
+  value,
+  onChange,
+  disabled,
+  clearFieldError,
+  getFieldError,
+}: Props) {
   const form = useTranslations("sections.complianceChecker.form");
 
   switch (field.kind) {
@@ -31,8 +40,14 @@ export default function FieldRenderer({ field, value, onChange, disabled }: Prop
         <NumberField
           value={typeof value === "number" ? value : undefined}
           placeholder={field.placeholderKey ? form(field.placeholderKey) : undefined}
-          onChange={(v) => onChange(v)}
+          onChange={(v) => {
+            clearFieldError?.(field.key);
+            onChange(v);
+          }}
           disabled={disabled}
+          error={getFieldError?.(field.key) ?? null}
+          min={0}
+          step={1}
         />
       );
 

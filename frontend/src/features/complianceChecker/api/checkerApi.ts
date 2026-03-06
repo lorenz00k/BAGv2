@@ -9,15 +9,55 @@ export type CheckerResult = components["schemas"]["CheckerResult"];
 export type CheckerAnswers = components["schemas"]["CheckerAnswers"];
 export type CheckerAnswersPatch = components["schemas"]["CheckerAnswersPatch"];
 
+export type ApiFieldIssue = {
+  path?: (string | number)[];
+  message: string;
+};
+
+export class ApiError extends Error {
+  status?: number;
+  issues?: ApiFieldIssue[];
+
+  constructor(message: string, options?: { status?: number; issues?: ApiFieldIssue[] }) {
+    super(message);
+    this.name = "ApiError";
+    this.status = options?.status;
+    this.issues = options?.issues;
+  }
+}
+
+function toApiError(error: unknown): ApiError {
+  if (typeof error === "string") {
+    return new ApiError(error);
+  }
+
+  const e = error as any;
+
+  const issues = Array.isArray(e?.error)
+    ? e.error.map((issue: any) => ({
+        path: Array.isArray(issue?.path) ? issue.path : [],
+        message: issue?.message ?? "Invalid value",
+      }))
+    : Array.isArray(e?.issues)
+    ? e.issues.map((issue: any) => ({
+        path: Array.isArray(issue?.path) ? issue.path : [],
+        message: issue?.message ?? "Invalid value",
+      }))
+    : undefined;
+
+  const message =
+    e?.message ??
+    e?.title ??
+    (issues?.length ? "Validation failed" : "Request failed");
+
+  return new ApiError(message, {
+    status: e?.status,
+    issues,
+  });
+}
+
 function throwOnError(error: unknown): never {
-  // openapi-fetch liefert "error" typisiert (ProblemDetails o.ä.), aber wir machen es erstmal simpel
-  const msg =
-    typeof error === "string"
-      ? error
-      : (error as any)?.message ??
-        (error as any)?.title ??
-        "Request failed";
-  throw new Error(msg);
+  throw toApiError(error);
 }
 
 export async function createSession(): Promise<CheckerState> {

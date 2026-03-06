@@ -189,7 +189,11 @@ checkerRouter.patch("/answers", async (c) => {
     if (!updated) return c.json({ error: "Unexpected: no row returned" }, 500);
     return c.json(toState(updated), 200);
   } catch (err) {
-    if (err instanceof z.ZodError) return c.json({ error: err.issues }, 400);
+    if (err instanceof z.ZodError) return c.json({
+        message: "Validation failed",
+        issues: err.issues,
+      },
+      400);
     return c.json({ error: "Internal server error" }, 500);
   }
 });
