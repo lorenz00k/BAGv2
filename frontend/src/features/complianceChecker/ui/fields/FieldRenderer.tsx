@@ -13,6 +13,7 @@ type Props = {
   disabled?: boolean;
   clearFieldError?: (field: string) => void;
   getFieldError?: (field: string) => string | null;
+  clientError?: string | null;
 };
 
 export default function FieldRenderer({
@@ -22,6 +23,7 @@ export default function FieldRenderer({
   disabled,
   clearFieldError,
   getFieldError,
+  clientError,
 }: Props) {
   const form = useTranslations("sections.complianceChecker.form");
 
@@ -30,8 +32,12 @@ export default function FieldRenderer({
       return (
         <BooleanField
           value={typeof value === "boolean" ? value : undefined}
-          onChange={(v) => onChange(v)}
+          onChange={(v) => {
+            clearFieldError?.(String(field.key));
+            onChange(v);
+          }}
           disabled={disabled}
+          error={clientError ?? getFieldError?.(String(field.key)) ?? null}
         />
       );
 
@@ -41,11 +47,11 @@ export default function FieldRenderer({
           value={typeof value === "number" ? value : undefined}
           placeholder={field.placeholderKey ? form(field.placeholderKey) : undefined}
           onChange={(v) => {
-            clearFieldError?.(field.key);
+            clearFieldError?.(String(field.key));
             onChange(v);
           }}
           disabled={disabled}
-          error={getFieldError?.(field.key) ?? null}
+          error={clientError ?? getFieldError?.(String(field.key)) ?? null}
           min={0}
           step={1}
         />
@@ -58,8 +64,12 @@ export default function FieldRenderer({
           field={field}
           kind={field.kind}
           value={typeof value === "string" ? value : undefined}
-          onChange={(v) => onChange(v)}
+          onChange={(v) => {
+            clearFieldError?.(String(field.key));
+            onChange(v);
+          }}
           disabled={disabled}
+          error={clientError ?? getFieldError?.(String(field.key)) ?? null}
         />
       );
 

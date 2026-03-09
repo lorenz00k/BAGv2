@@ -11,6 +11,7 @@ type Props = {
   disabled?: boolean;
   clearFieldError?: (field: string) => void;
   getFieldError?: (field: string) => string | null;
+  getClientFieldError?: (field: string) => string | null;
 };
 
 function isVisible(field: FieldDef, answers: Partial<CheckerAnswers>) {
@@ -24,6 +25,7 @@ export default function StepRenderer({
   disabled,
   clearFieldError,
   getFieldError,
+  getClientFieldError,
 }: Props) {
   const form = useTranslations("sections.complianceChecker.form");
 
@@ -43,6 +45,7 @@ export default function StepRenderer({
             disabled={disabled}
             clearFieldError={clearFieldError}
             getFieldError={getFieldError}
+            clientError={getClientFieldError?.(String(field.key)) ?? null}
           />
         </div>
       ))}

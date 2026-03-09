@@ -8,6 +8,7 @@ import { flow, type StepDef, type CheckerAnswers } from "../config/flow";
 import { useComplianceChecker } from "../hooks/useComplianceChecker";
 import StepRenderer from "./StepRenderer";
 
+
 function visibleFields(step: StepDef, answers: Partial<CheckerAnswers>) {
   return step.fields.filter((f) => (f.when ? f.when(answers) : true));
 }
@@ -51,8 +52,9 @@ function buildPatchForStep(step: StepDef, draft: Partial<CheckerAnswers>) {
 
 export default function ComplianceCheckerWizard() {
   const form = useTranslations("sections.complianceChecker.form");
-  const nav = useTranslations("common.actions.navigation");
+  const actions = useTranslations("common.actions");
   const statusT = useTranslations("common.labels.status");
+  const generalT = useTranslations("common.labels.general");
 
   const router = useRouter();
   const pathname = usePathname();
@@ -71,6 +73,7 @@ export default function ComplianceCheckerWizard() {
   const initialStep = useMemo(() => deriveInitialStepIndex(answers), [answers]);
   const [stepIndex, setStepIndex] = useState(initialStep);
   const [draft, setDraft] = useState<Partial<CheckerAnswers>>({});
+  const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
 
   const step = flow[Math.min(stepIndex, flow.length - 1)];
 
@@ -81,7 +84,44 @@ export default function ComplianceCheckerWizard() {
   const canGoBack = stepIndex > 0;
   const canGoNext = stepIndex < flow.length - 1;
 
+  function getStepFieldError(key: string) {
+    return stepErrors[key] ?? null;
+  }
+
+  function clearStepFieldError(key: string) {
+    setStepErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }
+
+  function validateStep(step: StepDef, values: Partial<CheckerAnswers>) {
+    const errors: Record<string, string> = {};
+    const fields = visibleFields(step, values);
+
+    for (const field of fields) {
+      const value = values[field.key];
+
+      if (isEmptyForField(field, value)) {
+        errors[String(field.key)] = generalT("required");
+      }
+    }
+
+    return errors;
+  }
+
   async function handleNext() {
+    const errors = validateStep(step, mergedForRender);
+
+    if (Object.keys(errors).length > 0) {
+      setStepErrors(errors);
+      return;
+    }
+
+    setStepErrors({});
+
     const patch = buildPatchForStep(step, mergedForRender);
     if (Object.keys(patch).length > 0) await savePatch(patch);
     setDraft({});
@@ -102,6 +142,15 @@ export default function ComplianceCheckerWizard() {
   }
 
   async function handleFinish() {
+    const errors = validateStep(step, mergedForRender);
+
+    if (Object.keys(errors).length > 0) {
+      setStepErrors(errors);
+      return;
+    }
+
+    setStepErrors({});
+
     const patch = buildPatchForStep(step, mergedForRender);
     if (Object.keys(patch).length > 0) await savePatch(patch);
     await runEvaluate();
@@ -137,10 +186,14 @@ export default function ComplianceCheckerWizard() {
           <StepRenderer
             step={step}
             answers={mergedForRender}
-            onChange={(key, value) => setDraft((prev) => ({ ...prev, [key]: value }))}
+            onChange={(key, value) => {
+              clearStepFieldError(String(key));
+              setDraft((prev) => ({ ...prev, [key]: value }));
+            }}
             disabled={busy}
             clearFieldError={clearFieldError}
             getFieldError={getFieldError}
+            getClientFieldError={getStepFieldError}
           />
         )}
       </div>
@@ -152,7 +205,7 @@ export default function ComplianceCheckerWizard() {
           disabled={!canGoBack || busy}
           onClick={handleBack}
         >
-          {nav("back")}
+          {actions("navigation.back")}
         </button>
 
         <div className="flex gap-3">
@@ -163,7 +216,7 @@ export default function ComplianceCheckerWizard() {
               disabled={busy}
               onClick={handleNext}
             >
-              {busy ? statusT("loading") : nav("next")}
+              {busy ? statusT("loading") : actions("navigation.next")}
             </button>
           ) : (
             <button
@@ -172,7 +225,7 @@ export default function ComplianceCheckerWizard() {
               disabled={busy}
               onClick={handleFinish}
             >
-              {busy ? statusT("loading") : nav("finish")}
+              {busy ? statusT("loading") : actions("navigation.finish")}
             </button>
           )}
         </div>
@@ -180,7 +233,7 @@ export default function ComplianceCheckerWizard() {
         <button type="button"
           disabled={busy}
           onClick={handleRestart}>
-          Restart
+          {actions("check.restart")}
         </button>
       </div>
     </div>
