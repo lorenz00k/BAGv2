@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useComplianceChecker } from "../hooks/useComplianceChecker";
 import ResultView from "./ResultView";
 
 export default function ComplianceCheckerResult() {
   const router = useRouter();
-  const { status, state, error, runEvaluate, refresh } = useComplianceChecker();
+  const [isRestarting, setIsRestarting] = useState(false);
+
+  const { status, state, error, runEvaluate, refresh, restart } = useComplianceChecker();
 
   // On result page: ensure we have latest state; if not finished, evaluate once.
   useEffect(() => {
     if (status !== "ready") return;
-
     if (!state) return;
 
     if (state.status !== "finished") {
@@ -24,6 +25,26 @@ export default function ComplianceCheckerResult() {
       void refresh();
     }
   }, [status, state, runEvaluate, refresh]);
+
+  useEffect(() => {
+    if (status !== "ready") return;
+    if (!state) return;
+    if (state.status !== "finished") return;
+    if (state.result) return;
+
+    router.replace("/complianceChecker");
+  }, [status, state, router]);
+
+  async function handleRestart() {
+    setIsRestarting(true);
+    try {
+      await restart();
+      router.replace("/complianceChecker");
+    } finally {
+      setIsRestarting(false);
+    }
+  }
+
 
   if (error) {
     return (
@@ -41,7 +62,7 @@ export default function ComplianceCheckerResult() {
     );
   }
 
-  if (!state || status === "loading" || status === "evaluating") {
+  if (!state || status === "loading" || status === "evaluating" || isRestarting) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10 text-sm opacity-70">
         Lädt Ergebnis…
@@ -55,5 +76,9 @@ export default function ComplianceCheckerResult() {
     return null;
   }
 
-  return <ResultView result={state.result} />;
+  return <ResultView
+    result={state.result}
+    onRestart={handleRestart}
+    restartDisabled={isRestarting}
+  />;
 }

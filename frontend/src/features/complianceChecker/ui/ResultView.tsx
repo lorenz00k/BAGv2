@@ -5,11 +5,23 @@ import type { components } from "@/lib/api/checker";
 
 type CheckerResult = components["schemas"]["CheckerResult"];
 
-export default function ResultView({ result }: { result: CheckerResult }) {
+type Props = {
+  result: CheckerResult;
+  onRestart: () => void;
+  restartDisabled?: boolean;
+};
+
+export default function ResultView({
+  result,
+  onRestart,
+  restartDisabled,
+}: Props) {
   const cls = useTranslations("sections.complianceResult.classifications");
   const reasonsT = useTranslations("sections.complianceResult.reasons");
   const gfvoT = useTranslations("sections.complianceResult.gfvo");
   const disclaimerT = useTranslations("sections.complianceResult.disclaimer");
+  const actions = useTranslations("common.actions");
+
 
   const classification = result.classification;
   const reasons = result.reasons ?? [];
@@ -21,7 +33,6 @@ export default function ResultView({ result }: { result: CheckerResult }) {
       </h1>
 
       <p className="mt-3 text-sm opacity-80">
-        {/* falls bei euch "description" statt "summary" heißt -> hier ändern */}
         {cls(`${classification}.summary`)}
       </p>
 
@@ -51,6 +62,15 @@ export default function ResultView({ result }: { result: CheckerResult }) {
         <div className="font-medium">{disclaimerT("title")}</div>
         <div className="mt-2">{disclaimerT("orientation")}</div>
       </div>
+
+      <button
+        type="button"
+        disabled={restartDisabled}
+        onClick={onRestart}
+        className="mt-8 rounded-lg border px-4 py-2 text-sm"
+      >
+        {actions("check.restart")}
+      </button>
     </div>
   );
 }
