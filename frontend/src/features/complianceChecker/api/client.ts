@@ -2,15 +2,15 @@
 
 
 import createClient, { type Middleware } from "openapi-fetch";
-import type {paths} from "@/lib/api/checker"; // automatisch aus openapi generierte Typen für Endpunkte, Requests und Responses
+import type { paths } from "@/lib/api/checker"; // automatisch aus openapi generierte Typen für Endpunkte, Requests und Responses
 
 
 const RAW =
-  (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001").trim();
+  (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000").trim();
 
 // Falls jemand aus Versehen "" oder "/" gesetzt hat
 const API_BASE =
-  RAW === "" || RAW === "/" ? "http://localhost:3001" : RAW.replace(/\/+$/, "");
+  RAW === "" || RAW === "/" ? "http://localhost:3000" : RAW.replace(/\/+$/, "");
 
 const withCookies: Middleware = {
   onRequest({ request }) {

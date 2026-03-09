@@ -63,6 +63,7 @@ export default function ComplianceCheckerWizard() {
     answers,
     savePatch,
     runEvaluate,
+    restart,
     clearFieldError,
     getFieldError,
   } = useComplianceChecker();
@@ -92,6 +93,12 @@ export default function ComplianceCheckerWizard() {
     if (Object.keys(patch).length > 0) await savePatch(patch);
     setDraft({});
     setStepIndex((i) => Math.max(i - 1, 0));
+  }
+
+  async function handleRestart() {
+    await restart();
+    setDraft({});
+    setStepIndex(0);
   }
 
   async function handleFinish() {
@@ -169,6 +176,12 @@ export default function ComplianceCheckerWizard() {
             </button>
           )}
         </div>
+
+        <button type="button"
+          disabled={busy}
+          onClick={handleRestart}>
+          Restart
+        </button>
       </div>
     </div>
   );

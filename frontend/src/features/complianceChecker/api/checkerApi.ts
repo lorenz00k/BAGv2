@@ -35,15 +35,15 @@ function toApiError(error: unknown): ApiError {
 
   const issues = Array.isArray(e?.error)
     ? e.error.map((issue: any) => ({
-        path: Array.isArray(issue?.path) ? issue.path : [],
-        message: issue?.message ?? "Invalid value",
-      }))
+      path: Array.isArray(issue?.path) ? issue.path : [],
+      message: issue?.message ?? "Invalid value",
+    }))
     : Array.isArray(e?.issues)
-    ? e.issues.map((issue: any) => ({
+      ? e.issues.map((issue: any) => ({
         path: Array.isArray(issue?.path) ? issue.path : [],
         message: issue?.message ?? "Invalid value",
       }))
-    : undefined;
+      : undefined;
 
   const message =
     e?.message ??

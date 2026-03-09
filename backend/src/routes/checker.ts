@@ -84,6 +84,7 @@ function toState(row: any) {
 
 // POST /api/checker/session
 checkerRouter.post("/session", async (c) => {
+
   // try reuse cookie if it points to an existing non-expired session
   const sid = readSid(c);
   if (sid) {
@@ -104,7 +105,7 @@ checkerRouter.post("/session", async (c) => {
         })
         .where(eq(checkerSessions.id, existing.id))
         .returning();
-        if (!updated) return c.json({ error: "Unexpected: no row returned" }, 500);
+      if (!updated) return c.json({ error: "Unexpected: no row returned" }, 500);
 
       setSidCookie(c, sid);
       return c.json(toState(updated), 200);
@@ -114,20 +115,28 @@ checkerRouter.post("/session", async (c) => {
   // create new session (rotate sid)
   const newSid = createSid();
   const sidHash = hashSid(newSid);
+  try {
+    const [created] = await db
+      .insert(checkerSessions)
+      .values({
+        sidHash,
+        status: "draft",
+        answers: {},
+        result: null,
+        expiresAt: computeExpiresAt(),
+      })
+      .returning();
 
-  const [created] = await db
-    .insert(checkerSessions)
-    .values({
-      sidHash,
-      status: "draft",
-      answers: {},
-      result: null,
-      expiresAt: computeExpiresAt(),
-    })
-    .returning();
+    setSidCookie(c, newSid);
+    return c.json(toState(created), 200);
+  }
+  catch (err) {
+    console.error("raw error:", err);
+    console.error("cause:", (err as any)?.cause);
+    return c.json({ error: "Internal server error" }, 500);
+  }
 
-  setSidCookie(c, newSid);
-  return c.json(toState(created), 200);
+
 });
 
 // GET /api/checker/state
@@ -190,9 +199,9 @@ checkerRouter.patch("/answers", async (c) => {
     return c.json(toState(updated), 200);
   } catch (err) {
     if (err instanceof z.ZodError) return c.json({
-        message: "Validation failed",
-        issues: err.issues,
-      },
+      message: "Validation failed",
+      issues: err.issues,
+    },
       400);
     return c.json({ error: "Internal server error" }, 500);
   }
@@ -230,9 +239,9 @@ checkerRouter.post("/evaluate", async (c) => {
     .where(eq(checkerSessions.id, existing.id))
     .returning();
 
-    if(!updated) {
-      return c.json({ error: "Session not found" }, 404);
-    }
+  if (!updated) {
+    return c.json({ error: "Session not found" }, 404);
+  }
   return c.json(updated.result ?? result, 200);
 });
 
