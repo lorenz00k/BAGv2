@@ -1,6 +1,9 @@
 "use client";
 
+import { useId } from "react";
 import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/Button";
+import { Text } from "@/components/typography/Text";
 
 type Props = {
   value?: boolean;
@@ -9,40 +12,62 @@ type Props = {
   error?: string | null;
 };
 
-export default function BooleanField({ value, onChange, disabled, error }: Props) {
-
+export default function BooleanField({
+  value,
+  onChange,
+  disabled,
+  error,
+}: Props) {
   const g = useTranslations("common.labels.general");
-  const baseClass = "rounded-lg border px-3 py-2 text-sm";
-  const activeClass = "bg-black text-white border-black";
-  const inactiveClass = error ? "border-red-500" : "border-neutral-300";
+  const errorId = useId();
+  const showErrorState = value === undefined && !!error;
 
   return (
     <div className="w-full">
-      <div className="flex gap-2">
-        <button
+      <div
+        className="flex grid-cols-2 gap-2"
+        role="radiogroup"
+        aria-invalid={!!error}
+        aria-describedby={error ? errorId : undefined}
+      >
+        <Button
           type="button"
-          className={`${baseClass} ${value === true ? activeClass : inactiveClass}`}
+          variant="choice"
+          selected={value === true}
           disabled={disabled}
-          aria-pressed={value === true}
-          aria-invalid={!!error}
+          role="radio"
+          aria-checked={value === true}
           onClick={() => onChange(true)}
+          className={showErrorState ? "w-full rounded-xl !border-red-500" : "w-full rounded-xl"}
         >
-          {g("yes")}
-        </button>
+          <Text className="mt-3" size="base" tone="default">
+            {g("yes")}
+          </Text>
+        </Button>
 
-        <button
+        <Button
           type="button"
-          className={`${baseClass} ${value === false ? activeClass : inactiveClass}`}
+          variant="choice"
+          selected={value === false}
           disabled={disabled}
-          aria-pressed={value === false}
-          aria-invalid={!!error}
+          role="radio"
+          aria-checked={value === false}
           onClick={() => onChange(false)}
+          className={showErrorState ? "w-full rounded-xl !border-red-500" : "w-full rounded-xl"}
         >
-          {g("no")}
-        </button>
+          <Text className="mt-3" size="base" tone="default">
+            {g("no")}
+          </Text>
+        </Button>
       </div>
 
-      {error ? <p className="mt-1 text-sm text-red-600">{error}</p> : null}
-    </div>
+      {
+        error ? (
+          <p id={errorId} className="mt-2 text-sm text-red-600">
+            {error}
+          </p>
+        ) : null
+      }
+    </div >
   );
 }

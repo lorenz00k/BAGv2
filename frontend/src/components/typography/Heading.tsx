@@ -1,10 +1,10 @@
 import * as React from "react";
 import clsx from "clsx";
-
-export type HeadingProps = React.HTMLAttributes<HTMLHeadingElement> & {
-    as?: "h1" | "h2" | "h3" | "h4" | "h5";
-    tone?: "default" | "muted";
-};
+export type HeadingProps =
+    React.HTMLAttributes<HTMLHeadingElement> & {
+        as?: "h1" | "h2" | "h3" | "h4" | "h5";
+        tone?: "default" | "muted";
+    };
 
 const toneClasses: Record<NonNullable<HeadingProps["tone"]>, string> = {
     default: "text-slate-900",
@@ -28,7 +28,8 @@ export function Heading({
     const Tag = as;
     return (
         <Tag
-            className={clsx(levelClasses[as], toneClasses[tone], className)}
+            className={clsx(levelClasses[as], toneClasses[tone],
+                className)}
             {...props}
         />
     );

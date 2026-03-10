@@ -2,13 +2,14 @@ import * as React from "react";
 import clsx from "clsx";
 import { Slot } from "@radix-ui/react-slot";
 
-type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "heroCta" | "next" | "previous";
+type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "heroCta" | "next" | "previous" | "choice";
 type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
     variant?: ButtonVariant;
     size?: ButtonSize;
     asChild?: boolean;
+    selected?: boolean;
 };
 
 const base =
@@ -77,16 +78,45 @@ const variants: Record<ButtonVariant, string> = {
     previous: primaryLike + " enabled:hover:-translate-y-[1px]",
 };
 
+const choiceSelected =
+    "bg-[var(--color-accent-soft)] text-[var(--color-accent-strong)] " +
+    "border-[var(--color-accent)] " +
+    "shadow-none";
+
+const choiceUnselected =
+    "bg-slate-50 text-[var(--color-foreground)] border-slate-300 " +
+    "enabled:hover:bg-slate-100 enabled:hover:border-slate-400";
+
+
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant = "primary", size = "md", asChild = false, type, ...props }, ref) => {
+    (
+        {
+            className,
+            variant = "primary",
+            size = "md",
+            asChild = false,
+            type,
+            selected = false,
+            ...props
+        },
+        ref
+    ) => {
         const resolvedType = type ?? "button";
         const Comp: any = asChild ? Slot : "button";
+
+        const variantClass =
+            variant === "choice"
+                ? selected
+                    ? choiceSelected
+                    : choiceUnselected
+                : variants[variant];
+
 
         return (
             <Comp
                 ref={ref}
                 type={asChild ? undefined : resolvedType}
-                className={clsx(base, sizes[size], variants[variant], className)}
+                className={clsx(base, sizes[size], variantClass, className)}
                 {...props}
             />
         );

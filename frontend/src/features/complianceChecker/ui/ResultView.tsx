@@ -2,6 +2,10 @@
 
 import { useTranslations } from "next-intl";
 import type { components } from "@/lib/api/checker";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Heading } from "@/components/typography/Heading";
+import { Text } from "@/components/typography/Text";
 
 type CheckerResult = components["schemas"]["CheckerResult"];
 
@@ -22,55 +26,73 @@ export default function ResultView({
   const disclaimerT = useTranslations("sections.complianceResult.disclaimer");
   const actions = useTranslations("common.actions");
 
-
   const classification = result.classification;
   const reasons = result.reasons ?? [];
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-2xl font-semibold">
-        {cls(`${classification}.title`)}
-      </h1>
+      <div className="space-y-6">
+        <Card className="hover:translate-y-0">
+          <Heading as="h1" className="mt-0">
+            {cls(`${classification}.title`)}
+          </Heading>
 
-      <p className="mt-3 text-sm opacity-80">
-        {cls(`${classification}.summary`)}
-      </p>
+          <Text className="mt-3" size="base" tone="default">
+            {cls(`${classification}.summary`)}
+          </Text>
+        </Card>
 
-      {reasons.length > 0 ? (
-        <div className="mt-8 rounded-2xl border p-5">
-          <h2 className="text-lg font-semibold">{reasonsT("title")}</h2>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm">
-            {reasons.map((r) => (
-              <li key={r}>
-                {reasonsT(`items.${r}`)}
-              </li>
-            ))}
-          </ul>
+        {reasons.length > 0 ? (
+          <Card variant="subtle" className="p-5 hover:translate-y-0">
+            <Heading as="h2" className="mt-0">
+              {reasonsT("title")}
+            </Heading>
+
+            <ul className="mt-3 list-disc space-y-2 pl-5">
+              {reasons.map((r) => (
+                <li key={r}>
+                  <Text size="sm" tone="muted" className="mt-0">
+                    {reasonsT(`items.${r}`)}
+                  </Text>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        ) : null}
+
+        {result.gfvoCategory ? (
+          <Card variant="subtle" className="p-5 hover:translate-y-0">
+            <Heading as="h2" className="mt-0">
+              {gfvoT("match.title")}
+            </Heading>
+
+            <Text size="sm" tone="muted">
+              {gfvoT(`categories.${result.gfvoCategory}`)}
+            </Text>
+          </Card>
+        ) : null}
+
+        <Card variant="subtle" className="p-5 hover:translate-y-0">
+          <Heading as="h2" className="mt-0">
+            {disclaimerT("title")}
+          </Heading>
+
+          <Text size="sm" tone="muted">
+            {disclaimerT("orientation")}
+          </Text>
+        </Card>
+
+        <div>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={restartDisabled}
+            onClick={onRestart}
+          >
+            {actions("check.restart")}
+          </Button>
         </div>
-      ) : null}
-
-      {result.gfvoCategory ? (
-        <div className="mt-6 rounded-2xl border p-5 text-sm">
-          <div className="font-medium">{gfvoT("match.title")}</div>
-          <div className="mt-2 opacity-80">
-            {gfvoT(`categories.${result.gfvoCategory}`)}
-          </div>
-        </div>
-      ) : null}
-
-      <div className="mt-8 rounded-2xl border p-5 text-sm opacity-80">
-        <div className="font-medium">{disclaimerT("title")}</div>
-        <div className="mt-2">{disclaimerT("orientation")}</div>
       </div>
-
-      <button
-        type="button"
-        disabled={restartDisabled}
-        onClick={onRestart}
-        className="mt-8 rounded-lg border px-4 py-2 text-sm"
-      >
-        {actions("check.restart")}
-      </button>
     </div>
   );
 }

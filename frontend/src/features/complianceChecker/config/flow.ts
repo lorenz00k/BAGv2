@@ -19,6 +19,8 @@ export type FieldDef = {
   optionDescriptionPrefix?: string;
 
   when?: (answers: Partial<CheckerAnswers>) => boolean;
+  min?: number;
+  step?: number;
 };
 
 export type StepDef = {
@@ -72,8 +74,8 @@ export const flow: readonly StepDef[] = [
         when: (a) => a.sector === "workshop",
       },
 
-      { key: "areaSqm", kind: "number", labelKey: "areaSqm.label", placeholderKey: "areaSqm.placeholder" },
-      { key: "personCount", kind: "number", labelKey: "personCount.label", placeholderKey: "personCount.placeholder" },
+      { key: "areaSqm", kind: "number", labelKey: "areaSqm.label", placeholderKey: "areaSqm.placeholder", min: 0, step: 1 },
+      { key: "personCount", kind: "number", labelKey: "personCount.label", placeholderKey: "personCount.placeholder", min: 0, step: 1 },
 
       { key: "isStationary", kind: "boolean", labelKey: "isStationary.question" },
       { key: "isOnlyTemporary", kind: "boolean", labelKey: "isOnlyTemporary.question" },
@@ -90,7 +92,9 @@ export const flow: readonly StepDef[] = [
         key: "bedCount",
         kind: "number",
         labelKey: "bedCount.label",
-        placeholderKey: "bedCount.placeholder"
+        placeholderKey: "bedCount.placeholder",
+        min: 0,
+        step: 1
       },
       {
         key: "buildingUseExclusive",

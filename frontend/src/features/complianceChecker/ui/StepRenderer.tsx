@@ -1,8 +1,14 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import type { StepDef, CheckerAnswers, AnswerKey, FieldDef } from "../config/flow";
+import type {
+  StepDef,
+  CheckerAnswers,
+  AnswerKey,
+  FieldDef,
+} from "../config/flow";
 import FieldRenderer from "./fields/FieldRenderer";
+import { Text } from "@/components/typography/Text";
 
 type Props = {
   step: StepDef;
@@ -33,22 +39,37 @@ export default function StepRenderer({
 
   return (
     <div className="space-y-6">
-      {fields.map((field) => (
-        <div key={String(field.key)} className="space-y-2">
-          <div className="text-sm font-medium">{form(field.labelKey)}</div>
-          {field.helperKey ? <div className="text-sm opacity-70">{form(field.helperKey)}</div> : null}
+      {fields.map((field) => {
+        const fieldKey = String(field.key);
+        const clientError = getClientFieldError?.(fieldKey) ?? null;
+        const helperText = field.helperKey ? form(field.helperKey) : null;
 
-          <FieldRenderer
-            field={field}
-            value={answers[field.key]}
-            onChange={(v) => onChange(field.key, v)}
-            disabled={disabled}
-            clearFieldError={clearFieldError}
-            getFieldError={getFieldError}
-            clientError={getClientFieldError?.(String(field.key)) ?? null}
-          />
-        </div>
-      ))}
+        return (
+          <section key={fieldKey} className="space-y-2">
+            <div className="space-y-1">
+              <div className="text-sm font-medium text-[var(--color-fg)]">
+                {form(field.labelKey)}
+              </div>
+
+              {helperText ? (
+                <Text size="sm" tone="muted" className="mt-0">
+                  {helperText}
+                </Text>
+              ) : null}
+            </div>
+
+            <FieldRenderer
+              field={field}
+              value={answers[field.key]}
+              onChange={(value) => onChange(field.key, value)}
+              disabled={disabled}
+              clearFieldError={clearFieldError}
+              getFieldError={getFieldError}
+              clientError={clientError}
+            />
+          </section>
+        );
+      })}
     </div>
   );
 }
