@@ -11,6 +11,8 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Heading } from "@/components/typography/Heading";
 import { Text } from "@/components/typography/Text";
+import { Section } from "@/components/layout/Section";
+import { Container } from "@/components/layout/Container";
 
 function visibleFields(step: StepDef, answers: Partial<CheckerAnswers>) {
   return step.fields.filter((f) => (f.when ? f.when(answers) : true));
@@ -168,8 +170,11 @@ export default function ComplianceCheckerWizard() {
   const step = visibleSteps[Math.min(stepIndex, visibleSteps.length - 1)];
   const canGoBack = stepIndex > 0;
   const canGoNext = stepIndex < visibleSteps.length - 1;
-  const busy =
-    status === "loading" || status === "saving" || status === "evaluating";
+  const busy = status === "loading" || status === "saving" || status === "evaluating";
+
+  const currentStep = stepIndex + 1;
+  const totalSteps = visibleSteps.length;
+  const progressPercent = totalSteps > 0 ? (currentStep / totalSteps) * 100 : 0;
 
   function getStepFieldError(key: string) {
     return stepErrors[key] ?? null;
@@ -265,114 +270,128 @@ export default function ComplianceCheckerWizard() {
   if (!step) return null;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
-      <div className="mb-6">
-        <Heading as="h1" className="mt-0">
-          {form(step.titleKey)}
-        </Heading>
+    <Container>
+      <div className="mx-auto max-w-4xl px-4 py-10">
+        <div className="mb-6">
+          <Heading as="h1" className="mt-0">
+            {form(step.titleKey)}
+          </Heading>
 
-        {step.helperKey ? (
-          <Text size="sm" tone="muted">
-            {form(step.helperKey)}
-          </Text>
-        ) : null}
+          {step.helperKey ? (
+            <Text size="sm" tone="muted">
+              {form(step.helperKey)}
+            </Text>
+          ) : null}
 
-        <Text size="sm" tone="muted">
-          {stepIndex + 1} / {visibleSteps.length}
-        </Text>
-      </div>
+          <div className="mt-4 space-y-2">
+            <Text size="sm" tone="muted" className="mt-0">
+              {actions("check.progress.step")} {currentStep} {actions("check.progress.of")} {totalSteps}
+            </Text>
 
-      {error ? (
-        <Card
-          variant="subtle"
-          className="mb-6 gap-2 border-red-300 bg-red-50 p-4 text-red-800 hover:translate-y-0"
-        >
-          <Text size="sm" className="mt-0 text-red-800">
-            {error}
-          </Text>
-        </Card>
-      ) : null}
-
-      <Card
-        variant="subtle"
-        className="p-5 hover:translate-y-0 hover:shadow-[var(--shadow-xs)]"
-      >
-        {status === "loading" ? (
-          <Text size="sm" tone="muted" className="py-10">
-            {statusT("loading")}
-          </Text>
-        ) : (
-          <StepRenderer
-            step={step}
-            answers={mergedForRender}
-            onChange={(key, value) => {
-              clearStepFieldError(String(key));
-              clearFieldError(String(key));
-
-              setDraft((prevDraft) => {
-                const current = {
-                  ...answers,
-                  ...prevDraft,
-                } as Partial<CheckerAnswers>;
-
-                const cleaned = applyAnswerChange(
-                  current,
-                  key,
-                  value as CheckerAnswers[typeof key]
-                );
-
-                return buildDraftFromAnswersDiff(answers, cleaned);
-              });
-            }}
-            disabled={busy}
-            clearFieldError={clearFieldError}
-            getFieldError={getFieldError}
-            getClientFieldError={getStepFieldError}
-          />
-        )}
-      </Card>
-
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap gap-3">
-          <Button
-            type="button"
-            variant="previous"
-            disabled={!canGoBack || busy}
-            onClick={handleBack}
-          >
-            {actions("navigation.back")}
-          </Button>
-
-          <Button
-            type="button"
-            variant="ghost"
-            disabled={busy}
-            onClick={handleRestart}
-          >
-            {actions("check.restart")}
-          </Button>
+            <div
+              className="h-2 w-full overflow-hidden rounded-full bg-slate-200"
+              aria-hidden="true"
+            >
+              <div
+                className="h-full rounded-full bg-[var(--color-accent)] transition-all duration-300"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
         </div>
 
-        {canGoNext ? (
-          <Button
-            type="button"
-            variant="next"
-            disabled={busy}
-            onClick={handleNext}
+        {error ? (
+          <Card
+            variant="subtle"
+            className="mb-6 gap-2 border-red-300 bg-red-50 p-4 text-red-800 hover:translate-y-0"
           >
-            {busy ? statusT("loading") : actions("navigation.next")}
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            variant="next"
-            disabled={busy}
-            onClick={handleFinish}
-          >
-            {busy ? statusT("loading") : actions("navigation.finish")}
-          </Button>
-        )}
+            <Text size="sm" className="mt-0 text-red-800">
+              {error}
+            </Text>
+          </Card>
+        ) : null}
+
+        <Card
+          variant="subtle"
+          className="p-5 hover:translate-y-0 hover:shadow-[var(--shadow-xs)]"
+        >
+          {status === "loading" ? (
+            <Text size="sm" tone="muted" className="py-10">
+              {statusT("loading")}
+            </Text>
+          ) : (
+            <StepRenderer
+              step={step}
+              answers={mergedForRender}
+              onChange={(key, value) => {
+                clearStepFieldError(String(key));
+                clearFieldError(String(key));
+
+                setDraft((prevDraft) => {
+                  const current = {
+                    ...answers,
+                    ...prevDraft,
+                  } as Partial<CheckerAnswers>;
+
+                  const cleaned = applyAnswerChange(
+                    current,
+                    key,
+                    value as CheckerAnswers[typeof key]
+                  );
+
+                  return buildDraftFromAnswersDiff(answers, cleaned);
+                });
+              }}
+              disabled={busy}
+              clearFieldError={clearFieldError}
+              getFieldError={getFieldError}
+              getClientFieldError={getStepFieldError}
+            />
+          )}
+        </Card>
+
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap gap-3">
+            <Button
+              type="button"
+              variant="previous"
+              disabled={!canGoBack || busy}
+              onClick={handleBack}
+            >
+              {actions("navigation.back")}
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={busy}
+              onClick={handleRestart}
+            >
+              {actions("check.restart")}
+            </Button>
+          </div>
+
+          {canGoNext ? (
+            <Button
+              type="button"
+              variant="next"
+              disabled={busy}
+              onClick={handleNext}
+            >
+              {busy ? statusT("loading") : actions("navigation.next")}
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="next"
+              disabled={busy}
+              onClick={handleFinish}
+            >
+              {busy ? statusT("loading") : actions("navigation.finish")}
+            </Button>
+          )}
+        </div>
       </div>
-    </div>
+    </Container>
   );
 }

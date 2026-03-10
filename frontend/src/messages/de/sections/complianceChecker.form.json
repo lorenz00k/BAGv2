@@ -1,7 +1,7 @@
 {
-    "options": {
-        "yes": "Ja",
-        "no": "Nein"
+    "basics": {
+        "heading": "Betriebsanlagen checker nach GewO",
+        "helper": "Führe die strukturierte Prüfung zu Betriebsanlage, Genehmigungspflicht, Unterlagen und Pflichten durch."
     },
     "sector": {
         "question": "Welche Betriebsart planst du?",
@@ -54,6 +54,10 @@
     },
     "isOnlyTemporary": {
         "question": "Handelt es sich nur um eine vorübergehende Nutzung?"
+    },
+    "accommodation": {
+        "heading": "Beherbergung im Detail",
+        "helper": "Zusätzliche Angaben für Beherbergungsbetriebe und kleine Hotels."
     },
     "bedCount": {
         "label": "Gästebetten gesamt",
@@ -125,9 +129,5 @@
     },
     "existingPermitHistory": {
         "question": "Gibt es bestehende Bescheide/Eignungsfeststellungen für den Standort?"
-    },
-    "accommodation": {
-        "heading": "Beherbergung im Detail",
-        "helper": "Zusätzliche Angaben für Beherbergungsbetriebe und kleine Hotels."
     }
 }

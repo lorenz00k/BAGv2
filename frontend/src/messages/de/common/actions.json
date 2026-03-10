@@ -10,7 +10,11 @@
     "check": {
         "start": "Check starten",
         "restart": "Checker neu starten",
-        "new": "Neuen Check starten"
+        "new": "Neuen Check starten",
+        "progress": {
+            "step": "Schritt",
+            "of": "von"
+        }
     },
     "addressCheck": {
         "run": "Adresse prüfen",

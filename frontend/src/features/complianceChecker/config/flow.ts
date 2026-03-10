@@ -34,8 +34,8 @@ export type StepDef = {
 export const flow: readonly StepDef[] = [
   {
     id: "basics",
-    titleKey: "sector.question",
-    helperKey: "sector.helper",
+    titleKey: "basics.heading",
+    helperKey: "basics.helper",
     fields: [
       {
         key: "sector",

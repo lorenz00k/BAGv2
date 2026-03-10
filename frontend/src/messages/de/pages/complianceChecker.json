@@ -4,7 +4,6 @@
     "subtitle": "Führe die strukturierte Prüfung zu Betriebsanlage, Genehmigungspflicht, Unterlagen und Pflichten durch.",
     "progress": "Schritt {current} von {total}",
     "sections": {
-        "actions": "complianceChecker.actions",
         "form": "complianceChecker.form"
     }
 }
