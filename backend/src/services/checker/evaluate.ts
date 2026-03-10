@@ -13,39 +13,38 @@ export const SectorValues = [
 
 export const HospitalitySubtypeValues = ["beherbergung", "iceSalon", "otherGastro"] as const;
 export const WorkshopSubtypeValues = ["tailor", "shoeService", "textilePickup", "otherWorkshop"] as const;
-
 export const OperatingPatternValues = ["gfvoWindow", "extendedHours", "roundTheClock"] as const;
 
 export type CheckerAnswers = {
-  sector?: (typeof SectorValues)[number];
-  hospitalitySubtype?: (typeof HospitalitySubtypeValues)[number];
-  workshopSubtype?: (typeof WorkshopSubtypeValues)[number];
+  sector?: (typeof SectorValues)[number] | undefined;
+  hospitalitySubtype?: (typeof HospitalitySubtypeValues)[number] | undefined;
+  workshopSubtype?: (typeof WorkshopSubtypeValues)[number] | undefined;
 
-  areaSqm?: number;
-  personCount?: number;
+  areaSqm?: number | undefined;
+  personCount?: number | undefined;
 
-  isStationary?: boolean;
-  isOnlyTemporary?: boolean;
+  isStationary?: boolean | undefined;
+  isOnlyTemporary?: boolean | undefined;
 
-  bedCount?: number;
-  buildingUseExclusive?: boolean;
-  hasWellnessFacilities?: boolean;
-  servesFullMeals?: boolean;
+  bedCount?: number | undefined;
+  buildingUseExclusive?: boolean | undefined;
+  hasWellnessFacilities?: boolean | undefined;
+  servesFullMeals?: boolean | undefined;
 
-  zoningClarified?: boolean;
-  buildingConsentPresent?: boolean;
+  zoningClarified?: boolean | undefined;
+  buildingConsentPresent?: boolean | undefined;
 
-  operatingPattern?: (typeof OperatingPatternValues)[number];
-  hasExternalVentilation?: boolean;
-  storesRegulatedHazardous?: boolean;
-  storesLabelledHazardous?: boolean;
-  usesLoudMusic?: boolean;
-  ippcOrSevesoRelevant?: boolean;
+  operatingPattern?: (typeof OperatingPatternValues)[number] | undefined;
+  hasExternalVentilation?: boolean | undefined;
+  storesRegulatedHazardous?: boolean | undefined;
+  storesLabelledHazardous?: boolean | undefined;
+  usesLoudMusic?: boolean | undefined;
+  ippcOrSevesoRelevant?: boolean | undefined;
 
-  expectedImpairments?: boolean;
-  locatedInInfrastructureSite?: boolean;
-  locatedInApprovedComplex?: boolean;
-  existingPermitHistory?: boolean;
+  expectedImpairments?: boolean | undefined;
+  locatedInInfrastructureSite?: boolean | undefined;
+  locatedInApprovedComplex?: boolean | undefined;
+  existingPermitHistory?: boolean | undefined;
 };
 
 export type ClassificationKey =
@@ -116,8 +115,40 @@ function pickGfvoCategory(a: CheckerAnswers): GfvoCategoryKey | null {
   }
 }
 
-export function evaluate(a: CheckerAnswers): CheckerResult {
+function collectBlockingReasons(a: CheckerAnswers): ReasonKey[] {
   const reasons: ReasonKey[] = [];
+  //Operating time outside GFVO window → not exempt
+  if (a.operatingPattern && a.operatingPattern !== "gfvoWindow") {
+    reasons.push("operatingHours");
+  }
+
+  //GFVO exclusion checks 
+  if (a.hasExternalVentilation) reasons.push("externalVentilation");
+  if (a.storesRegulatedHazardous) reasons.push("regulatedHazardousStorage");
+  if (a.storesLabelledHazardous) reasons.push("labelledHazardousStorage");
+  if (a.usesLoudMusic) reasons.push("musicExclusion");
+  if (a.ippcOrSevesoRelevant) reasons.push("ippcSeveso");
+
+  // Simple category-specific constraints (MVP)
+  // Retail size example appears in your content (<=600 m²)
+  if (a.sector === "retail" && typeof a.areaSqm === "number" && a.areaSqm > 600) {
+    reasons.push("areaExceeded");
+  }
+  // Accommodation constraints
+  const isAccommodation =
+    a.sector === "accommodation" || a.hospitalitySubtype === "beherbergung";
+
+  if (isAccommodation && typeof a.bedCount === "number") {
+    if (a.bedCount > 30) reasons.push("accommodationBeds");
+    if (a.buildingUseExclusive === false) reasons.push("accommodationBuildingUse");
+    if (a.hasWellnessFacilities) reasons.push("accommodationWellness");
+    if (a.servesFullMeals) reasons.push("accommodationMeals");
+  }
+
+  return reasons;
+}
+
+export function evaluate(a: CheckerAnswers): CheckerResult {
   const gfvoCategory = pickGfvoCategory(a);
 
   // 1) Not a facility (mobile/temporary) → stop
@@ -135,33 +166,8 @@ export function evaluate(a: CheckerAnswers): CheckerResult {
     return { classification: "needsPermit", reasons: ["expectedImpairments"], gfvoCategory };
   }
 
-  // 4) Operating time outside GFVO window → not exempt
-  if (a.operatingPattern && a.operatingPattern !== "gfvoWindow") {
-    reasons.push("operatingHours");
-  }
-
-  // 5) GFVO exclusion checks (your UI asks these directly) :contentReference[oaicite:8]{index=8}
-  if (a.hasExternalVentilation) reasons.push("externalVentilation");
-  if (a.storesRegulatedHazardous) reasons.push("regulatedHazardousStorage");
-  if (a.storesLabelledHazardous) reasons.push("labelledHazardousStorage");
-  if (a.usesLoudMusic) reasons.push("musicExclusion");
-  if (a.ippcOrSevesoRelevant) reasons.push("ippcSeveso");
-
-  // 6) Simple category-specific constraints (MVP)
-  // Retail size example appears in your content (<=600 m²) :contentReference[oaicite:9]{index=9}
-  if (a.sector === "retail" && typeof a.areaSqm === "number" && a.areaSqm > 600) {
-    reasons.push("areaExceeded");
-  }
-
-  // Accommodation constraints are described in your UI descriptions :contentReference[oaicite:10]{index=10}
-  if ((a.sector === "accommodation" || a.hospitalitySubtype === "beherbergung") && typeof a.bedCount === "number") {
-    if (a.bedCount > 30) reasons.push("accommodationBeds");
-    if (a.buildingUseExclusive === false) reasons.push("accommodationBuildingUse");
-    if (a.hasWellnessFacilities) reasons.push("accommodationWellness");
-    if (a.servesFullMeals) reasons.push("accommodationMeals");
-  }
-
   // 7) Decide
+  const reasons = collectBlockingReasons(a);
   const gfvoPossible = gfvoCategory !== null && a.operatingPattern === "gfvoWindow";
   const hasBlockingReasons = reasons.length > 0;
 

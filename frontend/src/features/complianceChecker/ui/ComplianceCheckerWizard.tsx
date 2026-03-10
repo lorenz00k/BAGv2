@@ -65,6 +65,66 @@ function buildPatchForStep(step: StepDef, values: Partial<CheckerAnswers>) {
   return patch;
 }
 
+function cleanupDependentAnswers(values: Partial<CheckerAnswers>): Partial<CheckerAnswers> {
+  const next = { ...values };
+
+  if (next.sector !== "gastronomyHotel") {
+    delete next.hospitalitySubtype;
+  }
+
+  if (next.sector !== "workshop") {
+    delete next.workshopSubtype;
+  }
+
+  const needsAccommodationDetails =
+    next.sector === "accommodation" || next.hospitalitySubtype === "beherbergung";
+
+  if (!needsAccommodationDetails) {
+    delete next.bedCount;
+    delete next.buildingUseExclusive;
+    delete next.hasWellnessFacilities;
+    delete next.servesFullMeals;
+  }
+
+  return next;
+}
+function setAnswer<K extends keyof CheckerAnswers>(
+  target: Partial<CheckerAnswers>,
+  key: K,
+  value: CheckerAnswers[K]
+) {
+  target[key] = value;
+}
+
+//helper that applies one answer change and then cleans up
+function applyAnswerChange<K extends keyof CheckerAnswers>(
+  current: Partial<CheckerAnswers>,
+  key: K,
+  value: CheckerAnswers[K]
+): Partial<CheckerAnswers> {
+  const next = { ...current };
+  setAnswer(next, key, value);
+  return cleanupDependentAnswers(next);
+}
+
+function buildDraftFromAnswersDiff(
+  base: Partial<CheckerAnswers>,
+  next: Partial<CheckerAnswers>
+): Partial<CheckerAnswers> {
+  const draft: Partial<CheckerAnswers> = {};
+
+  for (const key of Object.keys(next) as Array<keyof CheckerAnswers>) {
+    const value = next[key];
+
+    if (base[key] !== value && value !== undefined) {
+      setAnswer(draft, key, value);
+    }
+  }
+
+  return draft;
+}
+
+
 export default function ComplianceCheckerWizard() {
   const form = useTranslations("sections.complianceChecker.form");
   const actions = useTranslations("common.actions");
@@ -78,7 +138,7 @@ export default function ComplianceCheckerWizard() {
     status,
     error,
     answers,
-    savePatch,
+    saveAnswers,
     runEvaluate,
     restart,
     clearFieldError,
@@ -155,9 +215,15 @@ export default function ComplianceCheckerWizard() {
     setStepErrors({});
 
     try {
-      const patch = buildPatchForStep(step, mergedForRender);
-      if (Object.keys(patch).length > 0) await savePatch(patch);
+      const cleanedValues = cleanupDependentAnswers(mergedForRender);
+      if (Object.keys(errors).length > 0) {
+        setStepErrors(errors);
+        return;
+      }
 
+      setStepErrors({});
+
+      await saveAnswers(cleanedValues);
       setDraft({});
       setStepIndex((i) => Math.min(i + 1, visibleSteps.length - 1));
     } catch { }
@@ -165,9 +231,9 @@ export default function ComplianceCheckerWizard() {
 
   async function handleBack() {
     try {
-      const patch = buildPatchForStep(step, mergedForRender);
-      if (Object.keys(patch).length > 0) await savePatch(patch);
+      const cleanedValues = cleanupDependentAnswers(mergedForRender);
 
+      await saveAnswers(cleanedValues);
       setDraft({});
       setStepIndex((i) => Math.max(i - 1, 0));
     } catch { }
@@ -192,9 +258,18 @@ export default function ComplianceCheckerWizard() {
     setStepErrors({});
 
     try {
-      const patch = buildPatchForStep(step, mergedForRender);
-      if (Object.keys(patch).length > 0) await savePatch(patch);
+      const cleanedValues = cleanupDependentAnswers(mergedForRender);
 
+      const errors = validateStep(step, cleanedValues);
+
+      if (Object.keys(errors).length > 0) {
+        setStepErrors(errors);
+        return;
+      }
+
+      setStepErrors({});
+
+      await saveAnswers(cleanedValues);
       await runEvaluate();
       router.push(`${pathname.replace(/\/result$/, "")}/result`);
     } catch { }
@@ -230,7 +305,14 @@ export default function ComplianceCheckerWizard() {
             answers={mergedForRender}
             onChange={(key, value) => {
               clearStepFieldError(String(key));
-              setDraft((prev) => ({ ...prev, [key]: value }));
+              clearFieldError(String(key));
+
+              setDraft((prevDraft) => {
+                const current = { ...answers, ...prevDraft } as Partial<CheckerAnswers>;
+                const cleaned = applyAnswerChange(current, key, value as CheckerAnswers[typeof key]);
+
+                return buildDraftFromAnswersDiff(answers, cleaned);
+              });
             }}
             disabled={busy}
             clearFieldError={clearFieldError}

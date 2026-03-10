@@ -7,7 +7,7 @@ import type { components } from "@/lib/api/checker";
 export type CheckerState = components["schemas"]["CheckerState"];
 export type CheckerResult = components["schemas"]["CheckerResult"];
 export type CheckerAnswers = components["schemas"]["CheckerAnswers"];
-export type CheckerAnswersPatch = components["schemas"]["CheckerAnswersPatch"];
+//export type CheckerAnswersPatch = components["schemas"]["CheckerAnswersPatch"];
 
 export type ApiFieldIssue = {
   path?: (string | number)[];
@@ -72,16 +72,13 @@ export async function getState(): Promise<CheckerState> {
   return data!;
 }
 
-/**
- * Merge semantics: you pass only changed keys in `patch`.
- * Backend merges into stored answers.
- */
-export async function patchAnswers(patch: Partial<CheckerAnswers>): Promise<CheckerState> {
-  const body: CheckerAnswersPatch = { answers: patch as CheckerAnswers };
-  const { data, error } = await client.PATCH("/api/checker/answers", { body });
+export async function saveAnswers(answers: Partial<CheckerAnswers>): Promise<CheckerState> {
+  const body = { answers: answers as CheckerAnswers };
+  const { data, error } = await client.PUT("/api/checker/answers", { body });
   if (error) throwOnError(error);
   return data!;
 }
+
 
 export async function evaluate(): Promise<CheckerResult> {
   const { data, error } = await client.POST("/api/checker/evaluate");

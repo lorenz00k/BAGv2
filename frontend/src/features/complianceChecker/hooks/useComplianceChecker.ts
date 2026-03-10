@@ -4,7 +4,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as api from "../api/checkerApi";
-import { clear } from "console";
 
 type Status = "idle" | "loading" | "ready" | "saving" | "evaluating" | "error";
 
@@ -40,7 +39,7 @@ export function useComplianceChecker() {
   const [state, setState] = useState<api.CheckerState | null>(null);
 
   const answers = useMemo(() => (state?.answers ?? {}) as api.CheckerAnswers, [state]);
-  const clearErrors = useCallback(() => {setError(null); setFieldErrors({});}, []);
+  const clearErrors = useCallback(() => { setError(null); setFieldErrors({}); }, []);
 
   const start = useCallback(async () => {
     clearErrors();
@@ -62,32 +61,33 @@ export function useComplianceChecker() {
     void start();
   }, [start]);
 
-  const savePatch = useCallback(async (patch: Partial<api.CheckerAnswers>) => {
+  const saveAnswers = useCallback(async (answers: Partial<api.CheckerAnswers>) => {
     if (!state) return;
 
     clearErrors();
     setStatus("saving");
 
-    // optimistic local merge for snappy UI
     const previousState = state;
+
     setState((prev) =>
       prev
         ? ({
-            ...prev,
-            answers: { ...(prev.answers as object), ...patch },
-          } as api.CheckerState)
+          ...prev,
+          answers,
+          status: "draft",
+          result: null,
+        } as api.CheckerState)
         : prev
     );
 
     try {
-      const next = await api.patchAnswers(patch);
+      const next = await api.saveAnswers(answers);
       setState(next);
       setStatus("ready");
       return next;
     } catch (e: any) {
       setState(previousState);
       setFieldErrors(extractFieldErrors(e));
-
       setError(e?.message ?? "Failed to save");
       setStatus("error");
       throw e;
@@ -169,7 +169,7 @@ export function useComplianceChecker() {
     state,
     answers,
     start,
-    savePatch,
+    saveAnswers,
     runEvaluate,
     refresh,
     restart,

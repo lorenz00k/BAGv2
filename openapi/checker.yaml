@@ -82,13 +82,13 @@ paths:
           $ref: "#/components/responses/ServerError"
 
   /api/checker/answers:
-    patch:
+    put:
       tags: [checker]
-      summary: Patch answers (partial update, merge semantics)
-      operationId: patchCheckerAnswers
+      summary: Replace answers (full update)
+      operationId: saveCheckerAnswers
       description: >
-        Partial update. The backend merges provided keys into the persisted answers object.
-        Keys not present in the request remain unchanged.
+        Replaces the persisted answers object with the provided answers.
+        The backend may normalize dependent fields before saving.
       security:
         - sessionCookie: []
       requestBody:
@@ -96,10 +96,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CheckerAnswersPatch"
+              $ref: "#/components/schemas/CheckerAnswersSaveRequest"
       responses:
         "200":
-          description: Updated state after merge
+          description: Updated state after replace
           content:
             application/json:
               schema:
@@ -119,8 +119,9 @@ paths:
       summary: Evaluate current answers and return result
       operationId: evaluateChecker
       description: >
-        Runs the rule engine on the currently persisted answers, stores the result,
-        and returns the evaluated result (keys only).
+        Runs the rule engine on the currently persisted answers,
+        stores the normalized answers and result,
+        and returns the evaluated result.
       security:
         - sessionCookie: []
       responses:
@@ -138,7 +139,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/ServerError"
-    
 
 components:
   securitySchemes:
@@ -272,7 +272,7 @@ components:
     CheckerAnswers:
       type: object
       description: >
-        Persisted answers for the checker. All fields are optional to support step-wise PATCHing.
+        Persisted answers for the checker. All fields are optional to support step-wise progress and saving the current full answer state.
       additionalProperties: false
       properties:
         # sector selection
@@ -338,7 +338,7 @@ components:
         existingPermitHistory:
           type: boolean
 
-    CheckerAnswersPatch:
+    CheckerAnswersSaveRequest:
       type: object
       additionalProperties: false
       required: [answers]

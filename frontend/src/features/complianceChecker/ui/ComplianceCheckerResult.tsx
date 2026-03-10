@@ -9,31 +9,32 @@ export default function ComplianceCheckerResult() {
   const router = useRouter();
   const [isRestarting, setIsRestarting] = useState(false);
 
-  const { status, state, error, runEvaluate, refresh, restart } = useComplianceChecker();
+  const { status, state, error, refresh, restart } = useComplianceChecker();
 
-  // On result page: ensure we have latest state; if not finished, evaluate once.
   useEffect(() => {
+    if (isRestarting) return;
     if (status !== "ready") return;
     if (!state) return;
 
     if (state.status !== "finished") {
-      void runEvaluate();
+      router.replace("/complianceChecker");
       return;
     }
 
     if (!state.result) {
       void refresh();
     }
-  }, [status, state, runEvaluate, refresh]);
+  }, [isRestarting, status, state, refresh, router]);
 
   useEffect(() => {
+    if (isRestarting) return;
     if (status !== "ready") return;
     if (!state) return;
     if (state.status !== "finished") return;
     if (state.result) return;
 
     router.replace("/complianceChecker");
-  }, [status, state, router]);
+  }, [isRestarting, status, state, router]);
 
   async function handleRestart() {
     setIsRestarting(true);
@@ -44,7 +45,6 @@ export default function ComplianceCheckerResult() {
       setIsRestarting(false);
     }
   }
-
 
   if (error) {
     return (
@@ -70,15 +70,15 @@ export default function ComplianceCheckerResult() {
     );
   }
 
-  // If still no result, send back to wizard
   if (!state.result) {
-    router.push("../complianceChecker");
     return null;
   }
 
-  return <ResultView
-    result={state.result}
-    onRestart={handleRestart}
-    restartDisabled={isRestarting}
-  />;
+  return (
+    <ResultView
+      result={state.result}
+      onRestart={handleRestart}
+      restartDisabled={isRestarting}
+    />
+  );
 }

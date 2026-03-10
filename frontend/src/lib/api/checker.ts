@@ -53,16 +53,16 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put?: never;
+        /**
+         * Replace answers (full update)
+         * @description Replaces the persisted answers object with the provided answers. The backend may normalize dependent fields before saving.
+         */
+        put: operations["saveCheckerAnswers"];
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        /**
-         * Patch answers (partial update, merge semantics)
-         * @description Partial update. The backend merges provided keys into the persisted answers object. Keys not present in the request remain unchanged.
-         */
-        patch: operations["patchCheckerAnswers"];
+        patch?: never;
         trace?: never;
     };
     "/api/checker/evaluate": {
@@ -76,7 +76,7 @@ export interface paths {
         put?: never;
         /**
          * Evaluate current answers and return result
-         * @description Runs the rule engine on the currently persisted answers, stores the result, and returns the evaluated result (keys only).
+         * @description Runs the rule engine on the currently persisted answers, stores the normalized answers and result, and returns the evaluated result.
          */
         post: operations["evaluateChecker"];
         delete?: never;
@@ -103,7 +103,7 @@ export interface components {
         ReasonKey: "externalVentilation" | "regulatedHazardousStorage" | "labelledHazardousStorage" | "musicExclusion" | "ippcSeveso" | "noFacilityDefinition" | "operatingHours" | "areaExceeded" | "accommodationBeds" | "accommodationBuildingUse" | "accommodationWellness" | "accommodationMeals" | "expectedImpairments" | "individualAssessment" | "freistellungSummary";
         /** @enum {string} */
         GfvoCategoryKey: "retail" | "office" | "warehouse" | "cosmetics" | "tailor" | "textilePickup" | "accommodation" | "iceSalon" | "dataCenter" | "infrastructureSite" | "embeddedFacility";
-        /** @description Persisted answers for the checker. All fields are optional to support step-wise PATCHing. */
+        /** @description Persisted answers for the checker. All fields are optional to support step-wise progress and saving the current full answer state. */
         CheckerAnswers: {
             sector?: components["schemas"]["Sector"];
             hospitalitySubtype?: components["schemas"]["HospitalitySubtype"];
@@ -129,7 +129,7 @@ export interface components {
             locatedInApprovedComplex?: boolean;
             existingPermitHistory?: boolean;
         };
-        CheckerAnswersPatch: {
+        CheckerAnswersSaveRequest: {
             answers: components["schemas"]["CheckerAnswers"];
         };
         CheckerResult: {
@@ -287,7 +287,7 @@ export interface operations {
             500: components["responses"]["ServerError"];
         };
     };
-    patchCheckerAnswers: {
+    saveCheckerAnswers: {
         parameters: {
             query?: never;
             header?: never;
@@ -296,11 +296,11 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CheckerAnswersPatch"];
+                "application/json": components["schemas"]["CheckerAnswersSaveRequest"];
             };
         };
         responses: {
-            /** @description Updated state after merge */
+            /** @description Updated state after replace */
             200: {
                 headers: {
                     [name: string]: unknown;
