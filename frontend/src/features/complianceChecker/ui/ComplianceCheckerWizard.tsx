@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -8,12 +8,14 @@ import { flow, type StepDef, type CheckerAnswers } from "../config/flow";
 import { useComplianceChecker } from "../hooks/useComplianceChecker";
 import StepRenderer from "./StepRenderer";
 
-
 function visibleFields(step: StepDef, answers: Partial<CheckerAnswers>) {
   return step.fields.filter((f) => (f.when ? f.when(answers) : true));
 }
 
-function isEmptyForField(field: { kind: "radio" | "select" | "boolean" | "number" }, value: unknown) {
+function isEmptyForField(
+  field: { kind: "radio" | "select" | "boolean" | "number" },
+  value: unknown
+) {
   switch (field.kind) {
     case "select":
     case "radio":
@@ -27,26 +29,39 @@ function isEmptyForField(field: { kind: "radio" | "select" | "boolean" | "number
   }
 }
 
+function isStepVisible(step: StepDef, answers: Partial<CheckerAnswers>) {
+  if (step.when && !step.when(answers)) return false;
+  return visibleFields(step, answers).length > 0;
+}
+
+function deriveVisibleSteps(answers: Partial<CheckerAnswers>) {
+  return flow.filter((step) => isStepVisible(step, answers));
+}
+
 function deriveInitialStepIndex(answers: Partial<CheckerAnswers>) {
-  for (let i = 0; i < flow.length; i++) {
-    const step = flow[i];
+  const steps = deriveVisibleSteps(answers);
+
+  for (let i = 0; i < steps.length; i++) {
+    const step = steps[i];
     const fields = visibleFields(step, answers);
     const missing = fields.some((f) => isEmptyForField(f, answers[f.key]));
     if (missing) return i;
   }
-  return 0;
+
+  return Math.max(steps.length - 1, 0);
 }
 
-function buildPatchForStep(step: StepDef, draft: Partial<CheckerAnswers>) {
+function buildPatchForStep(step: StepDef, values: Partial<CheckerAnswers>) {
   const patch: Partial<CheckerAnswers> = {};
-  const fields = visibleFields(step, draft);
+  const fields = visibleFields(step, values);
 
   for (const f of fields) {
-    const v = draft[f.key];
+    const v = values[f.key];
     if (isEmptyForField(f, v)) continue;
     // @ts-expect-error dynamic key assign
     patch[f.key] = v;
   }
+
   return patch;
 }
 
@@ -70,19 +85,37 @@ export default function ComplianceCheckerWizard() {
     getFieldError,
   } = useComplianceChecker();
 
-  const initialStep = useMemo(() => deriveInitialStepIndex(answers), [answers]);
-  const [stepIndex, setStepIndex] = useState(initialStep);
+  const [stepIndex, setStepIndex] = useState(0);
   const [draft, setDraft] = useState<Partial<CheckerAnswers>>({});
   const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
-
-  const step = flow[Math.min(stepIndex, flow.length - 1)];
+  const hasInitializedStep = useRef(false);
 
   const mergedForRender = useMemo(() => {
     return { ...answers, ...draft } as Partial<CheckerAnswers>;
   }, [answers, draft]);
 
+  const visibleSteps = useMemo(() => {
+    return deriveVisibleSteps(mergedForRender);
+  }, [mergedForRender]);
+
+  useEffect(() => {
+    if (status === "loading") return;
+    if (hasInitializedStep.current) return;
+
+    setStepIndex(deriveInitialStepIndex(answers));
+    hasInitializedStep.current = true;
+  }, [status, answers]);
+
+  useEffect(() => {
+    setStepIndex((current) =>
+      Math.min(current, Math.max(visibleSteps.length - 1, 0))
+    );
+  }, [visibleSteps.length]);
+
+  const step = visibleSteps[Math.min(stepIndex, visibleSteps.length - 1)];
   const canGoBack = stepIndex > 0;
-  const canGoNext = stepIndex < flow.length - 1;
+  const canGoNext = stepIndex < visibleSteps.length - 1;
+  const busy = status === "loading" || status === "saving" || status === "evaluating";
 
   function getStepFieldError(key: string) {
     return stepErrors[key] ?? null;
@@ -103,7 +136,6 @@ export default function ComplianceCheckerWizard() {
 
     for (const field of fields) {
       const value = values[field.key];
-
       if (isEmptyForField(field, value)) {
         errors[String(field.key)] = generalT("required");
       }
@@ -122,23 +154,31 @@ export default function ComplianceCheckerWizard() {
 
     setStepErrors({});
 
-    const patch = buildPatchForStep(step, mergedForRender);
-    if (Object.keys(patch).length > 0) await savePatch(patch);
-    setDraft({});
-    setStepIndex((i) => Math.min(i + 1, flow.length - 1));
+    try {
+      const patch = buildPatchForStep(step, mergedForRender);
+      if (Object.keys(patch).length > 0) await savePatch(patch);
+
+      setDraft({});
+      setStepIndex((i) => Math.min(i + 1, visibleSteps.length - 1));
+    } catch { }
   }
 
   async function handleBack() {
-    const patch = buildPatchForStep(step, mergedForRender);
-    if (Object.keys(patch).length > 0) await savePatch(patch);
-    setDraft({});
-    setStepIndex((i) => Math.max(i - 1, 0));
+    try {
+      const patch = buildPatchForStep(step, mergedForRender);
+      if (Object.keys(patch).length > 0) await savePatch(patch);
+
+      setDraft({});
+      setStepIndex((i) => Math.max(i - 1, 0));
+    } catch { }
   }
 
   async function handleRestart() {
     await restart();
     setDraft({});
+    setStepErrors({});
     setStepIndex(0);
+    hasInitializedStep.current = false;
   }
 
   async function handleFinish() {
@@ -151,13 +191,16 @@ export default function ComplianceCheckerWizard() {
 
     setStepErrors({});
 
-    const patch = buildPatchForStep(step, mergedForRender);
-    if (Object.keys(patch).length > 0) await savePatch(patch);
-    await runEvaluate();
-    router.push(`${pathname.replace(/\/result$/, "")}/result`);
+    try {
+      const patch = buildPatchForStep(step, mergedForRender);
+      if (Object.keys(patch).length > 0) await savePatch(patch);
+
+      await runEvaluate();
+      router.push(`${pathname.replace(/\/result$/, "")}/result`);
+    } catch { }
   }
 
-  const busy = status === "loading" || status === "saving" || status === "evaluating";
+  if (!step) return null;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
@@ -167,9 +210,8 @@ export default function ComplianceCheckerWizard() {
           <div className="mt-2 text-sm opacity-70">{form(step.helperKey)}</div>
         ) : null}
 
-        {/* Progress erstmal ohne i18n-key, kannst du später leicht in messages packen */}
         <div className="mt-2 text-sm opacity-70">
-          {stepIndex + 1} / {flow.length}
+          {stepIndex + 1} / {visibleSteps.length}
         </div>
       </div>
 
@@ -230,9 +272,7 @@ export default function ComplianceCheckerWizard() {
           )}
         </div>
 
-        <button type="button"
-          disabled={busy}
-          onClick={handleRestart}>
+        <button type="button" disabled={busy} onClick={handleRestart}>
           {actions("check.restart")}
         </button>
       </div>

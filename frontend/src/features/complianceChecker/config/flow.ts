@@ -25,6 +25,7 @@ export type StepDef = {
   id: string;
   titleKey: string;     // <-- neu/required
   helperKey?: string;   // <-- optional
+  when?: (answers: Partial<CheckerAnswers>) => boolean;
   fields: FieldDef[];
 };
 
@@ -81,32 +82,30 @@ export const flow: readonly StepDef[] = [
 
   {
     id: "accommodation",
-    titleKey: "bedCount.label",
+    titleKey: "accommodation.heading", // "bedCount.label"
+    helperKey: "accommodation.helper",
+    when: (a) => a.sector === "accommodation" || a.hospitalitySubtype === "beherbergung",
     fields: [
       {
         key: "bedCount",
         kind: "number",
         labelKey: "bedCount.label",
-        placeholderKey: "bedCount.placeholder",
-        when: (a) => a.sector === "accommodation" || a.hospitalitySubtype === "beherbergung",
+        placeholderKey: "bedCount.placeholder"
       },
       {
         key: "buildingUseExclusive",
         kind: "boolean",
-        labelKey: "buildingUseExclusive.question",
-        when: (a) => a.sector === "accommodation" || a.hospitalitySubtype === "beherbergung",
+        labelKey: "buildingUseExclusive.question"
       },
       {
         key: "hasWellnessFacilities",
         kind: "boolean",
-        labelKey: "hasWellnessFacilities.question",
-        when: (a) => a.sector === "accommodation" || a.hospitalitySubtype === "beherbergung",
+        labelKey: "hasWellnessFacilities.question"
       },
       {
         key: "servesFullMeals",
         kind: "boolean",
-        labelKey: "servesFullMeals.question",
-        when: (a) => a.sector === "accommodation" || a.hospitalitySubtype === "beherbergung",
+        labelKey: "servesFullMeals.question"
       },
     ],
   },
