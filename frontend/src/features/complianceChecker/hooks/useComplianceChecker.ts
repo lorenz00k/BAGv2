@@ -52,7 +52,7 @@ export function useComplianceChecker() {
     clearErrors();
     setStatus("loading");
     try {
-      const existing = await api.createSession();
+      const existing = await api.getState();
       setState(existing);
       setStatus("ready");
       return existing;
@@ -101,7 +101,12 @@ export function useComplianceChecker() {
   }, [clearErrors]);
 
   const saveAnswers = useCallback(async (patch: Partial<api.CheckerAnswers>) => {
-    if (!state) return;
+    if (!state) {
+      const err = new Error("No active checker state");
+      setError(err.message);
+      setStatus("error");
+      throw err;
+    }
 
     clearErrors();
     setStatus("saving");
@@ -140,7 +145,12 @@ export function useComplianceChecker() {
   }, [state, clearErrors]);
 
   const runEvaluate = useCallback(async () => {
-    if (!state) return;
+    if (!state) {
+      const err = new Error("No active checker state");
+      setError(err.message);
+      setStatus("error");
+      throw err;
+    }
 
     clearErrors();
     setStatus("evaluating");

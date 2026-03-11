@@ -204,22 +204,31 @@ export default function ComplianceCheckerWizard() {
       await saveAnswers(cleanedValues);
       setDraft(cleanedValues);
       setStepIndex((i) => Math.min(i + 1, visibleSteps.length - 1));
-    } catch { }
+    } catch (err) {
+      console.error("Failed to handle next", err);
+    }
   }
 
   async function handleBack() {
     try {
       await persistDraftState();
       setStepIndex((i) => Math.max(i - 1, 0));
-    } catch { }
+    } catch (err) {
+      console.error("Failed to handle back", err);
+    }
   }
 
   async function handleRestart() {
-    await restart();
-    setDraft({});
-    setStepErrors({});
-    setStepIndex(0);
-    hasInitializedFromServer.current = false;
+    try {
+      await restart();
+      setDraft({});
+      setStepErrors({});
+      setStepIndex(0);
+      hasInitializedFromServer.current = false;
+    } catch (err) {
+      console.error("Failed to restart checker", err);
+    }
+
   }
 
   async function handleFinish() {
@@ -240,7 +249,9 @@ export default function ComplianceCheckerWizard() {
       setDraft(cleanedValues);
       await runEvaluate();
       router.push(`${pathname.replace(/\/result$/, "")}/result`);
-    } catch { }
+    } catch (err) {
+      console.error("Failed to save step", err);
+    }
   }
 
   if (!step) return null;
