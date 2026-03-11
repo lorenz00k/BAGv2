@@ -11,7 +11,6 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Heading } from "@/components/typography/Heading";
 import { Text } from "@/components/typography/Text";
-import { Section } from "@/components/layout/Section";
 import { Container } from "@/components/layout/Container";
 
 function visibleFields(step: StepDef, answers: Partial<CheckerAnswers>) {
@@ -83,39 +82,15 @@ function cleanupDependentAnswers(
   return next;
 }
 
-function setAnswer<K extends keyof CheckerAnswers>(
-  target: Partial<CheckerAnswers>,
-  key: K,
-  value: CheckerAnswers[K]
-) {
-  target[key] = value;
-}
-
 function applyAnswerChange<K extends keyof CheckerAnswers>(
   current: Partial<CheckerAnswers>,
   key: K,
   value: CheckerAnswers[K]
 ): Partial<CheckerAnswers> {
-  const next = { ...current };
-  setAnswer(next, key, value);
-  return cleanupDependentAnswers(next);
-}
-
-function buildDraftFromAnswersDiff(
-  base: Partial<CheckerAnswers>,
-  next: Partial<CheckerAnswers>
-): Partial<CheckerAnswers> {
-  const draft: Partial<CheckerAnswers> = {};
-
-  for (const key of Object.keys(next) as Array<keyof CheckerAnswers>) {
-    const value = next[key];
-
-    if (base[key] !== value && value !== undefined) {
-      setAnswer(draft, key, value);
-    }
-  }
-
-  return draft;
+  return cleanupDependentAnswers({
+    ...current,
+    [key]: value,
+  });
 }
 
 export default function ComplianceCheckerWizard() {
@@ -141,24 +116,22 @@ export default function ComplianceCheckerWizard() {
   const [stepIndex, setStepIndex] = useState(0);
   const [draft, setDraft] = useState<Partial<CheckerAnswers>>({});
   const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
-  const hasInitializedStep = useRef(false);
+  const hasInitializedFromServer = useRef(false);
 
-  const mergedForRender = useMemo(
-    () => ({ ...answers, ...draft } as Partial<CheckerAnswers>),
-    [answers, draft]
-  );
 
   const visibleSteps = useMemo(
-    () => deriveVisibleSteps(mergedForRender),
-    [mergedForRender]
+    () => deriveVisibleSteps(draft),
+    [draft]
   );
 
   useEffect(() => {
-    if (status === "loading") return;
-    if (hasInitializedStep.current) return;
+    if (status !== "ready") return;
+    if (hasInitializedFromServer.current) return;
 
-    setStepIndex(deriveInitialStepIndex(answers));
-    hasInitializedStep.current = true;
+    const initialDraft = cleanupDependentAnswers(answers);
+    setDraft(initialDraft);
+    setStepIndex(deriveInitialStepIndex(initialDraft));
+    hasInitializedFromServer.current = true;
   }, [status, answers]);
 
   useEffect(() => {
@@ -170,9 +143,13 @@ export default function ComplianceCheckerWizard() {
   const step = visibleSteps[Math.min(stepIndex, visibleSteps.length - 1)];
   const canGoBack = stepIndex > 0;
   const canGoNext = stepIndex < visibleSteps.length - 1;
-  const busy = status === "loading" || status === "saving" || status === "evaluating";
+  const busy =
+    status === "idle" ||
+    status === "loading" ||
+    status === "saving" ||
+    status === "evaluating";
 
-  const currentStep = stepIndex + 1;
+  const currentStep = step ? stepIndex + 1 : 0;
   const totalSteps = visibleSteps.length;
   const progressPercent = totalSteps > 0 ? (currentStep / totalSteps) * 100 : 0;
 
@@ -204,14 +181,17 @@ export default function ComplianceCheckerWizard() {
   }
 
   async function persistDraftState() {
-    const cleanedValues = cleanupDependentAnswers(mergedForRender);
+    const cleanedValues = cleanupDependentAnswers(draft);
     await saveAnswers(cleanedValues);
-    setDraft({});
+    setDraft(cleanedValues);
     return cleanedValues;
   }
 
   async function handleNext() {
-    const errors = validateStep(step, mergedForRender);
+    if (!step) return;
+
+    const cleanedValues = cleanupDependentAnswers(draft);
+    const errors = validateStep(step, cleanedValues);
 
     if (Object.keys(errors).length > 0) {
       setStepErrors(errors);
@@ -221,7 +201,8 @@ export default function ComplianceCheckerWizard() {
     setStepErrors({});
 
     try {
-      await persistDraftState();
+      await saveAnswers(cleanedValues);
+      setDraft(cleanedValues);
       setStepIndex((i) => Math.min(i + 1, visibleSteps.length - 1));
     } catch { }
   }
@@ -238,30 +219,25 @@ export default function ComplianceCheckerWizard() {
     setDraft({});
     setStepErrors({});
     setStepIndex(0);
-    hasInitializedStep.current = false;
+    hasInitializedFromServer.current = false;
   }
 
   async function handleFinish() {
-    const initialErrors = validateStep(step, mergedForRender);
+    if (!step) return;
 
-    if (Object.keys(initialErrors).length > 0) {
-      setStepErrors(initialErrors);
+    const cleanedValues = cleanupDependentAnswers(draft);
+    const errors = validateStep(step, cleanedValues);
+
+    if (Object.keys(errors).length > 0) {
+      setStepErrors(errors);
       return;
     }
 
     setStepErrors({});
 
     try {
-      const cleanedValues = cleanupDependentAnswers(mergedForRender);
-      const finalErrors = validateStep(step, cleanedValues);
-
-      if (Object.keys(finalErrors).length > 0) {
-        setStepErrors(finalErrors);
-        return;
-      }
-
       await saveAnswers(cleanedValues);
-      setDraft({});
+      setDraft(cleanedValues);
       await runEvaluate();
       router.push(`${pathname.replace(/\/result$/, "")}/result`);
     } catch { }
@@ -315,32 +291,25 @@ export default function ComplianceCheckerWizard() {
           variant="subtle"
           className="p-5 hover:translate-y-0 hover:shadow-[var(--shadow-xs)]"
         >
-          {status === "loading" ? (
+          {busy ? (
             <Text size="sm" tone="muted" className="py-10">
               {statusT("loading")}
             </Text>
           ) : (
             <StepRenderer
               step={step}
-              answers={mergedForRender}
+              answers={draft}
               onChange={(key, value) => {
                 clearStepFieldError(String(key));
                 clearFieldError(String(key));
 
-                setDraft((prevDraft) => {
-                  const current = {
-                    ...answers,
-                    ...prevDraft,
-                  } as Partial<CheckerAnswers>;
-
-                  const cleaned = applyAnswerChange(
-                    current,
+                setDraft((prev) =>
+                  applyAnswerChange(
+                    prev,
                     key,
                     value as CheckerAnswers[typeof key]
-                  );
-
-                  return buildDraftFromAnswersDiff(answers, cleaned);
-                });
+                  )
+                );
               }}
               disabled={busy}
               clearFieldError={clearFieldError}

@@ -108,22 +108,24 @@ export function useComplianceChecker() {
 
     const previousState = state;
 
+    const fullAnswers = {
+      ...(state.answers ?? {}),
+      ...patch,
+    } as api.CheckerAnswers;
+
     setState((prev) =>
       prev
-        ? ({
+        ? {
           ...prev,
-          answers: {
-            ...(prev.answers ?? {}),
-            ...patch,
-          },
+          answers: fullAnswers,
           status: "draft",
           result: null,
-        } as api.CheckerState)
+        }
         : prev
     );
 
     try {
-      const next = await api.saveAnswers(answers);
+      const next = await api.saveAnswers(fullAnswers);
       setState(next);
       setStatus("ready");
       return next;

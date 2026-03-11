@@ -73,7 +73,7 @@ export async function getState(): Promise<CheckerState> {
 }
 
 export async function saveAnswers(answers: Partial<CheckerAnswers>): Promise<CheckerState> {
-  const body = { answers: answers as CheckerAnswers };
+  const body = { answers };
   const { data, error } = await client.PUT("/api/checker/answers", { body });
   if (error) throwOnError(error);
   return data!;
