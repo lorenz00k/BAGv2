@@ -31,6 +31,13 @@ function extractFieldErrors(error: unknown): FieldErrors {
   return out;
 }
 
+function isNotFoundError(error: unknown) {
+  if (!(error instanceof api.ApiError)) return false;
+
+  // adjust to your actual ApiError shape
+  return error.status === 404;
+}
+
 export function useComplianceChecker() {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -41,27 +48,59 @@ export function useComplianceChecker() {
   const answers = useMemo(() => (state?.answers ?? {}) as api.CheckerAnswers, [state]);
   const clearErrors = useCallback(() => { setError(null); setFieldErrors({}); }, []);
 
-  const start = useCallback(async () => {
+  const init = useCallback(async () => {
     clearErrors();
     setStatus("loading");
     try {
-      const s = await api.createSession();
-      setState(s);
+      const existing = await api.createSession();
+      setState(existing);
       setStatus("ready");
-      return s;
-    } catch (e: any) {
-      setError(e?.message ?? "Failed to start session");
+      return existing;
+    } catch (e: unknown) {
+      if (!isNotFoundError(e)) {
+        const message = e instanceof Error ? e.message : "Failed to initialize session";
+        setError(message);
+        setStatus("error");
+        throw e;
+      }
+    }
+    try {
+      const fresh = await api.createSession();
+      setState(fresh);
+      setStatus("ready");
+      return fresh;
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error ? e.message : "Failed to start session";
+      setError(message);
       setStatus("error");
       throw e;
     }
   }, [clearErrors]);
 
   useEffect(() => {
-    // auto-start on mount
-    void start();
-  }, [start]);
+    void init();
+  }, [init]);
 
-  const saveAnswers = useCallback(async (answers: Partial<api.CheckerAnswers>) => {
+  const start = useCallback(async () => {
+    clearErrors();
+    setStatus("loading");
+
+    try {
+      const fresh = await api.createSession();
+      setState(fresh);
+      setStatus("ready");
+      return fresh;
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error ? e.message : "Failed to start session";
+      setError(message);
+      setStatus("error");
+      throw e;
+    }
+  }, [clearErrors]);
+
+  const saveAnswers = useCallback(async (patch: Partial<api.CheckerAnswers>) => {
     if (!state) return;
 
     clearErrors();
@@ -73,7 +112,10 @@ export function useComplianceChecker() {
       prev
         ? ({
           ...prev,
-          answers,
+          answers: {
+            ...(prev.answers ?? {}),
+            ...patch,
+          },
           status: "draft",
           result: null,
         } as api.CheckerState)
@@ -85,10 +127,11 @@ export function useComplianceChecker() {
       setState(next);
       setStatus("ready");
       return next;
-    } catch (e: any) {
+    } catch (e: unknown) {
       setState(previousState);
       setFieldErrors(extractFieldErrors(e));
-      setError(e?.message ?? "Failed to save");
+      const message = e instanceof Error ? e.message : "Failed to save";
+      setError(message);
       setStatus("error");
       throw e;
     }
@@ -101,14 +144,14 @@ export function useComplianceChecker() {
     setStatus("evaluating");
     try {
       const result = await api.evaluate();
-      // state enthält ggf. result; zur Sicherheit einmal state refresh:
       const next = await api.getState();
       setState(next);
       setStatus("ready");
       return result;
-    } catch (e: any) {
+    } catch (e: unknown) {
       setFieldErrors(extractFieldErrors(e));
-      setError(e?.message ?? "Failed to evaluate");
+      const message = e instanceof Error ? e.message : "Failed to evaluate";
+      setError(message);
       setStatus("error");
       throw e;
     }
@@ -122,8 +165,10 @@ export function useComplianceChecker() {
       setState(next);
       setStatus("ready");
       return next;
-    } catch (e: any) {
-      setError(e?.message ?? "Failed to load state");
+    } catch (e: unknown) {
+      setFieldErrors(extractFieldErrors(e));
+      const message = e instanceof Error ? e.message : "Failed to load state";
+      setError(message);
       setStatus("error");
       throw e;
     }
@@ -144,8 +189,9 @@ export function useComplianceChecker() {
       setState(fresh);
       setStatus("ready");
       return fresh;
-    } catch (e: any) {
-      setError(e?.message ?? "Failed to start session");
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Failed to restart session";
+      setError(message);
       setStatus("error");
       throw e;
     }
