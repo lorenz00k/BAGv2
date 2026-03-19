@@ -26,7 +26,7 @@ export class ApiError extends Error {
   }
 }
 
-function toApiError(error: unknown): ApiError {
+function toApiError(error: unknown, httpStatus?: number): ApiError {
   if (typeof error === "string") {
     return new ApiError(error);
   }
@@ -51,42 +51,42 @@ function toApiError(error: unknown): ApiError {
     (issues?.length ? "Validation failed" : "Request failed");
 
   return new ApiError(message, {
-    status: e?.status,
+    status: httpStatus ?? e?.status,
     issues,
   });
 }
 
-function throwOnError(error: unknown): never {
-  throw toApiError(error);
+function throwOnError(error: unknown, response: number): never {
+  throw toApiError(error, response);
 }
 
 export async function createSession(): Promise<CheckerState> {
-  const { data, error } = await client.POST("/api/checker/session");
-  if (error) throwOnError(error);
+  const { data, error, response } = await client.POST("/api/checker/session");
+  if (error) throwOnError(error, response.status);
   return data!;
 }
 
 export async function getState(): Promise<CheckerState> {
-  const { data, error } = await client.GET("/api/checker/state");
-  if (error) throwOnError(error);
+  const { data, error, response } = await client.GET("/api/checker/state");
+  if (error) throwOnError(error, response.status);
   return data!;
 }
 
 export async function saveAnswers(answers: Partial<CheckerAnswers>): Promise<CheckerState> {
   const body = { answers };
-  const { data, error } = await client.PUT("/api/checker/answers", { body });
-  if (error) throwOnError(error);
+  const { data, error, response } = await client.PUT("/api/checker/answers", { body });
+  if (error) throwOnError(error, response.status);
   return data!;
 }
 
 
 export async function evaluate(): Promise<CheckerResult> {
-  const { data, error } = await client.POST("/api/checker/evaluate");
-  if (error) throwOnError(error);
+  const { data, error, response } = await client.POST("/api/checker/evaluate");
+  if (error) throwOnError(error, response.status);
   return data!;
 }
 
 export async function deleteSession(): Promise<void> {
-  const { error } = await client.DELETE("/api/checker/session");
-  if (error) throwOnError(error);
+  const { error, response } = await client.DELETE("/api/checker/session");
+  if (error) throwOnError(error, response.status);
 }

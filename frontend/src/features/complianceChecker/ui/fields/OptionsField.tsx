@@ -28,7 +28,7 @@ export default function OptionsField({
   const errorId = useId();
 
   const opts = field.options ?? [];
-  const emptyOptionLabel = "—";
+  const emptyOptionLabel = form("sector.placeholder")
 
   const labelOf = (opt: string) =>
     field.optionLabelPrefix ? form(`${field.optionLabelPrefix}.${opt}`) : opt;

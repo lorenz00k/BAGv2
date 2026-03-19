@@ -6,6 +6,7 @@
     "sector": {
         "question": "Welche Betriebsart planst du?",
         "helper": "Der Checker deckt Handel, Dienstleistung, Gastronomie/Beherbergung, Werkstätten und weitere Sonderfälle ab.",
+        "placeholder": "Betriebsart auswählen",
         "options": {
             "retail": "Handel/Einzelhandel",
             "office": "Büro- oder Dienstleistungsbetrieb",
@@ -20,25 +21,31 @@
         }
     },
     "hospitalitySubtype": {
-        "question": "Welche Ausprägung trifft für Gastronomie/Beherbergung zu?",
+        "question": "Welche Variante trifft für Gastronomie oder Beherbergung zu?",
         "options": {
-            "beherbergung": "Beherbergung (Pension, kleines Hotel)",
+            "beherbergung": "Beherbergung (z.B. Pension, kleines Hotel)",
             "iceSalon": "Gastgewerbe in der Betriebsart Eissalon",
-            "otherGastro": "Andere Gastronomieform"
+            "otherGastro": "Andere Form der Gastronomie"
         },
         "descriptions": {
             "beherbergung": "Max. 30 Betten, Gebäude ausschließlich Wohn-/Beherbergungszweck, keine Wellnessbereiche, nur Frühstück oder kleiner Imbiss.",
             "iceSalon": "Reiner Eissalon ohne vollwertige Küche.",
-            "otherGastro": "Gastrobetriebe außerhalb der Eissalon-Freistellung."
+            "otherGastro": "Zum Beispiel Restaurant, Café, Bar, Imbiss oder sonstiger Gastrobetrieb außerhalb der Eissalon-Freistellung."
         }
     },
     "workshopSubtype": {
         "question": "Welche Werkstattform trifft zu?",
         "options": {
-            "tailor": "Änderungsschneiderei/haushaltsähnliche Nähmaschinen",
-            "shoeService": "Schuhservice/Schusterei",
-            "textilePickup": "Textilreinigung-Annahmestelle",
+            "tailor": "Änderungsschneiderei mit haushaltsüblichen Nähmaschinen",
+            "shoeService": "Schuhservice oder Schusterei",
+            "textilePickup": "Annahmestelle für Textilreinigung",
             "otherWorkshop": "Andere Werkstatt"
+        },
+        "descriptions": {
+            "tailor": "Zum Beispiel eine kleine Änderungsschneiderei ohne industrielle Maschinen.",
+            "shoeService": "Zum Beispiel Reparatur, Pflege oder kleinere Bearbeitung von Schuhen.",
+            "textilePickup": "Nur Annahme und Ausgabe von Textilien, ohne Reinigung vor Ort.",
+            "otherWorkshop": "Werkstattbetriebe, die nicht unter die genannten vereinfachten Fälle fallen."
         }
     },
     "areaSqm": {
@@ -46,7 +53,7 @@
         "placeholder": "z. B. 250"
     },
     "personCount": {
-        "label": "Maximale Personen gleichzeitig (AN + Kund:innen/Gäste)",
+        "label": "Maximale Anzahl gleichzeitig anwesender Personen (Mitarbeitende und Kund:innen/Gäste)",
         "placeholder": "z. B. 20"
     },
     "isStationary": {
@@ -73,8 +80,8 @@
         "question": "Werden über Frühstück/Imbiss hinausgehende Mahlzeiten angeboten?"
     },
     "location": {
-        "heading": "Standort- & Baukonsens",
-        "helper": "Klärung von Widmung, Bebauungsplan und bestehendem Nutzungskonsens."
+        "heading": "Standort und Nutzung",
+        "helper": "Hier prüfen wir, ob dein Standort baurechtlich und widmungsrechtlich zu deinem Vorhaben passt."
     },
     "zoningClarified": {
         "question": "Ist Widmung/Bebauungsplan für die geplante Nutzung passend?"
@@ -87,47 +94,56 @@
         "helper": "Bewerte Zeiten, Emissionen, Gefahrstoffe und Sonderanlagen."
     },
     "operatingPattern": {
-        "question": "Welche Betriebszeiten werden benötigt?",
+        "question": "Welche Betriebszeiten sind geplant?",
         "options": {
-            "gfvoWindow": "Innerhalb der 2. GFVO-Zeiten (Mo–Fr 6–22 Uhr, Sa 6–19 Uhr)",
-            "extendedHours": "Erweiterte Zeiten (z. B. Abende, Sonntag)",
+            "gfvoWindow": "Nur innerhalb der üblichen Tageszeiten (Mo–Fr 6–22 Uhr, Sa 6–19 Uhr)",
+            "extendedHours": "Auch außerhalb dieser Zeiten (z. B. abends oder sonntags)",
             "roundTheClock": "24/7 oder Nachtbetrieb"
         },
         "descriptions": {
-            "gfvoWindow": "Normale Tagesöffnungszeiten inklusive Lieferzeiten der 2. GFVO.",
-            "extendedHours": "Zeitbedarf außerhalb der Freistellung, aber nicht dauerhaft 24/7.",
-            "roundTheClock": "Durchgehender Betrieb oder Nachtbetrieb."
+            "gfvoWindow": "Geplante Öffnungs- und Betriebszeiten liegen vollständig innerhalb der üblichen Tageszeiten.",
+            "extendedHours": "Der Betrieb soll teilweise auch außerhalb der üblichen Zeiten stattfinden, aber nicht dauerhaft 24/7.",
+            "roundTheClock": "Es ist ein Betrieb über Nacht oder rund um die Uhr vorgesehen."
         }
     },
     "hasExternalVentilation": {
-        "question": "Gibt es außenliegende Ventilatoren/Kälte- oder Abluftgeräte?"
+        "question": "Gibt es außenliegende Ventilatoren, Kühl- oder Abluftgeräte?",
+        "description": "Gemeint sind Geräte an Fassade, Dach, Hof oder im Außenbereich, die Luft absaugen, ausblasen oder kühlen. Beispiele: Außengerät einer Klimaanlage, Lüftungsgerät, Abluftventilator, Kühlaggregat oder Küchenabluft über Dach oder Hof."
     },
     "storesRegulatedHazardous": {
-        "question": "Lagern Gefahrstoffe mit speziellen Rechtsvorschriften (z. B. brennbare Flüssigkeiten, Gas)?"
+        "question": "Lagern Gefahrstoffe mit speziellen Rechtsvorschriften (z. B. brennbare Flüssigkeiten, Gas)?",
+        "description": "Gemeint sind Stoffe, für deren Lagerung besondere Vorschriften gelten. Beispiele: Gasflaschen, Flüssiggas, Benzin, Diesel, Lösungsmittel, Lacke oder andere leicht entzündliche bzw. besonders gefährliche Stoffe."
     },
     "storesLabelledHazardous": {
-        "question": "Lagern kennzeichnungspflichtige Gefahrstoffe ohne Spezialvorschrift in relevanten Mengen?"
+        "question": "Lagern kennzeichnungspflichtige Gefahrstoffe ohne Spezialvorschrift in relevanten Mengen?",
+        "description": "Gemeint sind chemische Produkte mit Gefahrenkennzeichnung, auch wenn keine eigene Sonderregel wie etwa für Gas oder brennbare Flüssigkeiten greift. Beispiele: Reinigungschemikalien, Desinfektionsmittel, Farben, Lacke, Kleber, Säuren oder Laugen. Nicht gemeint sind einzelne haushaltsübliche Kleinmengen, sondern betriebsrelevante Lagerbestände."
     },
     "usesLoudMusic": {
-        "question": "Sind Musikdarbietungen oder laute Beschallung vorgesehen?"
+        "question": "Sind Musikdarbietungen oder laute Beschallung vorgesehen?",
+        "description": "Gemeint ist Musik, die über bloße Hintergrundmusik hinausgeht oder nach außen deutlich hörbar sein kann. Beispiele: Live-Musik, DJ, Tanzfläche, verstärkte Lautsprecher, regelmäßige Events oder Musik im Gastgarten bzw. Außenbereich."
     },
     "ippcOrSevesoRelevant": {
-        "question": "Fallen IPPC-/Seveso-Schwellen (Anlage 3 GewO, Störfallrecht) an?"
+        "question": "Gehört der Betrieb zu einer besonders emissions- oder störfallrelevanten Anlage?",
+        "description": "Das betrifft vor allem größere Industrieanlagen oder Betriebe mit gefährlichen Stoffen in relevanten Mengen, zum Beispiel Chemieanlagen, Raffinerien, Treibstofflager oder bestimmte Energie- und Produktionsanlagen (Anlage 3 GewO, Störfallrecht)."
     },
     "context": {
-        "heading": "Wirkungen & Sonderfälle",
-        "helper": "Bewerte Umweltauswirkungen, Infrastrukturstandorte und bestehende Bescheide."
+        "heading": "Auswirkungen & Sonderstandorte",
+        "helper": "Prüfe, ob vom Betrieb relevante Auswirkungen ausgehen können, ob er in einem besonderen Standort liegt und ob es für den Standort bereits gewerberechtliche Bescheide gibt."
     },
     "expectedImpairments": {
-        "question": "Sind nachteilige Auswirkungen iSd § 74 Abs. 2 GewO zu erwarten?"
+        "question": "Sind nach Art des Betriebs relevante Auswirkungen auf Nachbar:innen, Umwelt, Verkehr oder sensible Einrichtungen zu erwarten?",
+        "description": "Gemeint sind vor allem Gefährdungen, Lärm, Geruch, Rauch, Staub, Erschütterungen, zusätzlicher Verkehr oder sonstige Beeinträchtigungen. Dazu zählen auch mögliche Störungen von Schule, Religionsausübung, Kur- oder Krankenanstalt. Rechtliche Grundlage ist § 74 Abs. 2 GewO."
     },
     "locatedInInfrastructureSite": {
-        "question": "Liegt der Betrieb innerhalb von Bahnhof, Flugplatz, Hafen oder Krankenanstalt?"
+        "question": "Liegt der Betrieb in einem Bahnhof, Flughafen, Hafen oder in einer Krankenanstalt?",
+        "description": "Gemeint sind Standorte innerhalb solcher Anlagen oder Einrichtungen, zum Beispiel ein Shop im Bahnhof, ein Betrieb am Flughafengelände oder ein Lokal in einer Krankenanstalt."
     },
     "locatedInApprovedComplex": {
-        "question": "Befindet sich der Betrieb in einer bereits genehmigten Gesamtanlage (z. B. Einkaufszentrum)?"
+        "question": "Liegt der Betrieb in einer rechtskräftig genehmigten Gesamtanlage, z. B. in einem Einkaufszentrum?",
+        "description": "Gemeint ist ein Teilbetrieb innerhalb eines größeren, bereits insgesamt genehmigten Standorts, etwa ein Shop oder Lokal in einer Mall, Passage oder sonstigen Gesamtanlage."
     },
     "existingPermitHistory": {
-        "question": "Gibt es bestehende Bescheide/Eignungsfeststellungen für den Standort?"
+        "question": "Gibt es für den Standort bereits gewerberechtliche Bescheide oder Eignungsfeststellungen?",
+        "description": "Zum Beispiel frühere Betriebsanlagengenehmigungen, Änderungsbescheide, Auflagenbescheide oder Eignungsfeststellungen. Solche Unterlagen sind wichtig, weil sie den genehmigten Umfang und bestehende Auflagen des Standorts festlegen können."
     }
 }
