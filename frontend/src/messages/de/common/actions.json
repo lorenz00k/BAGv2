@@ -11,6 +11,7 @@
         "start": "Check starten",
         "restart": "Checker neu starten",
         "new": "Neuen Check starten",
+        "result": "Auswertung",
         "progress": {
             "step": "Schritt",
             "of": "von"
