@@ -61,7 +61,7 @@ export default function OptionsField({
         </Select>
 
         {error ? (
-          <Text id={errorId} size="sm" className="mt-2 text-red-600">
+          <Text id={errorId} size="sm" tone="error" className="mt-2">
             {error}
           </Text>
         ) : null}
@@ -110,7 +110,7 @@ export default function OptionsField({
       </div>
 
       {error ? (
-        <Text id={errorId} size="sm" className="mt-2 text-red-600">
+        <Text id={errorId} size="sm" tone="error" className="mt-2">
           {error}
         </Text>
       ) : null}

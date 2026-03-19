@@ -46,10 +46,10 @@ export default function StepRenderer({
 
         return (
           <section key={fieldKey} className="space-y-2">
-            <div className="space-y-1">
-              <div className="text-sm font-medium text-[var(--color-fg)]">
+            <div>
+              <Text size="base" tone="muted" className="mt-0">
                 {form(field.labelKey)}
-              </div>
+              </Text>
 
               {helperText ? (
                 <Text size="sm" tone="muted" className="mt-0">

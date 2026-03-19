@@ -55,7 +55,7 @@ export default function BooleanField({
           onClick={() => onChange(false)}
           className={showErrorState ? "w-full rounded-xl !border-red-500" : "w-full rounded-xl"}
         >
-          <Text className="mt-3" size="base" tone="default">
+          <Text className="mt-3" size="sm" tone="default">
             {g("no")}
           </Text>
         </Button>
@@ -63,9 +63,9 @@ export default function BooleanField({
 
       {
         error ? (
-          <p id={errorId} className="mt-2 text-sm text-red-600">
+          <Text id={errorId} size="sm" tone="error" className="mt-2">
             {error}
-          </p>
+          </Text>
         ) : null
       }
     </div >

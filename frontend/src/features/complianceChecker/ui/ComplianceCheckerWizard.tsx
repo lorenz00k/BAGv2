@@ -265,7 +265,7 @@ export default function ComplianceCheckerWizard() {
           </Heading>
 
           {step.helperKey ? (
-            <Text size="sm" tone="muted">
+            <Text size="base" tone="muted">
               {form(step.helperKey)}
             </Text>
           ) : null}
@@ -292,7 +292,7 @@ export default function ComplianceCheckerWizard() {
             variant="subtle"
             className="mb-6 gap-2 border-red-300 bg-red-50 p-4 text-red-800 hover:translate-y-0"
           >
-            <Text size="sm" className="mt-0 text-red-800">
+            <Text size="base" className="mt-0 text-red-800">
               {error}
             </Text>
           </Card>
@@ -303,7 +303,7 @@ export default function ComplianceCheckerWizard() {
           className="p-5 hover:translate-y-0 hover:shadow-[var(--shadow-xs)]"
         >
           {busy ? (
-            <Text size="sm" tone="muted" className="py-10">
+            <Text size="base" tone="muted" className="py-10">
               {statusT("loading")}
             </Text>
           ) : (

@@ -3,6 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/Input";
+import { Text } from "@/components/typography/Text"
 
 type Props = {
   value?: number;
@@ -75,9 +76,9 @@ export default function NumberField({
       />
 
       {visibleError ? (
-        <p id={errorId} className="mt-2 text-sm text-red-600">
+        <Text id={errorId} size="sm" tone="error" className="mt-2">
           {visibleError}
-        </p>
+        </Text>
       ) : null}
     </div>
   );
