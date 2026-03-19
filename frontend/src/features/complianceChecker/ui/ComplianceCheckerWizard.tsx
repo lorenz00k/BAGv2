@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { Heading } from "@/components/typography/Heading";
 import { Text } from "@/components/typography/Text";
 import { Container } from "@/components/layout/Container";
+import ComplianceCheckerProgress from "./ComplianceCheckerProgress";
 
 function visibleFields(step: StepDef, answers: Partial<CheckerAnswers>) {
   return step.fields.filter((f) => (f.when ? f.when(answers) : true));
@@ -258,33 +259,27 @@ export default function ComplianceCheckerWizard() {
 
   return (
     <Container>
-      <div className="mx-auto max-w-4xl px-4 py-10">
+      <div className="mx-auto max-w-4xö px-4 py-10">
         <div className="mb-6">
-          <Heading as="h1" className="mt-0">
-            {form(step.titleKey)}
-          </Heading>
+          <div className="flex items-start justify-between gap-4">
+            <Heading as="h1" className="mt-0">
+              {form(step.titleKey)}
+            </Heading>
 
-          {step.helperKey ? (
-            <Text size="base" tone="muted">
-              {form(step.helperKey)}
-            </Text>
-          ) : null}
-
-          <div className="mt-4 space-y-2">
-            <Text size="sm" tone="muted" className="mt-0">
-              {actions("check.progress.step")} {currentStep} {actions("check.progress.of")} {totalSteps}
-            </Text>
-
-            <div
-              className="h-2 w-full overflow-hidden rounded-full bg-slate-200"
-              aria-hidden="true"
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={busy}
+              onClick={handleRestart}
             >
-              <div
-                className="h-full rounded-full bg-[var(--color-accent)] transition-all duration-300"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
+              {actions("check.restart")}
+            </Button>
           </div>
+          <ComplianceCheckerProgress
+            helperKey={step.helperKey}
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+          />
         </div>
 
         {error ? (
@@ -339,15 +334,6 @@ export default function ComplianceCheckerWizard() {
               onClick={handleBack}
             >
               {actions("navigation.back")}
-            </Button>
-
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={busy}
-              onClick={handleRestart}
-            >
-              {actions("check.restart")}
             </Button>
           </div>
 
