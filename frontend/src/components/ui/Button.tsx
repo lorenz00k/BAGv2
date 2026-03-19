@@ -40,23 +40,19 @@ const primaryLike =
 const variants: Record<ButtonVariant, string> = {
     primary: primaryLike + " enabled:hover:-translate-y-[2px]",
 
-    secondary:
-        "bg-[var(--color-surface)] text-[var(--color-accent-strong)] " +
+    secondary: "bg-[var(--color-surface)] text-[var(--color-accent-strong)] " +
         "border-[color-mix(in_srgb,var(--color-accent)_35%,var(--color-border))] " +
         "enabled:hover:bg-[var(--color-accent-soft)] enabled:hover:text-[var(--color-accent-strong)]",
 
-    outline:
-        "bg-transparent text-[var(--color-foreground)] " +
+    outline: "bg-transparent text-[var(--color-foreground)] " +
         "border-[color-mix(in_srgb,var(--color-border)_85%,transparent)] " +
         "enabled:hover:bg-[var(--color-surface)]",
 
-    ghost:
-        "bg-transparent text-[var(--color-foreground)] border-transparent shadow-none " +
+    ghost: "bg-transparent text-[var(--color-foreground)] border-transparent shadow-none " +
         "enabled:hover:bg-[color-mix(in_srgb,var(--color-accent-soft)_70%,transparent)] " +
         "enabled:hover:text-[var(--color-accent-strong)]",
 
-    heroCta:
-        "relative overflow-hidden " +
+    heroCta: "relative overflow-hidden " +
         "bg-[var(--hero-cta-bg)] !text-[var(--hero-cta-fg)] " +
         "border border-[var(--hero-cta-border)] " +
         "shadow-[0_18px_55px_-28px_rgba(0,0,0,0.45)] " +
@@ -76,6 +72,7 @@ const variants: Record<ButtonVariant, string> = {
     // behält dein Verhalten
     next: primaryLike + " enabled:hover:-translate-y-[1px]",
     previous: primaryLike + " enabled:hover:-translate-y-[1px]",
+    choice: ""
 };
 
 const choiceSelected =

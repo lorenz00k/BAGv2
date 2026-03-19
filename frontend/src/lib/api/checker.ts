@@ -137,6 +137,10 @@ export interface components {
             reasons: components["schemas"]["ReasonKey"][];
             /** @description Present when classification indicates GFVO matching (optional). */
             gfvoCategory?: components["schemas"]["GfvoCategoryKey"] | null;
+            nextSteps?: string[];
+            documentHints?: string[];
+            authorityHint?: string | null;
+            rulesVersion?: string | null;
         };
         CheckerState: {
             /** @description Server-side session identifier (not the cookie value) */

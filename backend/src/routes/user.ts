@@ -13,7 +13,7 @@ user.use("*", authMiddleware);
 // GET /api/user/me
 user.get("/me", async (c) => {
   const userId = c.get("userId");
-  
+
   const [currentUser] = await db
     .select({
       id: users.id,
@@ -24,11 +24,11 @@ user.get("/me", async (c) => {
     .from(users)
     .where(eq(users.id, userId))
     .limit(1);
-  
+
   if (!currentUser) {
     return c.json({ error: "User not found" }, 404);
   }
-  
+
   return c.json({ user: currentUser });
 });
 

@@ -83,11 +83,32 @@ export type GfvoCategoryKey =
   | "infrastructureSite"
   | "embeddedFacility";
 
+export type NextStepKey =
+  | "contactMA36"
+  | "prepareDocuments"
+  | "checkZoning"
+  | "consultExpert"
+  | "noActionRequired";
+
+export type DocumentHintKey =
+  | "floorplan"
+  | "fireProtectionReport"
+  | "ventilationConcept"
+  | "operatingDescription";
+
+export type AuthorityHintKey = "ma36" | "none";
+
 export type CheckerResult = {
   classification: ClassificationKey;
   reasons: ReasonKey[];
   gfvoCategory: GfvoCategoryKey | null;
+  nextSteps: NextStepKey[];
+  documentHints: DocumentHintKey[];
+  authorityHint: AuthorityHintKey;
+  rulesVersion: string;
 };
+
+const RULES_VERSION = "2025-01";
 
 function pickGfvoCategory(a: CheckerAnswers): GfvoCategoryKey | null {
   if (a.locatedInInfrastructureSite) return "infrastructureSite";
@@ -148,36 +169,79 @@ function collectBlockingReasons(a: CheckerAnswers): ReasonKey[] {
   return reasons;
 }
 
+function pickNextSteps(classification: ClassificationKey): NextStepKey[] {
+  switch (classification) {
+    case "freistellungGFVO":
+      return ["noActionRequired"];
+    case "needsPermit":
+      return ["contactMA36", "prepareDocuments"];
+    case "individualAssessment":
+      return ["contactMA36", "consultExpert"];
+    case "noFacility":
+      return ["noActionRequired"];
+  }
+}
+
+function pickDocumentHints(
+  classification: ClassificationKey,
+  a: CheckerAnswers
+): DocumentHintKey[] {
+  if (classification === "freistellungGFVO" || classification === "noFacility") {
+    return [];
+  }
+
+  const docs: DocumentHintKey[] = ["floorplan", "operatingDescription"];
+  if (a.hasExternalVentilation) docs.push("ventilationConcept");
+  if (a.expectedImpairments) docs.push("fireProtectionReport");
+  return docs;
+}
+
+function pickAuthorityHint(classification: ClassificationKey): AuthorityHintKey {
+  return classification === "freistellungGFVO" || classification === "noFacility"
+    ? "none"
+    : "ma36";
+}
+
 export function evaluate(a: CheckerAnswers): CheckerResult {
   const gfvoCategory = pickGfvoCategory(a);
 
+  const build = (
+    classification: ClassificationKey,
+    reasons: ReasonKey[],
+    gfvoCategory: GfvoCategoryKey | null
+  ): CheckerResult => ({
+    classification,
+    reasons,
+    gfvoCategory,
+    nextSteps: pickNextSteps(classification),
+    documentHints: pickDocumentHints(classification, a),
+    authorityHint: pickAuthorityHint(classification),
+    rulesVersion: RULES_VERSION,
+  });
+
   // 1) Not a facility (mobile/temporary) → stop
   if (a.isStationary === false || a.isOnlyTemporary === true) {
-    return { classification: "noFacility", reasons: ["noFacilityDefinition"], gfvoCategory: null };
+    return build("noFacility", ["noFacilityDefinition"], null);
   }
-
   // 2) Special contexts that usually need clarification
   if (a.locatedInInfrastructureSite || a.locatedInApprovedComplex) {
-    return { classification: "individualAssessment", reasons: ["individualAssessment"], gfvoCategory };
+    return build("individualAssessment", ["individualAssessment"], gfvoCategory);
   }
-
   // 3) If harmful impacts expected → permit likely
   if (a.expectedImpairments) {
-    return { classification: "needsPermit", reasons: ["expectedImpairments"], gfvoCategory };
+    return build("needsPermit", ["expectedImpairments"], gfvoCategory);
   }
 
-  // 7) Decide
   const reasons = collectBlockingReasons(a);
   const gfvoPossible = gfvoCategory !== null && a.operatingPattern === "gfvoWindow";
-  const hasBlockingReasons = reasons.length > 0;
 
   if (!gfvoPossible) {
-    return { classification: "individualAssessment", reasons: ["individualAssessment"], gfvoCategory };
+    return build("individualAssessment", ["individualAssessment"], gfvoCategory);
   }
 
-  if (hasBlockingReasons) {
-    return { classification: "needsPermit", reasons, gfvoCategory };
+  if (reasons.length > 0) {
+    return build("needsPermit", reasons, gfvoCategory);
   }
 
-  return { classification: "freistellungGFVO", reasons: ["freistellungSummary"], gfvoCategory };
+  return build("freistellungGFVO", ["freistellungSummary"], gfvoCategory);
 }

@@ -7,23 +7,6 @@
         "projectSprech": "Projektsprechtage der Behörde beschleunigen Abstimmungen mit Sachverständigen.",
         "feeHint": "Bundesgebühren entfallen seit der GewO-Novelle 2017; Neugründungen können NeuföG-Befreiungen nutzen."
     },
-    "documents": {
-        "general": {
-            "application": "Antrag auf Errichtung/Änderung der Betriebsanlage (Formblatt, unterschrieben).",
-            "description": "Betriebsbeschreibung mit Betriebsart, Öffnungszeiten, Mitarbeiteranzahl, Verkehrsaufkommen, Lagerungen, Lüftungssituation.",
-            "sitePlans": "Lageplan sowie Grundrisse/Schnitte (typisch Maßstab 1:100).",
-            "ventilationPlan": "Plan bzw. Beschreibung der Lüftungsanlage inkl. Führung der Abluft.",
-            "machineList": "Maschinen- und Geräteverzeichnis mit Leistungen, Medien und Aufstellungsplan.",
-            "emissionStatement": "Erklärung zu Lärm-, Luft- und Verkehrsbelastungen samt vorgesehenen Maßnahmen.",
-            "wasteConcept": "Abfallwirtschaftskonzept gemäß GewO/Vorgaben der Stadt Wien.",
-            "wasteWater": "Nachweis der Abwassereinleitung (Mitteilung/allenfalls wasserrechtliche Bewilligung)."
-        },
-        "sector": {
-            "gastroExhaust": "Gastronomie/Beherbergung: Nachweis Küchenabluft gemäß Stand der Technik (z. B. ÖNORM EN 16282-1).",
-            "guestSanitary": "Gäste-Sanitäranlagen nach baurechtlichen Vorgaben (OIB-Richtlinie 3, Kellnerregel etc.).",
-            "hygiene": "Branchenspezifische Hygienenachweise (Lebensmittelhygiene, Fett-/Ölabscheider)."
-        }
-    },
     "labour": {
         "roomHeight": "Arbeitsräume i. d. R. mit 3,0 m Mindest-Raumhöhe (Ausnahmen nach Abstimmung mit Arbeitsinspektion).",
         "daylight": "Natürliche Belichtung mind. 10 % der Grundfläche; Sonderfälle wie Kellerlokale gesondert begründen.",
@@ -66,5 +49,32 @@
         "gastro": "Gastronomie/Hotellerie Leitfaden (WKNÖ 06/2024).",
         "procedure": "Gewerberechtliches Genehmigungsverfahren (NÖ Leitfaden 06/2024).",
         "section82b": "Regelmäßige Prüfung § 82b GewO – Prüfer, Fristen, Bescheinigung."
-    }
+    },
+    "nextSteps": {
+        "title": "Nächste Schritte",
+        "items": {
+            "contactMA36": "Kontaktiere die MA 36 (Betriebsanlagen) für eine Beratung.",
+            "prepareDocuments": "Bereite die erforderlichen Unterlagen für die Einreichung vor.",
+            "checkZoning": "Kläre Widmung und Baukonsens vor Projektstart.",
+            "consultExpert": "Ziehe einen Sachverständigen oder die Wirtschaftskammer hinzu.",
+            "noActionRequired": "Es sind keine weiteren Schritte erforderlich."
+        }
+    },
+    "documents": {
+        "title": "Benötigte Unterlagen",
+        "items": {
+            "floorplan": "Grundriss und Lageplan (Maßstab 1:100)",
+            "fireProtectionReport": "Brandschutznachweis",
+            "ventilationConcept": "Lüftungskonzept inkl. Abluftführung",
+            "operatingDescription": "Betriebsbeschreibung mit Öffnungszeiten und Betriebsart"
+        }
+    },
+    "authority": {
+        "title": "Zuständige Behörde",
+        "hints": {
+            "ma36": "Zuständig ist die MA 36 – Betriebsanlagen (Wien). Projektsprechtage nutzen für schnellere Abstimmung.",
+            "none": ""
+        }
+    },
+    "rulesVersion": "Regelstand: {version}"
 }

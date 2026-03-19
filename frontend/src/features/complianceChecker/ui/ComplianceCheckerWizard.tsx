@@ -268,7 +268,7 @@ export default function ComplianceCheckerWizard() {
 
             <Button
               type="button"
-              variant="ghost"
+              variant="secondary"
               disabled={busy}
               onClick={handleRestart}
             >
