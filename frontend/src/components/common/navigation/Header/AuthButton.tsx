@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
 import type { Locale } from "@/i18n/locales";
+import { useTranslations } from "next-intl";
 
 export function AuthButtons({ locale }: { locale: Locale }) {
+    const tActions = useTranslations("common.actions");
     const { user, isLoading, logout } = useAuth();
     if (isLoading) return null;
 
@@ -15,13 +17,13 @@ export function AuthButtons({ locale }: { locale: Locale }) {
                 {user.email}
             </span>
             <Button variant="ghost" size="sm" onClick={logout}>
-                Abmelden
+                {tActions("auth.logout")}
             </Button>
         </div>
     ) : (
         <Link href={`/${locale}/login`}>
             <Button variant="primary" size="sm">
-                Anmelden
+                {tActions("auth.login")}
             </Button>
         </Link>
     );

@@ -23,5 +23,10 @@
     },
     "documents": {
         "open": "Zu den Dokumenten"
+    },
+    "auth": {
+        "login": "Anmelden",
+        "logout": "Abmelden",
+        "register": "Registrieren"
     }
 }

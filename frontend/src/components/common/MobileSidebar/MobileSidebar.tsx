@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -16,15 +16,10 @@ import { useIsActivePath } from "@/components/hooks/useIsActivePath";
 import SidebarNavLink from "./SidebarNavLink";
 import { SectionSeparator } from "@/components/layout/SectionSeperator";
 import BreakPoint from "../BreakPoint";
-import { ChevronDown, FileText, Wand2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { SidebarDropdown } from "./SidebarDropdown";
 
-interface MobileSidebarProps {
-    locale: Locale;
-    open: boolean;
-    onClose: () => void;
-}
-
+// --- fokussierbare Elemente ---
 const focusableSelectors = [
     'a[href]',
     "button:not([disabled])",
@@ -36,20 +31,31 @@ const focusableSelectors = [
     '[tabindex]:not([tabindex="-1"])',
 ].join(",");
 
+// --- Expandable Dropdown für mobile ---
+
+
+// --- Sidebar ---
+interface MobileSidebarProps {
+    locale: Locale;
+    open: boolean;
+    onClose: () => void;
+}
+
 export default function MobileSidebar({ locale, open, onClose }: MobileSidebarProps) {
     const tNav = useTranslations("common.navigation");
     const tItems = useTranslations("common.items");
+    const tActions = useTranslations("common.actions");
     const { user, isLoading, logout } = useAuth();
     const drawerRef = useRef<HTMLDivElement | null>(null);
     const lastFocusedElement = useRef<HTMLElement | null>(null);
-    const [isDocsExpanded, setIsDocsExpanded] = useState(false);
 
     const primary = useMemo(() => PRIMARY_NAV, []);
     const secondary = useMemo(() => SECONDARY_NAV, []);
+    const isActive = useIsActivePath(locale);
 
+    // Focus trap
     useEffect(() => {
         if (!open) return;
-
         lastFocusedElement.current = document.activeElement as HTMLElement;
 
         const drawer = drawerRef.current;
@@ -60,24 +66,15 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
         focusableItems[0]?.focus();
 
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === "Escape") {
-                event.preventDefault();
-                onClose();
-                return;
-            }
+            if (event.key === "Escape") { event.preventDefault(); onClose(); return; }
             if (event.key !== "Tab" || focusableItems.length === 0) return;
 
             const first = focusableItems[0];
             const last = focusableItems[focusableItems.length - 1];
             const active = document.activeElement as HTMLElement | null;
 
-            if (!event.shiftKey && active === last) {
-                event.preventDefault();
-                first.focus();
-            } else if (event.shiftKey && active === first) {
-                event.preventDefault();
-                last.focus();
-            }
+            if (!event.shiftKey && active === last) { event.preventDefault(); first.focus(); }
+            else if (event.shiftKey && active === first) { event.preventDefault(); last.focus(); }
         };
 
         document.addEventListener("keydown", handleKeyDown);
@@ -86,8 +83,6 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
             lastFocusedElement.current?.focus();
         };
     }, [open, onClose]);
-
-    const isActive = useIsActivePath(locale)
 
     return (
         <div
@@ -98,7 +93,6 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
             aria-hidden={!open}
             id="mobile-sidebar"
         >
-            {/* Backdrop: UI Button, aber neutralisiert */}
             <button
                 type="button"
                 aria-label={tNav("menu.close")}
@@ -107,132 +101,68 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
                 className={styles.backdrop}
             />
 
-            <div
-                ref={drawerRef}
-                className={styles.drawer}
-                onClick={(e) => e.stopPropagation()}
-            >
+            <div ref={drawerRef} className={styles.drawer} onClick={(e) => e.stopPropagation()}>
+
+                {/* Header */}
                 <div className={styles.header}>
                     <div className={styles.topRow}>
-                        <Link
-                            href={`/${locale}`}
-                            className={styles.brand}
-                            onClick={onClose}
-                            tabIndex={open ? 0 : -1}
-                        >
+                        <Link href={`/${locale}`} className={styles.brand} onClick={onClose} tabIndex={open ? 0 : -1}>
                             <Image
                                 src="/assets/icons/icon.svg"
                                 alt=""
                                 width={32}
                                 height={32}
                                 className="h-9 w-9"
-                                style={{
-                                    borderRadius: "var(--radius-sm)",
-                                    boxShadow: "var(--shadow-xs)",
-                                }}
+                                style={{ borderRadius: "var(--radius-sm)", boxShadow: "var(--shadow-xs)" }}
                             />
-                            <div>
-                                <div className={styles.brandTitle}>{tItems("app")}</div>
-
-                            </div>
+                            <div className={styles.brandTitle}>{tItems("app")}</div>
                         </Link>
 
-                        {/* Close: UI Button (icon) + overrides */}
-                        <Button
-                            variant="secondary"
-                            size="icon"
-                            onClick={onClose}
-                            aria-label={tNav("menu.close")}
-                            tabIndex={open ? 0 : -1}
-                            className={styles.close}
-                        >
-                            <svg
-                                className="h-5 w-5"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                                aria-hidden
-                            >
+                        <Button variant="secondary" size="icon" onClick={onClose} aria-label={tNav("menu.close")} tabIndex={open ? 0 : -1} className={styles.close}>
+                            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M18 6L6 18" />
                             </svg>
                         </Button>
                     </div>
-
                     <SectionSeparator />
                 </div>
 
+                {/* Content */}
                 <div className={styles.content}>
                     <div className={styles.sectionLabel}>{tNav("aria.primaryMenu")}</div>
 
                     <nav className={styles.nav}>
                         {primary.map((link) => {
                             if (!link.key) return null;
-                            const linkHref = href(locale, link.key);
-                            const active = isActive(linkHref);
 
-                            if (link.key === "documents") {
-                                const docsActive = active || isActive(href(locale, "documentAssistant"));
+                            if (link.children) {
                                 return (
-                                    <div key={link.key}>
-                                        <button
-                                            onClick={() => setIsDocsExpanded(v => !v)}
-                                            tabIndex={open ? 0 : -1}
-                                            aria-expanded={isDocsExpanded}
-                                            className={`${styles.item} ${styles.expandTrigger} ${docsActive ? styles.active : ""}`}
-                                        >
-                                            <span>{tItems(link.labelKey.replace("item.", ""))}</span>
-                                            <ChevronDown className={`${styles.expandChevron} ${isDocsExpanded ? styles.expandChevronOpen : ""}`} aria-hidden />
-                                        </button>
-
-                                        {isDocsExpanded && (
-                                            <div className={styles.subNav}>
-                                                <Link
-                                                    href={linkHref}
-                                                    onClick={onClose}
-                                                    tabIndex={open ? 0 : -1}
-                                                    aria-current={isActive(linkHref) ? "page" : undefined}
-                                                    className={`${styles.subItem} ${isActive(linkHref) ? styles.active : ""}`}
-                                                >
-                                                    <FileText className={styles.subItemIcon} aria-hidden />
-                                                    <span>
-                                                        <span className={styles.subItemLabel}>Benötigte Unterlagen</span>
-                                                        <span className={styles.subItemDesc}>Pflichtdokumente-Checkliste</span>
-                                                    </span>
-                                                </Link>
-                                                <Link
-                                                    href={href(locale, "documentAssistant")}
-                                                    onClick={onClose}
-                                                    tabIndex={open ? 0 : -1}
-                                                    aria-current={isActive(href(locale, "documentAssistant")) ? "page" : undefined}
-                                                    className={`${styles.subItem} ${isActive(href(locale, "documentAssistant")) ? styles.active : ""}`}
-                                                >
-                                                    <Wand2 className={styles.subItemIcon} aria-hidden />
-                                                    <span>
-                                                        <span className={styles.subItemLabel}>Dokumenten-Assistent</span>
-                                                        <span className={styles.subItemDesc}>Betriebsbeschreibung als PDF</span>
-                                                    </span>
-                                                </Link>
-                                            </div>
-                                        )}
-                                    </div>
+                                    <SidebarDropdown
+                                        key={link.labelKey}
+                                        item={link}
+                                        locale={locale}
+                                        open={open}
+                                        onClose={onClose}
+                                    />
                                 );
                             }
 
+                            const linkHref = href(locale, link.key);
                             return (
                                 <SidebarNavLink
                                     key={link.key}
                                     href={linkHref}
-                                    active={active}
+                                    active={isActive(linkHref)}
                                     onClick={onClose}
-                                    aria-current={active ? "page" : undefined}
+                                    aria-current={isActive(linkHref) ? "page" : undefined}
                                     tabIndex={open ? 0 : -1}
                                 >
-                                    <span>{tItems(link.labelKey.replace("item.", ""))}</span>
+                                    <span>{tItems(link.labelKey)}</span>
                                 </SidebarNavLink>
                             );
                         })}
                     </nav>
+
                     <BreakPoint />
                     <SectionSeparator />
 
@@ -252,40 +182,31 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
                                     className={`${styles.item} ${styles["item--secondary"]} ${active ? styles.active : ""}`}
                                     tabIndex={open ? 0 : -1}
                                 >
-                                    {tItems(link.labelKey.replace("item.", ""))}
+                                    {tItems(link.labelKey)}
                                 </Link>
                             );
                         })}
                     </nav>
                 </div>
+
                 <BreakPoint />
+
+                {/* Footer */}
                 <div className={styles.footer}>
                     <div className={styles.footerInner}>
                         {!isLoading && (
                             <div className="flex w-full items-center justify-between gap-2 px-3 pb-2">
                                 {user ? (
                                     <>
-                                        <span className="max-w-40 truncate text-sm opacity-70">
-                                            {user.email}
-                                        </span>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => { logout(); onClose(); }}
-                                            tabIndex={open ? 0 : -1}
-                                        >
-                                            Abmelden
+                                        <span className="max-w-40 truncate text-sm opacity-70">{user.email}</span>
+                                        <Button variant="ghost" size="sm" onClick={() => { logout(); onClose(); }} tabIndex={open ? 0 : -1}>
+                                            {tActions("auth.logout")}
                                         </Button>
                                     </>
                                 ) : (
-                                    <Link
-                                        href={`/${locale}/login`}
-                                        onClick={onClose}
-                                        tabIndex={open ? 0 : -1}
-                                        className="w-full"
-                                    >
+                                    <Link href={`/${locale}/login`} onClick={onClose} tabIndex={open ? 0 : -1} className="w-full">
                                         <Button variant="primary" size="sm" className="w-full">
-                                            Anmelden
+                                            {tActions("auth.login")}
                                         </Button>
                                     </Link>
                                 )}
