@@ -7,7 +7,6 @@
  * This is the only public entry point for compliance evaluation.
  */
 
-//adasüoifdhapshfpiuahsdfshapidfuh
 
 import type {
   ClassificationType,
