@@ -1,11 +1,12 @@
 {
     "app": "Betriebsanlagen Check",
+    "checks": "Checks",
     "complianceChecker": "Genehmigungs-Check",
-    "gastroAi": "Gastro-KI",
     "addressChecker": "Adressen-Check",
-    "formAssistant": "Formular-Assistent",
+    "fundingChecker": "Förder-Check",
     "documents": "Dokumente",
-    "foerdercheck": "Förder-Check",
+    "requiredDocuments": "Benötigte Dokumente",
+    "documentAssistant": "Dokument Assistent",
     "faq": "FAQ",
     "imprint": "Impressum",
     "privacy": "Datenschutz"

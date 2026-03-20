@@ -20,6 +20,8 @@ import { Text } from "@/components/typography/Text"
 import BreakPoint from "@/components/common/BreakPoint"
 import CtaPanel from "@/components/ui/CtaPanels/CtaPanel"
 import { SectionSeparator } from "@/components/layout/SectionSeperator"
+import { href } from "@/navigation/nav"
+import { Locale } from "@/i18n/locales"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -725,7 +727,7 @@ export default function DokumentePageClient({ locale }: { locale: string }) {
 
                     {/* ── Wizard Hero Banner ─────────────────────────────── */}
                     <a
-                        href={`/${locale}/betriebsbeschreibung`}
+                        href={href(locale as Locale, "documentAssistant")}
                         className="group flex flex-col sm:flex-row sm:items-center gap-5 rounded-[var(--radius)] border-2 border-[color-mix(in_srgb,var(--color-accent)_40%,transparent)] bg-gradient-to-br from-[var(--color-accent-soft)] via-[var(--color-accent-soft)] to-[var(--color-surface)] p-6 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow)] hover:border-[var(--color-accent)] transition-all duration-200 no-underline"
                     >
                         <div className="w-14 h-14 rounded-[var(--radius-sm)] bg-[var(--color-accent)] grid place-items-center flex-shrink-0 shadow-[var(--shadow-xs)] group-hover:scale-105 transition-transform duration-200">
@@ -819,7 +821,7 @@ export default function DokumentePageClient({ locale }: { locale: string }) {
                                 </p>
                             </div>
                             <a
-                                href={`/${locale}/betriebsbeschreibung`}
+                                href={href(locale as Locale, "documentAssistant")}
                                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[var(--radius-sm)] bg-[var(--color-accent)] text-white text-sm font-semibold shadow-[var(--shadow-xs)] hover:bg-[var(--color-accent-strong)] transition-colors whitespace-nowrap flex-shrink-0"
                             >
                                 Assistent starten
@@ -1037,7 +1039,7 @@ export default function DokumentePageClient({ locale }: { locale: string }) {
                 <CtaPanel
                     title="Nicht sicher, was auf Sie zutrifft?"
                     text="Unser Compliance-Checker analysiert Ihr Vorhaben und erstellt eine maßgeschneiderte Übersicht der erforderlichen Unterlagen."
-                    href={`/${locale}/compliance-checker`}
+                    href={href(locale as Locale, "complianceChecker")}
                     buttonLabel="Jetzt prüfen"
                 />
             </Container>

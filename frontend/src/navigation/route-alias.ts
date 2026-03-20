@@ -1,9 +1,11 @@
 //rewrite url kebab case to camel case
 
 export const KEBAB_TO_CAMEL: Record<string, string> = {
-    "compliance-checker": "complianceChecker",
-    "address-checker": "addressChecker",
-    "gastro-ai": "gastroAi",
+    "checks/compliance-checker": "checks/complianceChecker",
+    "checks/address-checker": "checks/addressChecker",
+    "checks/funding-checker": "checks/fundingChecker",
+    "documents/required-documents": "documents/requiredDocuments",
+    "documents/document-assistant": "documents/documentAssistant",
 }
 
 export const CAMEL_TO_KEBAB: Record<string, string> = Object.fromEntries(

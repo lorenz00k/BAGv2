@@ -33,29 +33,30 @@ export default function middleware(req: NextRequest) {
     if (segments.length <= slugIndex) return intlResponse;
 
     const slug = segments[slugIndex];
-    const rest = segments.slice(slugIndex + 1);
+    //const rest = segments.slice(slugIndex + 1);
 
     // A) Redirect camelCase URL -> kebab-case URL (SEO canonical)
-    const kebab = CAMEL_TO_KEBAB[slug]
+    const remainingPath = segments.slice(slugIndex).join("/"); // "checks/complianceChecker"
+    const kebab = CAMEL_TO_KEBAB[remainingPath] ?? CAMEL_TO_KEBAB[slug];
     if (kebab) {
         const url = req.nextUrl.clone()
         // Redirect soll die "öffentliche" URL-Struktur beibehalten:
         // - ohne Locale für default (de)
         // - mit Locale für nicht-default
         if (hasLocale) {
-            url.pathname = "/" + [locale, kebab, ...rest].join("/");
+            url.pathname = "/" + [locale, kebab].join("/");
         } else {
-            url.pathname = "/" + [kebab, ...rest].join("/");
+            url.pathname = "/" + kebab;
         }
 
         return NextResponse.redirect(url, 308);
     }
 
     // B) Rewrite kebab-case -> camelCase Ordnerroute (intern immer mit Locale-Segment)
-    const camel = KEBAB_TO_CAMEL[slug];
+    const camel = KEBAB_TO_CAMEL[remainingPath] ?? KEBAB_TO_CAMEL[slug];
     if (camel) {
         const url = req.nextUrl.clone();
-        url.pathname = "/" + [locale, camel, ...rest].join("/");
+        url.pathname = "/" + [locale, camel].join("/");
         return NextResponse.rewrite(url);
     }
 

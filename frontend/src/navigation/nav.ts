@@ -2,24 +2,44 @@ import type { Locale } from "@/i18n/locales";
 import { ROUTES, type RouteKey } from "./routes";
 
 export type NavLabelKey =
+    | "checks"
     | "complianceChecker"
     | "addressChecker"
+    | "fundingChecker"
+
     | "faq"
-    | "foerdercheck"
     | "imprint"
+    | "privacy"
+
     | "documents"
-    | "privacy";
+    | "requiredDocuments"
+    | "documentAssistant"
+    ;
 
 export type NavItem = {
-    key: RouteKey;
+    key?: RouteKey;     //dropdowns don't need route
     labelKey: NavLabelKey; // passt zu common.items.*
+    children?: NavItem[]; //dropdowns
 };
 
 export const PRIMARY_NAV: NavItem[] = [
-    { key: "complianceChecker", labelKey: "complianceChecker" },
-    { key: "addressChecker", labelKey: "addressChecker" },
-    { key: "documents", labelKey: "documents"},
-    { key: "grant", labelKey: "foerdercheck"},
+    {
+        key: "checks",
+        labelKey: "checks",
+        children: [
+            { key: "complianceChecker", labelKey: "complianceChecker" },
+            { key: "addressChecker", labelKey: "addressChecker" },
+            { key: "fundingChecker", labelKey: "fundingChecker" },
+        ],
+    },
+    {
+        key: "documents",
+        labelKey: "documents",
+        children: [
+            { key: "requiredDocuments", labelKey: "requiredDocuments" },
+            { key: "documentAssistant", labelKey: "documentAssistant" }
+        ],
+    },
     { key: "faq", labelKey: "faq" },
 ];
 

@@ -1,5 +1,6 @@
 import DokumentePageClient from "@/features/documents/DokumentePageClient";
 import { Locale, locales } from "@/i18n/locales";
+import { ROUTES } from "@/navigation/routes";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -11,7 +12,7 @@ export async function generateMetadata(
     return {
         title: "Dokumente",
         description: "Alle relevanten Dokumente im Überblick.",
-        alternates: { canonical: `/${locale}/documents` },
+        alternates: { canonical: `/${locale}${ROUTES.requiredDocuments}` },
     };
 }
 

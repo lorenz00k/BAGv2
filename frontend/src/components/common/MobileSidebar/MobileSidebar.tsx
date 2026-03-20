@@ -167,11 +167,12 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
 
                     <nav className={styles.nav}>
                         {primary.map((link) => {
+                            if (!link.key) return null;
                             const linkHref = href(locale, link.key);
                             const active = isActive(linkHref);
 
                             if (link.key === "documents") {
-                                const docsActive = active || isActive(`/${locale}/betriebsbeschreibung`);
+                                const docsActive = active || isActive(href(locale, "documentAssistant"));
                                 return (
                                     <div key={link.key}>
                                         <button
@@ -200,11 +201,11 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
                                                     </span>
                                                 </Link>
                                                 <Link
-                                                    href={`/${locale}/betriebsbeschreibung`}
+                                                    href={href(locale, "documentAssistant")}
                                                     onClick={onClose}
                                                     tabIndex={open ? 0 : -1}
-                                                    aria-current={isActive(`/${locale}/betriebsbeschreibung`) ? "page" : undefined}
-                                                    className={`${styles.subItem} ${isActive(`/${locale}/betriebsbeschreibung`) ? styles.active : ""}`}
+                                                    aria-current={isActive(href(locale, "documentAssistant")) ? "page" : undefined}
+                                                    className={`${styles.subItem} ${isActive(href(locale, "documentAssistant")) ? styles.active : ""}`}
                                                 >
                                                     <Wand2 className={styles.subItemIcon} aria-hidden />
                                                     <span>
@@ -239,6 +240,7 @@ export default function MobileSidebar({ locale, open, onClose }: MobileSidebarPr
 
                     <nav className={styles.nav}>
                         {secondary.map((link) => {
+                            if (!link.key) return null;
                             const linkHref = href(locale, link.key);
                             const active = isActive(linkHref);
                             return (

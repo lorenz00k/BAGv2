@@ -40,20 +40,14 @@ export default async function LocaleLayout({
 
     return (
         <NextIntlClientProvider locale={locale} messages={messages}>
-            <HeaderNav locale={locale} />
-
-            {children}
-
-            <Footer locale={locale} />
-
             <CookieConsentMount locale={locale} />
-            {/*
+
             <AuthProvider>
                 <HeaderNav locale={locale} />
                 {children}
                 <Footer locale={locale} />
             </AuthProvider>
-            */}
+
         </NextIntlClientProvider>
     );
 }

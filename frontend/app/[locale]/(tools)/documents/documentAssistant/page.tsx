@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { Locale, locales } from "@/i18n/locales"
 import { WizardClient } from "@/features/documents/wizard/WizardClient"
+import { ROUTES } from "@/navigation/routes"
 
 export async function generateMetadata(
     { params }: { params: Promise<{ locale: string }> }
@@ -12,7 +13,7 @@ export async function generateMetadata(
         description:
             "Schritt-für-Schritt-Assistent für die Betriebsbeschreibung gemäß §353 GewO – " +
             "Formular 005-2 der MA 36 Wien. Kostenlos, im Browser, PDF-Download.",
-        alternates: { canonical: `/${locale}/betriebsbeschreibung` },
+        alternates: { canonical: `/${locale}${ROUTES.documentAssistant}` },
     }
 }
 
