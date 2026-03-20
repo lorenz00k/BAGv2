@@ -1,7 +1,7 @@
 import type { Locale } from "@/i18n/locales";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import RegisterForm from "@/tools/auth/RegisterForm";
+import RegisterForm from "@/features/auth/RegisterForm";
 
 type PageProps = {
     params: Promise<{ locale: Locale }>;

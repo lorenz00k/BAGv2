@@ -49,8 +49,8 @@ export default function HeaderNav({ locale }: HeaderNavProps) {
                     />
 
                     <div className="hidden min-w-0 flex-shrink-0 items-center gap-3 lg:flex">
-                        <LanguageSwitcher />
                         <AuthButtons locale={locale} />
+                        <LanguageSwitcher />
                     </div>
 
                 </div>
