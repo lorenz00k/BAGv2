@@ -43,6 +43,7 @@ export const messageBundles: Record<string, Loader> = {
             addressChecker: (await import(`@/messages/${l}/pages/addressChecker.json`)).default,
             complianceChecker: (await import(`@/messages/${l}/pages/complianceChecker.json`)).default,
             complianceResult: (await import(`@/messages/${l}/pages/complianceResult.json`)).default,
+            auth: (await import(`@/messages/${l}/pages/auth.json`)).default,
         }) as AbstractIntlMessages,
 
     components: async (l) =>

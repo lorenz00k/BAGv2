@@ -10,6 +10,7 @@ import { ChevronDown, FileText, Wand2 } from "lucide-react";
 import type { Locale } from "@/i18n/locales";
 import { PRIMARY_NAV, href } from "@/navigation/nav";
 import { useIsActivePath } from "@/components/hooks/useIsActivePath";
+import { useAuth } from "@/context/AuthContext";
 
 import { Button } from "@/components/ui/Button";
 
@@ -26,6 +27,7 @@ export default function HeaderNav({ locale }: HeaderNavProps) {
     const tItems = useTranslations("common.items");
     const tNav = useTranslations("common.navigation");
 
+    const { user, isLoading, logout } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isDocsOpen, setIsDocsOpen] = useState(false);
     const docsRef = useRef<HTMLDivElement>(null);
@@ -166,9 +168,27 @@ export default function HeaderNav({ locale }: HeaderNavProps) {
                         </Button>
                     </div>
 
-                    {/* Desktop language switcher */}
+                    {/* Desktop: language switcher + auth */}
                     <div className="hidden min-w-0 flex-shrink-0 items-center gap-3 lg:flex">
                         <LanguageSwitcher />
+                        {!isLoading && (
+                            user ? (
+                                <div className="flex items-center gap-2">
+                                    <span className="max-w-32 truncate text-sm text-(--color-header-fg-muted)">
+                                        {user.email}
+                                    </span>
+                                    <Button variant="ghost" size="sm" onClick={logout}>
+                                        Abmelden
+                                    </Button>
+                                </div>
+                            ) : (
+                                <Link href={`/${locale}/login`}>
+                                    <Button variant="primary" size="sm">
+                                        Anmelden
+                                    </Button>
+                                </Link>
+                            )
+                        )}
                     </div>
                 </div>
             </div>

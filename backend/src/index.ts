@@ -11,8 +11,9 @@ import { errorHandler } from "./middleware/error-handler.js";
 import user from "./routes/user.js";
 import { cleanupExpiredSessions } from "./utils/session.js";
 import { globalRateLimiter } from "./middleware/rate-limit.js";
-import checksRouter from "./routes/checks.js"; 
+import checksRouter from "./routes/checks.js";
 import checkerRouter from "./routes/checker.js";
+import viennagis from "./routes/viennagis.js";
 
 config();
 
@@ -24,15 +25,16 @@ const app = new Hono();
 //Middleware einsetzten
 app.use(logger);
 app.use(corsMiddleware);
-app.route("/api/auth", auth); 
-app.use(globalRateLimiter); 
+app.route("/api/auth", auth);
+app.use(globalRateLimiter);
 
 app.options("/api/*", (c) => c.body(null, 204));
 
-app.route("/api/user", user);  
+app.route("/api/user", user);
 app.route("/api/checks", checksRouter);
 app.route("/api/checker", checkerRouter)
 
+app.route("/api/viennagis", viennagis);
 
 //error handel
 app.onError(errorHandler);

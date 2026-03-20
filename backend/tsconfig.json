@@ -42,8 +42,9 @@
     "skipLibCheck": true,
   },
   "exclude": [
-    "ndoe_modules",
+    "node_modules",
     "dist",
-    "drizzle.config.ts"
+    "drizzle.config.ts",
+    ".next"
   ]
 }

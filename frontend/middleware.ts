@@ -1,11 +1,11 @@
 import createMiddleware from "next-intl/middleware";
-import { locales } from "@/i18n/locales";
+import { locales, defaultLocale } from "@/i18n/locales";
 import { NextResponse, type NextRequest } from "next/server";
 import { CAMEL_TO_KEBAB, KEBAB_TO_CAMEL } from "@/navigation/route-alias";
 
 const intlMiddleware = createMiddleware({
     locales,
-    defaultLocale: 'de',
+    defaultLocale,
     localePrefix: 'as-needed'
 });
 
@@ -24,42 +24,42 @@ export default function middleware(req: NextRequest) {
 
     // 2) Jetzt Alias-Handling: Wir nehmen an, Locale ist erstes Segment: "/de/..."
     const segments = pathname.split("/").filter(Boolean) // ["de","compliance-checker"]
-     const first = segments[0];
-  const hasLocale = !!first && (locales as readonly string[]).includes(first);
+    const first = segments[0];
+    const hasLocale = !!first && (locales as readonly string[]).includes(first);
 
-  const locale = hasLocale ? first : "de";
-  const slugIndex = hasLocale ? 1 : 0;
+    const locale = hasLocale ? first : "de";
+    const slugIndex = hasLocale ? 1 : 0;
 
-  if (segments.length <= slugIndex) return intlResponse;
+    if (segments.length <= slugIndex) return intlResponse;
 
-  const slug = segments[slugIndex];
-  const rest = segments.slice(slugIndex + 1);
+    const slug = segments[slugIndex];
+    const rest = segments.slice(slugIndex + 1);
 
     // A) Redirect camelCase URL -> kebab-case URL (SEO canonical)
     const kebab = CAMEL_TO_KEBAB[slug]
     if (kebab) {
         const url = req.nextUrl.clone()
         // Redirect soll die "öffentliche" URL-Struktur beibehalten:
-    // - ohne Locale für default (de)
-    // - mit Locale für nicht-default
-    if (hasLocale) {
-      url.pathname = "/" + [locale, kebab, ...rest].join("/");
-    } else {
-      url.pathname = "/" + [kebab, ...rest].join("/");
+        // - ohne Locale für default (de)
+        // - mit Locale für nicht-default
+        if (hasLocale) {
+            url.pathname = "/" + [locale, kebab, ...rest].join("/");
+        } else {
+            url.pathname = "/" + [kebab, ...rest].join("/");
+        }
+
+        return NextResponse.redirect(url, 308);
     }
 
-    return NextResponse.redirect(url, 308);
-  }
+    // B) Rewrite kebab-case -> camelCase Ordnerroute (intern immer mit Locale-Segment)
+    const camel = KEBAB_TO_CAMEL[slug];
+    if (camel) {
+        const url = req.nextUrl.clone();
+        url.pathname = "/" + [locale, camel, ...rest].join("/");
+        return NextResponse.rewrite(url);
+    }
 
-  // B) Rewrite kebab-case -> camelCase Ordnerroute (intern immer mit Locale-Segment)
-  const camel = KEBAB_TO_CAMEL[slug];
-  if (camel) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/" + [locale, camel, ...rest].join("/");
-    return NextResponse.rewrite(url);
-  }
-
-  return intlResponse;
+    return intlResponse;
 }
 
 

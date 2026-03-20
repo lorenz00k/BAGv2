@@ -1,5 +1,24 @@
 {
     "title": "Auswertung Betriebsanlagen checker",
+    "auth": {
+        "loginRequired": "Login erforderlich",
+        "loginDescription": "Bitte logge dich ein, um dein Ergebnis zu sehen.",
+        "loginButton": "Zum Login →"
+    },
+    "loading": "Ergebnis wird geladen...",
+    "error": {
+        "title": "Fehler beim Laden",
+        "description": "Das Ergebnis konnte nicht geladen werden.",
+        "newCheckButton": "Neuen Check starten →"
+    },
+    "resultBadge": "Ergebnis",
+    "legalAssessmentTitle": "Rechtliche Einschätzung",
+    "actions": {
+        "title": "Nächste Schritte",
+        "description": "Starte einen neuen Check oder drucke dieses Ergebnis.",
+        "print": "Drucken / PDF",
+        "newCheck": "Neuen Check starten →"
+    },
     "sections": {
         "labels": "complianceResult.labels",
         "gfvo": "complianceResult.gfvo",

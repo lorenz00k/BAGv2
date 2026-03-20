@@ -16,11 +16,12 @@ export async function fetchViennaOGD<T>(
   try {
     const response = await fetch(url, {
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      credentials: "include",
     });
 
     if (!response.ok) {
       logger.warn({ status: response.status, context }, "Vienna OGD API error");
-      return null;
+      return null; 
     }
 
     // Check if response is JSON
@@ -60,8 +61,11 @@ export function buildWFSUrl(params: {
   dataset: string;
   bbox?: string;
   srsName?: string;
+  cqlFilter?: string;
+  maxFeatures?: number;
+  sortBy?: string;
 }): string {
-  const { dataset, bbox, srsName = "EPSG:4326" } = params;
+  const { dataset, bbox, srsName = "EPSG:4326", cqlFilter, maxFeatures, sortBy } = params;
 
   const url = new URL("https://data.wien.gv.at/daten/geo");
   url.searchParams.set("service", "WFS");
@@ -72,7 +76,19 @@ export function buildWFSUrl(params: {
   url.searchParams.set("srsName", srsName);
 
   if (bbox) {
-    url.searchParams.set("bbox", bbox);
+    url.searchParams.set("bbox", `${bbox},${srsName}`);
+  }
+
+  if (cqlFilter) {
+    url.searchParams.set("cql_filter", cqlFilter);
+  }
+
+  if (maxFeatures) {
+    url.searchParams.set("maxFeatures", maxFeatures.toString());
+  }
+
+  if (sortBy) {
+    url.searchParams.set("sortBy", sortBy);
   }
 
   return url.toString();
@@ -87,7 +103,10 @@ export function createBBox(
   lat: number,
   bufferMeters: number = 5
 ): string {
-  const latBuffer = bufferMeters / 111_320;
-  const lngBuffer = bufferMeters / (111_320 * Math.cos((lat * Math.PI) / 180));
+  // Präzisere Berechnung für größere Radien
+  // 1 Grad Breite ≈ 111 km
+  // 1 Grad Länge ≈ 111 km * cos(latitude)
+  const latBuffer = bufferMeters / 111000; // Meter → Grad Breite
+  const lngBuffer = bufferMeters / (111000 * Math.cos((lat * Math.PI) / 180)); // Meter → Grad Länge
   return `${lng - lngBuffer},${lat - latBuffer},${lng + lngBuffer},${lat + latBuffer}`;
 }
