@@ -18,7 +18,7 @@ const createCheckSchema = z.object({
 });
 
 const updateCheckSchema = z.object({
-  formData: z.record(z.string(), z.unknown()).optional(),  
+  formData: z.record(z.string(), z.unknown()).optional(),
   currentStep: z.string().optional(),
   status: z.enum(["draft", "completed"]).optional(),
 });

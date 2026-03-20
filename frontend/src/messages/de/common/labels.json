@@ -3,7 +3,8 @@
         "yes": "Ja",
         "no": "Nein",
         "optional": "Optional",
-        "required": "Pflichtfeld"
+        "required": "Pflichtfeld",
+        "minValue": "Wert muss größer {value} sein."
     },
     "status": {
         "loading": "Wird geladen …",

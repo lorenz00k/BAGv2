@@ -3,18 +3,19 @@ import * as React from "react";
 import clsx from "clsx";
 
 export type TextProps = React.HTMLAttributes<HTMLParagraphElement> & {
-    tone?: "default" | "muted";
+    tone?: "default" | "muted" | "error";
     size?: "sm" | "base";
 };
 
 const toneClasses: Record<NonNullable<TextProps["tone"]>, string> = {
     default: "text-slate-700",
     muted: "text-slate-600",
+    error: "text-red-600",
 };
 
 const sizeClasses: Record<NonNullable<TextProps["size"]>, string> = {
     sm: "text-[14px] leading-6",
-    base: "text-[15px] leading-7",
+    base: "text-[18px] leading-7",
 };
 
 export function Text({

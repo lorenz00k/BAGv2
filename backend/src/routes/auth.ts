@@ -9,14 +9,14 @@ import { createSession } from "../utils/session.js";
 import { deleteCookie } from "hono/cookie";
 import { deleteSession } from "../utils/session.js";
 import { authMiddleware } from "../middleware/auth.js";
-import type { Variables } from "../types/hono.js"; 
+import type { Variables } from "../types/hono.js";
 import { loginRateLimiter, registerRateLimiter } from "../middleware/rate-limit.js";
 
 
 const auth = new Hono<{ Variables: Variables }>();
 
 // POST /api/auth/register
-auth.post("/register", registerRateLimiter ,async (c) => {
+auth.post("/register", registerRateLimiter, async (c) => {
   try {
     const body = await c.req.json();
     const data = registerSchema.parse(body);
@@ -52,7 +52,7 @@ auth.post("/register", registerRateLimiter ,async (c) => {
 });
 
 // POST /api/auth/login (ERSETZEN)
-auth.post("/login", loginRateLimiter , async (c) => {
+auth.post("/login", loginRateLimiter, async (c) => {
   try {
     const body = await c.req.json();
     const data = loginSchema.parse(body);
@@ -74,7 +74,7 @@ auth.post("/login", loginRateLimiter , async (c) => {
 
     // Session erstellen
     const sessionId = await createSession(user.id);
-    
+
     // Cookie setzen
     setCookie(c, "session_id", sessionId, {
       httpOnly: true,
@@ -101,12 +101,12 @@ auth.post("/login", loginRateLimiter , async (c) => {
 // POST /api/auth/logout
 auth.post("/logout", authMiddleware, async (c) => {
   const sessionId = c.get("sessionId");
-  
+
   await deleteSession(sessionId);
   deleteCookie(c, "session_id", {
     path: "/",
   });
-  
+
   return c.json({ message: "Logged out" });
 });
 

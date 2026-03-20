@@ -2,13 +2,20 @@
     "navigation": {
         "next": "Weiter",
         "back": "Zurück",
+        "save": "Änderungen speichern",
+        "saving": "Änderungen werden gespeichert...",
         "finish": "Auswertung anzeigen",
         "close": "Schließen"
     },
     "check": {
         "start": "Check starten",
         "restart": "Checker neu starten",
-        "new": "Neuen Check starten"
+        "new": "Neuen Check starten",
+        "result": "Auswertung",
+        "progress": {
+            "step": "Schritt",
+            "of": "von"
+        }
     },
     "addressCheck": {
         "run": "Adresse prüfen",

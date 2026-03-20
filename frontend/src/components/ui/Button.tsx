@@ -2,13 +2,14 @@ import * as React from "react";
 import clsx from "clsx";
 import { Slot } from "@radix-ui/react-slot";
 
-type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "heroCta" | "next" | "previous";
+type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "heroCta" | "next" | "previous" | "choice";
 type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
     variant?: ButtonVariant;
     size?: ButtonSize;
     asChild?: boolean;
+    selected?: boolean;
 };
 
 const base =
@@ -39,23 +40,19 @@ const primaryLike =
 const variants: Record<ButtonVariant, string> = {
     primary: primaryLike + " enabled:hover:-translate-y-[2px]",
 
-    secondary:
-        "bg-[var(--color-surface)] text-[var(--color-accent-strong)] " +
+    secondary: "bg-[var(--color-surface)] text-[var(--color-accent-strong)] " +
         "border-[color-mix(in_srgb,var(--color-accent)_35%,var(--color-border))] " +
         "enabled:hover:bg-[var(--color-accent-soft)] enabled:hover:text-[var(--color-accent-strong)]",
 
-    outline:
-        "bg-transparent text-[var(--color-foreground)] " +
+    outline: "bg-transparent text-[var(--color-foreground)] " +
         "border-[color-mix(in_srgb,var(--color-border)_85%,transparent)] " +
         "enabled:hover:bg-[var(--color-surface)]",
 
-    ghost:
-        "bg-transparent text-[var(--color-foreground)] border-transparent shadow-none " +
+    ghost: "bg-transparent text-[var(--color-foreground)] border-transparent shadow-none " +
         "enabled:hover:bg-[color-mix(in_srgb,var(--color-accent-soft)_70%,transparent)] " +
         "enabled:hover:text-[var(--color-accent-strong)]",
 
-    heroCta:
-        "relative overflow-hidden " +
+    heroCta: "relative overflow-hidden " +
         "bg-[var(--hero-cta-bg)] !text-[var(--hero-cta-fg)] " +
         "border border-[var(--hero-cta-border)] " +
         "shadow-[0_18px_55px_-28px_rgba(0,0,0,0.45)] " +
@@ -75,18 +72,48 @@ const variants: Record<ButtonVariant, string> = {
     // behält dein Verhalten
     next: primaryLike + " enabled:hover:-translate-y-[1px]",
     previous: primaryLike + " enabled:hover:-translate-y-[1px]",
+    choice: ""
 };
 
+const choiceSelected =
+    "bg-[var(--color-accent-soft)] text-[var(--color-accent-strong)] " +
+    "border-[var(--color-accent)] " +
+    "shadow-none";
+
+const choiceUnselected =
+    "bg-slate-50 text-[var(--color-foreground)] border-slate-300 " +
+    "enabled:hover:bg-slate-100 enabled:hover:border-slate-400";
+
+
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant = "primary", size = "md", asChild = false, type, ...props }, ref) => {
+    (
+        {
+            className,
+            variant = "primary",
+            size = "md",
+            asChild = false,
+            type,
+            selected = false,
+            ...props
+        },
+        ref
+    ) => {
         const resolvedType = type ?? "button";
         const Comp: any = asChild ? Slot : "button";
+
+        const variantClass =
+            variant === "choice"
+                ? selected
+                    ? choiceSelected
+                    : choiceUnselected
+                : variants[variant];
+
 
         return (
             <Comp
                 ref={ref}
                 type={asChild ? undefined : resolvedType}
-                className={clsx(base, sizes[size], variants[variant], className)}
+                className={clsx(base, sizes[size], variantClass, className)}
                 {...props}
             />
         );

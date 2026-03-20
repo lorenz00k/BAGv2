@@ -1,19 +1,23 @@
 import * as React from "react";
 import clsx from "clsx";
 
-type CardVariant = "default" | "subtle" | "borderless";
+type CardVariant = "default" | "subtle" | "borderless" | "orientation";
 type IconTone = "default" | "warm" | "accentSoft" | "success" | "shield";
 
 export type CardProps = React.HTMLAttributes<HTMLDivElement> & {
     variant?: CardVariant;
+    gap?: "sm" | "md" | "lg";
 };
-
+const gapClasses = {
+    sm: "gap-2",
+    md: "gap-4",
+    lg: "grid gap-6",
+};
 const cardBase =
     "bg-[var(--color-surface)] rounded-[var(--radius)] " +
     "border border-[color-mix(in_srgb,var(--color-border)_70%,transparent)] " +
     "shadow-[var(--shadow-xs)] " +
     "p-[clamp(2rem,4vw,2.75rem)] " +
-    "grid gap-6 " + // 1.5rem
     "[transition:transform_var(--transition-move),box-shadow_var(--transition-move),border-color_var(--transition-fade)] " +
     "hover:-translate-y-[6px] hover:shadow-[var(--shadow-sm)] " +
     "hover:border-[color-mix(in_srgb,var(--color-accent)_20%,var(--color-border))]";
@@ -24,15 +28,20 @@ const cardSubtle =
 
 const cardBorderless =
     "border-0 hover:border-0";
+const cardOrientation =
+    "bg-yellow-50 border-yellow-300 shadow-none " +
+    "hover:shadow-[var(--shadow-xs)] hover:border-yellow-400";
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
-    ({ className, variant = "default", ...props }, ref) => {
+    ({ className, variant = "default", gap = "lg", ...props }, ref) => {
         return (
             <div
                 ref={ref}
                 className={clsx(cardBase,
+                    gapClasses[gap],
                     variant === "subtle" && cardSubtle,
                     variant === "borderless" && cardBorderless,
+                    variant === "orientation" && cardOrientation,
                     className)}
                 {...props}
             />
