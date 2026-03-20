@@ -9,7 +9,9 @@
     },
     "check": {
         "start": "Check starten",
-        "restart": "Checker neu starten",
+        "resume": "Fortsetzen",
+        "restart": "Neu starten",
+        "viewResult": "Ergebnis anzeigen",
         "new": "Neuen Check starten",
         "result": "Auswertung",
         "progress": {

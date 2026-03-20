@@ -153,5 +153,10 @@
     "existingPermitHistory": {
         "question": "Gibt es für den Standort bereits gewerberechtliche Bescheide oder Eignungsfeststellungen?",
         "description": "Zum Beispiel frühere Betriebsanlagengenehmigungen, Änderungsbescheide, Auflagenbescheide oder Eignungsfeststellungen. Solche Unterlagen sind wichtig, weil sie den genehmigten Umfang und bestehende Auflagen des Standorts festlegen können."
+    },
+    "checkFound": {
+        "completedTitle": "Abgeschlossener Check gefunden",
+        "draftTitle": "Offener Check gefunden",
+        "description": "Vom {date}."
     }
 }

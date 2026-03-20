@@ -1,6 +1,7 @@
 
 //createSession, patchAnswers, getState, evaluate, deleteSession
 
+import { fetchApi } from "@/services/api";
 import { client } from "./client";
 import type { components } from "@/lib/api/checker";
 
@@ -89,4 +90,17 @@ export async function evaluate(): Promise<CheckerResult> {
 export async function deleteSession(): Promise<void> {
   const { error, response } = await client.DELETE("/api/checker/session");
   if (error) throwOnError(error, response.status);
+}
+
+export type SavedCheck = {
+  id: string;
+  status: "draft" | "completed";
+  formData: CheckerAnswers;
+  currentStep: string;
+  updatedAt: string;
+};
+
+export async function getLatestCheck(): Promise<SavedCheck | null> {
+  const data = await fetchApi<{ check: SavedCheck | null }>("/api/checker/latest");
+  return data.check;
 }

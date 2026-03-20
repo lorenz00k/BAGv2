@@ -120,6 +120,8 @@ auth.post("/logout", async (c) => {
   deleteCookie(c, "session_id", {
     path: "/",
   });
+  //damit daten nach logout nicht mehr angezeigt werden
+  clearSidCookie(c);
 
   return c.json({ message: "Logged out" });
 });

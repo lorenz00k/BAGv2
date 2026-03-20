@@ -22,13 +22,16 @@ export async function mergeAnonymousChecker(
 
     if (!anonSession) return;
 
-    // Als Check dem User zuordnen
-    await db.insert(checks).values({
-        userId,
-        status: anonSession.status === "finished" ? "completed" : "draft",
-        currentStep: "0",
-        formData: anonSession.answers,
-    });
+    const answers = anonSession.answers as Record<string, unknown>;
+    if (answers && Object.keys(answers).length > 0) {
+        // Als Check dem User zuordnen
+        await db.insert(checks).values({
+            userId,
+            status: anonSession.status === "finished" ? "completed" : "draft",
+            currentStep: "0",
+            formData: anonSession.answers,
+        });
+    }
 
     // Anonyme Session löschen — Daten sind jetzt im Account
     await db
