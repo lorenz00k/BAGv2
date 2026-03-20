@@ -2,16 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { useComplianceChecker } from "../hooks/useComplianceChecker";
 import ResultView from "./ResultView";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Text } from "@/components/typography/Text";
+import { Locale } from "@/i18n/locales";
+import { href } from "@/navigation/nav";
 
 export default function ComplianceCheckerResult() {
   const router = useRouter();
+  const locale = useLocale();
   const actions = useTranslations("common.actions");
   const statusT = useTranslations("common.labels.status");
 
@@ -26,7 +29,7 @@ export default function ComplianceCheckerResult() {
     if (!state) return;
 
     if (state.status !== "finished") {
-      router.replace("/complianceChecker");
+      router.replace(href(locale as Locale, "complianceChecker"));
       return;
     }
 
@@ -37,7 +40,7 @@ export default function ComplianceCheckerResult() {
     }
 
     if (!state.result && hasTriedRefresh.current) {
-      router.replace("/complianceChecker");
+      router.replace(href(locale as Locale, "complianceChecker"));
     }
   }, [isRestarting, status, state, refresh, router]);
 
@@ -46,7 +49,7 @@ export default function ComplianceCheckerResult() {
 
     try {
       await restart();
-      router.replace("/complianceChecker");
+      router.replace(href(locale as Locale, "complianceChecker"));
     } finally {
       setIsRestarting(false);
     }

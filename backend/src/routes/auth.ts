@@ -12,6 +12,8 @@ import { authMiddleware } from "../middleware/auth.js";
 import type { Variables } from "../types/hono.js";
 import { loginRateLimiter, registerRateLimiter } from "../middleware/rate-limit.js";
 import { HTTPException } from "hono/http-exception";
+import { clearSidCookie, readSid } from "../utils/checkerSession.js";
+import { mergeAnonymousChecker } from "../utils/sessionMerge.js";
 
 
 const auth = new Hono<{ Variables: Variables }>();
@@ -41,6 +43,24 @@ auth.post("/register", registerRateLimiter, async (c) => {
       passwordHash,
     })
     .returning({ id: users.id, email: users.email });
+
+  if (!newUser) {
+    throw new HTTPException(500, { message: "User creation failed" });
+  }
+  // direkt einloggen:
+  const sessionId = await createSession(newUser.id);
+  setCookie(c, "session_id", sessionId, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Strict",
+    maxAge: 30 * 24 * 60 * 60,
+    path: "/",
+  });
+
+  // Anonyme Checker-Session migrieren
+  const sid = readSid(c);
+  await mergeAnonymousChecker(sid, newUser.id);
+  clearSidCookie(c);
 
   return c.json({ user: newUser }, 201);
 });
@@ -76,6 +96,11 @@ auth.post("/login", loginRateLimiter, async (c) => {
     maxAge: 30 * 24 * 60 * 60, // 30 Tage
     path: "/",
   });
+
+  //session merge: get anonymous data 
+  const sid = readSid(c)
+  await mergeAnonymousChecker(sid, user.id);
+  clearSidCookie(c);
 
   return c.json({
     user: {

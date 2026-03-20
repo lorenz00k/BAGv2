@@ -37,9 +37,9 @@ export default function RegisterForm() {
 
     try {
       await register(email, password);
-      router.push("/login?registered=true");
-    } catch {
-      setError("Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.");
+      router.push("/");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registrierung fehlgeschlagen.");
     } finally {
       setIsSubmitting(false);
     }

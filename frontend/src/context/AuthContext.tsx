@@ -3,12 +3,12 @@ import { AuthUser } from "@/types/auth";
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import * as authService from "@/services/auth";
 
-interface AuthContextValue{
-    user: AuthUser | null;
-    isLoading: boolean;
-    login: (email:string, password:string) => Promise<void>;
-    register: (email:string, password:string) => Promise<void>;
-    logout: () => Promise<void>;
+interface AuthContextValue {
+  user: AuthUser | null;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -44,8 +44,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Register: NUR registrieren, NICHT einloggen
-  const register = useCallback(async (email: string, password: string) => {
+  /*const register = useCallback(async (email: string, password: string) => {
     await authService.register(email, password);
+  }, []);*/
+
+  //regsiter and auto login
+  const register = useCallback(async (email: string, password: string) => {
+    const user = await authService.register(email, password);
+    setUser(user);
   }, []);
 
   return (

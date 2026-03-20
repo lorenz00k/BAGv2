@@ -31,11 +31,11 @@ function extractFieldErrors(error: unknown): FieldErrors {
   return out;
 }
 
-function isNotFoundError(error: unknown) {
+function isNoSessionError(error: unknown) {
   if (!(error instanceof api.ApiError)) return false;
 
   // adjust to your actual ApiError shape
-  return error.status === 404;
+  return error.status === 404 || error.status == 401;
 }
 
 export function useComplianceChecker() {
@@ -57,7 +57,7 @@ export function useComplianceChecker() {
       setStatus("ready");
       return existing;
     } catch (e: unknown) {
-      if (!isNotFoundError(e)) {
+      if (!isNoSessionError(e)) {
         const message = e instanceof Error ? e.message : "Failed to initialize session";
         setError(message);
         setStatus("error");

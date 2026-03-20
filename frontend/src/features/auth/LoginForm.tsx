@@ -26,8 +26,8 @@ export default function LoginForm() {
     try {
       await login(email, password);
       router.push("/");
-    } catch {
-      setError("Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Eingaben.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Anmeldung fehlgeschlagen.");
     } finally {
       setIsSubmitting(false);
     }
@@ -97,8 +97,8 @@ export default function LoginForm() {
             </div>
           )}
 
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={isSubmitting}
             className="h-11 w-full bg-(--color-fg) text-(--color-bg) transition-transform active:scale-[0.98] hover:opacity-90"
           >

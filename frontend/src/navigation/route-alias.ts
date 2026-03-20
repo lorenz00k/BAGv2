@@ -4,6 +4,7 @@ export const KEBAB_TO_CAMEL: Record<string, string> = {
     "checks/compliance-checker": "checks/complianceChecker",
     "checks/address-checker": "checks/addressChecker",
     "checks/funding-checker": "checks/fundingChecker",
+    "checks/compliance-checker/result": "checks/complianceChecker/result",
     "documents/required-documents": "documents/requiredDocuments",
     "documents/document-assistant": "documents/documentAssistant",
 }
