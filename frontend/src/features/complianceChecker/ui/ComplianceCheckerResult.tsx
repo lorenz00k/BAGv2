@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/Card";
 import { Text } from "@/components/typography/Text";
 import { Locale } from "@/i18n/locales";
 import { href } from "@/navigation/nav";
+import * as api from "../api/checkerApi";
 
 export default function ComplianceCheckerResult() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function ComplianceCheckerResult() {
   const [isRestarting, setIsRestarting] = useState(false);
   const hasTriedRefresh = useRef(false);
 
-  const { status, state, error, refresh, restart, savedResult } = useComplianceChecker();
+  const { status, state, error, refresh, restart, savedResult, savedCheck } = useComplianceChecker();
 
   // result: either from active session or from saved check in db
   const result = state?.result ?? savedResult;
@@ -59,6 +60,20 @@ export default function ComplianceCheckerResult() {
       router.replace(href(locale as Locale, "complianceChecker"));
     } finally {
       setIsRestarting(false);
+    }
+  }
+
+  async function handleEdit() {
+    // Result-State hat die Antworten — neue Session mit diesen Antworten starten
+    const answers = state?.answers ?? savedCheck?.formData;
+    if (!answers) return;
+
+    try {
+      await api.createSession();
+      await api.saveAnswers(answers as api.CheckerAnswers);
+      router.replace(href(locale as Locale, "complianceChecker"));
+    } catch (err) {
+      console.error("Failed to edit", err);
     }
   }
 
@@ -100,6 +115,7 @@ export default function ComplianceCheckerResult() {
       result={result}
       onRestart={handleRestart}
       restartDisabled={isRestarting}
+      onEdit={handleEdit}
     />
   );
 }
