@@ -112,6 +112,11 @@ export default function ComplianceCheckerWizard() {
     restart,
     clearFieldError,
     getFieldError,
+    showResumePrompt,
+    savedCheck,
+    resumeCheck,
+    startFresh,
+    state,
   } = useComplianceChecker();
 
   const [stepIndex, setStepIndex] = useState(0);
@@ -127,13 +132,21 @@ export default function ComplianceCheckerWizard() {
 
   useEffect(() => {
     if (status !== "ready") return;
-    if (hasInitializedFromServer.current) return;
+    if (hasInitializedFromServer.current && Object.keys(answers).length === 0) return;
 
     const initialDraft = cleanupDependentAnswers(answers);
     setDraft(initialDraft);
     setStepIndex(deriveInitialStepIndex(initialDraft));
     hasInitializedFromServer.current = true;
   }, [status, answers]);
+
+  // redirect to result-page if checker is already finished
+  useEffect(() => {
+    if (status !== "ready") return;
+    if (state?.status === "finished" && state?.result) {
+      router.replace(`${pathname}/result`);
+    }
+  }, [status, state, pathname, router]);
 
   useEffect(() => {
     setStepIndex((current) =>
@@ -253,6 +266,52 @@ export default function ComplianceCheckerWizard() {
     } catch (err) {
       console.error("Failed to save step", err);
     }
+  }
+  if (showResumePrompt && savedCheck) {
+    const isCompleted = savedCheck.status === "completed";
+
+    return (
+      <Container>
+        <div className="mx-auto max-w-4xl px-4 py-10">
+          <Card variant="subtle" className="p-8 text-center hover:translate-y-0">
+            <Heading as="h2" className="mt-0">
+              {isCompleted
+                ? form("checkFound.completedTitle")
+                : form("checkFound.draftTitle")}
+            </Heading>
+            <Text size="base" tone="muted" className="mt-2">
+              {form("checkFound.description", {
+                date: new Date(savedCheck.updatedAt).toLocaleDateString("de-AT"),
+              })}
+            </Text>
+            <div className="mt-6 flex justify-center gap-3">
+              {isCompleted ? (
+                <>
+                  <Button
+                    variant="next"
+                    onClick={() => router.push(`${pathname}/result`)}
+                  >
+                    {actions("check.viewResult")}
+                  </Button>
+                  <Button variant="secondary" onClick={startFresh}>
+                    {actions("check.restart")}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="next" onClick={resumeCheck} disabled={busy}>
+                    {actions("check.resume")}
+                  </Button>
+                  <Button variant="secondary" onClick={startFresh} disabled={busy}>
+                    {actions("check.restart")}
+                  </Button>
+                </>
+              )}
+            </div>
+          </Card>
+        </div>
+      </Container>
+    );
   }
 
   if (!step) return null;

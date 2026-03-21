@@ -2,6 +2,10 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import type { Variables } from "../types/hono.js";
 import { z } from "zod";
+import { authMiddleware } from "../middleware/auth.js";
+import { db } from "../db/index.js";
+import { checks } from "../db/schema/index.js";
+import { and, eq, isNull, desc, sql } from "drizzle-orm";
 
 import {
   createSid,
@@ -31,6 +35,9 @@ import {
   toState,
   touchSession,
 } from "../services/checker/checkerSessionRepo.js";
+import { getUserIdFromSession } from "../utils/session.js";
+import { getCookie } from "hono/cookie";
+
 
 const checkerRouter = new Hono<{ Variables: Variables }>();
 
@@ -122,6 +129,47 @@ checkerRouter.put("/answers", async (c) => {
       return c.json({ error: "Unexpected: no row returned" }, 500);
     }
 
+    //save also for logged in users
+    const sessionId = getCookie(c, "session_id");
+    if (sessionId) {
+      const userId = await getUserIdFromSession(sessionId);
+      if (userId) {
+        //search current draft
+        const [existingDraft] = await db
+          .select({ id: checks.id })
+          .from(checks)
+          .where(
+            and(
+              eq(checks.userId, userId),
+              eq(checks.status, "draft"),
+              isNull(checks.deletedAt)
+            )
+          )
+          .orderBy(desc(checks.updatedAt))
+          .limit(1);
+
+        if (existingDraft) {
+          // Update
+          await db
+            .update(checks)
+            .set({
+              formData: normalizedAnswers,
+              updatedAt: new Date(),
+            })
+            .where(eq(checks.id, existingDraft.id));
+        } else {
+          // New Draft
+          await db.insert(checks).values({
+            userId,
+            status: "draft",
+            formData: normalizedAnswers,
+            currentStep: "0",
+          });
+        }
+      }
+    }
+
+
     return c.json(toState(updated), 200);
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -172,6 +220,45 @@ checkerRouter.post("/evaluate", async (c) => {
       return c.json({ error: "Unexpected: no row returned" }, 500);
     }
 
+    //save also for logged in users
+    const sessionId = getCookie(c, "session_id");
+    if (sessionId) {
+      const userId = await getUserIdFromSession(sessionId);
+      if (userId) {
+        const [existingDraft] = await db
+          .select({ id: checks.id })
+          .from(checks)
+          .where(
+            and(
+              eq(checks.userId, userId),
+              eq(checks.status, "draft"),
+              isNull(checks.deletedAt)
+            )
+          )
+          .orderBy(desc(checks.updatedAt))
+          .limit(1);
+
+        if (existingDraft) {
+          await db
+            .update(checks)
+            .set({
+              status: "completed",
+              formData: normalizedAnswers,
+              result: result,
+              updatedAt: new Date(),
+            })
+            .where(eq(checks.id, existingDraft.id));
+        } else {
+          await db.insert(checks).values({
+            userId,
+            status: "completed",
+            formData: normalizedAnswers,
+            result: result,
+            currentStep: "0",
+          });
+        }
+      }
+    }
     return c.json(updated.result ?? result, 200);
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -205,5 +292,39 @@ checkerRouter.delete("/session", async (c) => {
   clearSidCookie(c);
   return c.body(null, 204);
 });
+
+// Check if logged in user has draft-check
+checkerRouter.get("/latest", authMiddleware, async (c) => {
+  const userId = c.get("userId");
+
+  const [latest] = await db
+    .select()
+    .from(checks)
+    .where(
+      and(
+        eq(checks.userId, userId),
+        isNull(checks.deletedAt),
+        sql`${checks.formData}::text != '{}'`
+      )
+    )
+    .orderBy(desc(checks.updatedAt))
+    .limit(1);
+
+  if (!latest) {
+    return c.json({ check: null });
+  }
+
+  return c.json({
+    check: {
+      id: latest.id,
+      status: latest.status,
+      formData: latest.formData,
+      result: latest.result,
+      currentStep: latest.currentStep,
+      updatedAt: latest.updatedAt,
+    },
+  });
+});
+
 
 export default checkerRouter;

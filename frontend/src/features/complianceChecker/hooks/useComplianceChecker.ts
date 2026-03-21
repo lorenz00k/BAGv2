@@ -4,6 +4,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as api from "../api/checkerApi";
+import { CheckerResult, SavedCheck } from "../api/checkerApi";
 
 type Status = "idle" | "loading" | "ready" | "saving" | "evaluating" | "error";
 
@@ -45,12 +46,18 @@ export function useComplianceChecker() {
 
   const [state, setState] = useState<api.CheckerState | null>(null);
 
+  const [savedCheck, setSavedCheck] = useState<SavedCheck | null>(null);
+  const [savedResult, setSavedResult] = useState<CheckerResult | null>(null);
+  const [showResumePrompt, setShowResumePrompt] = useState(false);
+
   const answers = useMemo(() => (state?.answers ?? {}) as api.CheckerAnswers, [state]);
   const clearErrors = useCallback(() => { setError(null); setFieldErrors({}); }, []);
 
   const init = useCallback(async () => {
     clearErrors();
     setStatus("loading");
+
+    // anonyme session vorhanden? -> direkt laden
     try {
       const existing = await api.getState();
       setState(existing);
@@ -64,6 +71,26 @@ export function useComplianceChecker() {
         throw e;
       }
     }
+    // eingeloggt + draft-check vorhanden -> Auwahl anzeigen
+    try {
+      console.log("Checking for latest...");
+      const check = await api.getLatestCheck();
+      console.log("Latest check result:", check);
+      if (check) {
+        setSavedCheck(check);
+        if (check.status === "completed" && check.result) {
+          setSavedResult(check.result);
+        }
+        setShowResumePrompt(true);
+        setStatus("ready");
+        return;
+      }
+    } catch (e) {
+      // Nicht eingeloggt oder kein Draft — weiter
+      //console.error("getLatestCheck failed:", e);
+    }
+
+    // nichts gefunden -> neue Session 
     try {
       const fresh = await api.createSession();
       setState(fresh);
@@ -192,9 +219,13 @@ export function useComplianceChecker() {
     try {
       await api.deleteSession();
     } catch (e: any) {
-      console.error("Failed to delete session", e);
+      //No active session -ok go on
+      //console.error("Failed to delete session", e);
     }
     setState(null);
+    setSavedCheck(null);
+    setSavedResult(null);
+    setShowResumePrompt(false);
 
     try {
       const fresh = await api.createSession();
@@ -218,6 +249,47 @@ export function useComplianceChecker() {
     });
   }, []);
 
+
+  const resumeCheck = useCallback(async () => {
+    if (!savedCheck) return;
+    clearErrors();
+    setStatus("loading");
+    setShowResumePrompt(false);
+
+    try {
+      const fresh = await api.createSession();
+      const restored = await api.saveAnswers(savedCheck.formData);
+      setState(restored);
+      setSavedCheck(null);
+      setStatus("ready");
+      return restored;
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Failed to restore";
+      setError(message);
+      setStatus("error");
+      throw e;
+    }
+  }, [savedCheck, clearErrors]);
+
+  const startFresh = useCallback(async () => {
+    setShowResumePrompt(false);
+    setSavedCheck(null);
+    clearErrors();
+    setStatus("loading");
+
+    try {
+      const fresh = await api.createSession();
+      setState(fresh);
+      setStatus("ready");
+      return fresh;
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Failed to start";
+      setError(message);
+      setStatus("error");
+      throw e;
+    }
+  }, [clearErrors]);
+
   const getFieldError = useCallback((field: string) => fieldErrors[field] ?? null, [fieldErrors]);
 
   return {
@@ -234,5 +306,10 @@ export function useComplianceChecker() {
     clearErrors,
     clearFieldError,
     getFieldError,
+    showResumePrompt,
+    savedCheck,
+    resumeCheck,
+    startFresh,
+    savedResult,
   };
 }

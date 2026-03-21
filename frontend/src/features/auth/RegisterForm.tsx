@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/Input";
@@ -18,6 +18,9 @@ export default function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,7 +40,7 @@ export default function RegisterForm() {
 
     try {
       await register(email, password);
-      router.push("/");
+      router.push(redirectTo);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registrierung fehlgeschlagen.");
     } finally {
@@ -105,7 +108,7 @@ export default function RegisterForm() {
         <p className="mt-4 text-center text-sm text-(--color-fg-subtle)">
           Bereits ein Konto?{" "}
           <Link
-            href="/login"
+            href={`/login${redirectTo !== "/" ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`}
             className="font-medium text-(--color-accent) hover:underline"
           >
             Hier anmelden

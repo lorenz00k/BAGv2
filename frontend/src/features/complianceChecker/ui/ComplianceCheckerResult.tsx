@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/Card";
 import { Text } from "@/components/typography/Text";
 import { Locale } from "@/i18n/locales";
 import { href } from "@/navigation/nav";
+import * as api from "../api/checkerApi";
 
 export default function ComplianceCheckerResult() {
   const router = useRouter();
@@ -21,11 +22,18 @@ export default function ComplianceCheckerResult() {
   const [isRestarting, setIsRestarting] = useState(false);
   const hasTriedRefresh = useRef(false);
 
-  const { status, state, error, refresh, restart } = useComplianceChecker();
+  const { status, state, error, refresh, restart, savedResult, savedCheck } = useComplianceChecker();
+
+  // result: either from active session or from saved check in db
+  const result = state?.result ?? savedResult;
 
   useEffect(() => {
     if (isRestarting) return;
     if (status !== "ready") return;
+
+    //show saved result
+    if (result) return;
+
     if (!state) return;
 
     if (state.status !== "finished") {
@@ -42,7 +50,7 @@ export default function ComplianceCheckerResult() {
     if (!state.result && hasTriedRefresh.current) {
       router.replace(href(locale as Locale, "complianceChecker"));
     }
-  }, [isRestarting, status, state, refresh, router]);
+  }, [isRestarting, status, state, result, refresh, router]);
 
   async function handleRestart() {
     setIsRestarting(true);
@@ -52,6 +60,20 @@ export default function ComplianceCheckerResult() {
       router.replace(href(locale as Locale, "complianceChecker"));
     } finally {
       setIsRestarting(false);
+    }
+  }
+
+  async function handleEdit() {
+    // Result-State hat die Antworten — neue Session mit diesen Antworten starten
+    const answers = state?.answers ?? savedCheck?.formData;
+    if (!answers) return;
+
+    try {
+      await api.createSession();
+      await api.saveAnswers(answers as api.CheckerAnswers);
+      router.replace(href(locale as Locale, "complianceChecker"));
+    } catch (err) {
+      console.error("Failed to edit", err);
     }
   }
 
@@ -76,7 +98,7 @@ export default function ComplianceCheckerResult() {
     );
   }
 
-  if (!state || status === "loading" || status === "evaluating" || isRestarting) {
+  if (!result || status === "loading" || status === "evaluating" || isRestarting) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10">
         <Card variant="subtle" className="p-4 hover:translate-y-0">
@@ -88,15 +110,12 @@ export default function ComplianceCheckerResult() {
     );
   }
 
-  if (!state.result) {
-    return null;
-  }
-
   return (
     <ResultView
-      result={state.result}
+      result={result}
       onRestart={handleRestart}
       restartDisabled={isRestarting}
+      onEdit={handleEdit}
     />
   );
 }

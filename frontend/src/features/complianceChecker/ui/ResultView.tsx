@@ -17,12 +17,14 @@ type Props = {
   result: CheckerResult;
   onRestart: () => void;
   restartDisabled?: boolean;
+  onEdit: () => void;
 };
 
 export default function ResultView({
   result,
   onRestart,
   restartDisabled,
+  onEdit,
 }: Props) {
   const cls = useTranslations("sections.complianceResult.classifications");
   const disclaimerT = useTranslations("sections.complianceResult.disclaimer");
@@ -40,6 +42,13 @@ export default function ResultView({
           <Heading as="h1" className="mt-0">
             {actions("check.result")}
           </Heading>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onEdit}
+          >
+            {actions("check.edit")}
+          </Button>
           <Button
             type="button"
             variant="secondary"

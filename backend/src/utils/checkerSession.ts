@@ -1,6 +1,9 @@
 import crypto from "node:crypto";
 import type { Context } from "hono";
 import { getCookie, setCookie, deleteCookie } from "hono/cookie";
+import { db } from "../db/index.js";
+import { checkerSessions } from "../db/schema/checker.js";
+import { lt } from "drizzle-orm";
 
 export const CHECKER_COOKIE_NAME = "sid";
 export const CHECKER_TTL_SECONDS = 60 * 60 * 24; // 24h
@@ -34,4 +37,14 @@ export function clearSidCookie(c: Context) {
 
 export function computeExpiresAt(now = new Date()): Date {
   return new Date(now.getTime() + CHECKER_TTL_SECONDS * 1000);
+}
+
+
+export async function cleanupExpiredCheckerSessions(): Promise<number> {
+  const result = await db
+    .delete(checkerSessions)
+    .where(lt(checkerSessions.expiresAt, new Date()))
+    .returning({ id: checkerSessions.id });
+
+  return result.length;
 }
