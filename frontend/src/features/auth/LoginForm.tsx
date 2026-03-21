@@ -8,10 +8,13 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { useTranslations } from "next-intl";
 
 export default function LoginForm() {
   const { login } = useAuth();
   const router = useRouter();
+  const tLogin = useTranslations("pages.auth.login");
+
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,7 +33,7 @@ export default function LoginForm() {
       await login(email, password);
       router.push(redirectTo);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Anmeldung fehlgeschlagen.");
+      setError(err instanceof Error ? err.message : tLogin("errorDefault"));
     } finally {
       setIsSubmitting(false);
     }
@@ -47,22 +50,22 @@ export default function LoginForm() {
       <Card className="w-full max-w-[420px] border-white/10 bg-white/70 p-8 shadow-[0_8px_32px_rgba(0,0,0,0.08)] backdrop-blur-xl :bg-green">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-extrabold tracking-tight text-(--color-fg)">
-            Willkommen zurück
+            {tLogin("title")}
           </h1>
           <p className="mt-2 text-sm text-(--color-fg-subtle)">
-            Bitte melde dich mit deinen Zugangsdaten an.
+            {tLogin("subtitle")}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider opacity-70">
-              E-Mail-Adresse
+              {tLogin("emailLabel")}
             </Label>
             <Input
               id="email"
               type="email"
-              placeholder="name@beispiel.de"
+              placeholder={tLogin("emailPlaceholder")}
               className="h-11 border-zinc-200 bg-white/50 transition-all focus:ring-2 focus:ring-(--color-accent) dark:border-zinc-800"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -74,16 +77,16 @@ export default function LoginForm() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider opacity-70">
-                Passwort
+                {tLogin("passwordLabel")}
               </Label>
               <Link href="#" className="text-xs text-(--color-accent) hover:underline">
-                Vergessen?
+                {tLogin("forgotPasswordLink")}
               </Link>
             </div>
             <Input
               id="password"
               type="password"
-              placeholder="••••••••"
+              placeholder={tLogin("passwordPlaceholder")}
               className="h-11 border-zinc-200 bg-white/50 transition-all focus:ring-2 focus:ring-(--color-accent) dark:border-zinc-800"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -108,21 +111,21 @@ export default function LoginForm() {
             {isSubmitting ? (
               <span className="flex items-center gap-2">
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Wird angemeldet...
+                {tLogin("submittingButton")}
               </span>
             ) : (
-              "Anmelden"
+              tLogin("submitButton")
             )}
           </Button>
         </form>
 
         <div className="mt-8 border-t border-zinc-100 pt-6 text-center dark:border-zinc-800">
           <p className="text-sm text-(--color-fg-subtle)">
-            Noch kein Konto?{" "}
+            {tLogin("noAccountText")}{" "}
             <Link
               href={`/register${redirectTo !== "/" ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`}
               className="font-semibold text-(--color-accent) transition-colors hover:text-(--color-accent-emphasis)">
-              Jetzt registrieren
+              {tLogin("registerLink")}
             </Link>
           </p>
         </div>
