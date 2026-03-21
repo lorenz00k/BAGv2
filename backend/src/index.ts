@@ -14,6 +14,7 @@ import { globalRateLimiter } from "./middleware/rate-limit.js";
 import checksRouter from "./routes/checks.js";
 import checkerRouter from "./routes/checker.js";
 import viennagis from "./routes/viennagis.js";
+import { cleanupExpiredCheckerSessions } from "./utils/checkerSession.js";
 
 config();
 
@@ -52,6 +53,17 @@ setInterval(() => {
   cleanupExpiredSessions()
     .then((count) => console.log(`Cleaned up ${count} expired sessions`))
     .catch((err) => console.error("Cleanup error:", err));
+}, 24 * 60 * 60 * 1000);
+
+// cleanup checkerSession
+cleanupExpiredCheckerSessions()
+  .then((count) => console.log(`Cleaned up ${count} expired checker sessions`))
+  .catch((err) => console.error("Checker cleanup error:", err));
+
+setInterval(() => {
+  cleanupExpiredCheckerSessions()
+    .then((count) => console.log(`Cleaned up ${count} expired checker sessions`))
+    .catch((err) => console.error("Checker cleanup error:", err));
 }, 24 * 60 * 60 * 1000);
 
 //Route definieren: Definiert: Bei GET-Request auf "/" führe diese Funktion aus
