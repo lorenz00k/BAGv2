@@ -13,13 +13,13 @@ function generateSessionId(): string {
 export async function createSession(userId: string): Promise<string> {
   const sessionId = generateSessionId();
   const expiresAt = new Date(Date.now() + SESSION_DURATION);
-  
+
   await db.insert(sessions).values({
     id: sessionId,  // ← Manuell gesetzt
     userId,
     expiresAt,
   });
-  
+
   return sessionId;
 }
 
@@ -29,13 +29,13 @@ export async function validateSession(sessionId: string) {
     .from(sessions)
     .where(eq(sessions.id, sessionId))
     .limit(1);
-  
+
   if (!session) return null;
   if (session.expiresAt < new Date()) {
     await deleteSession(sessionId);
     return null;
   }
-  
+
   return session;
 }
 
@@ -45,10 +45,21 @@ export async function cleanupExpiredSessions(): Promise<number> {
     .delete(sessions)
     .where(lt(sessions.expiresAt, new Date()))
     .returning({ id: sessions.id });
-  
+
   return result.length;
 }
 
 export async function deleteSession(sessionId: string): Promise<void> {
   await db.delete(sessions).where(eq(sessions.id, sessionId));
+}
+
+export async function getUserIdFromSession(sessionId: string): Promise<string | null> {
+  const [session] = await db
+    .select({ userId: sessions.userId })
+    .from(sessions)
+    .where(eq(sessions.id, sessionId))
+    .limit(1);
+
+  if (!session) return null;
+  return session.userId;
 }

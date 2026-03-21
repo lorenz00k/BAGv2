@@ -35,6 +35,8 @@ import {
   toState,
   touchSession,
 } from "../services/checker/checkerSessionRepo.js";
+import { getUserIdFromSession } from "../utils/session.js";
+import { getCookie } from "hono/cookie";
 
 
 const checkerRouter = new Hono<{ Variables: Variables }>();
@@ -127,6 +129,47 @@ checkerRouter.put("/answers", async (c) => {
       return c.json({ error: "Unexpected: no row returned" }, 500);
     }
 
+    //save also for logged in users
+    const sessionId = getCookie(c, "session_id");
+    if (sessionId) {
+      const userId = await getUserIdFromSession(sessionId);
+      if (userId) {
+        //search current draft
+        const [existingDraft] = await db
+          .select({ id: checks.id })
+          .from(checks)
+          .where(
+            and(
+              eq(checks.userId, userId),
+              eq(checks.status, "draft"),
+              isNull(checks.deletedAt)
+            )
+          )
+          .orderBy(desc(checks.updatedAt))
+          .limit(1);
+
+        if (existingDraft) {
+          // Update
+          await db
+            .update(checks)
+            .set({
+              formData: normalizedAnswers,
+              updatedAt: new Date(),
+            })
+            .where(eq(checks.id, existingDraft.id));
+        } else {
+          // New Draft
+          await db.insert(checks).values({
+            userId,
+            status: "draft",
+            formData: normalizedAnswers,
+            currentStep: "0",
+          });
+        }
+      }
+    }
+
+
     return c.json(toState(updated), 200);
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -177,6 +220,43 @@ checkerRouter.post("/evaluate", async (c) => {
       return c.json({ error: "Unexpected: no row returned" }, 500);
     }
 
+    //save also for logged in users
+    const sessionId = getCookie(c, "session_id");
+    if (sessionId) {
+      const userId = await getUserIdFromSession(sessionId);
+      if (userId) {
+        const [existingDraft] = await db
+          .select({ id: checks.id })
+          .from(checks)
+          .where(
+            and(
+              eq(checks.userId, userId),
+              eq(checks.status, "draft"),
+              isNull(checks.deletedAt)
+            )
+          )
+          .orderBy(desc(checks.updatedAt))
+          .limit(1);
+
+        if (existingDraft) {
+          await db
+            .update(checks)
+            .set({
+              status: "completed",
+              formData: normalizedAnswers,
+              updatedAt: new Date(),
+            })
+            .where(eq(checks.id, existingDraft.id));
+        } else {
+          await db.insert(checks).values({
+            userId,
+            status: "completed",
+            formData: normalizedAnswers,
+            currentStep: "0",
+          });
+        }
+      }
+    }
     return c.json(updated.result ?? result, 200);
   } catch (err) {
     if (err instanceof z.ZodError) {
