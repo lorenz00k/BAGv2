@@ -244,6 +244,7 @@ checkerRouter.post("/evaluate", async (c) => {
             .set({
               status: "completed",
               formData: normalizedAnswers,
+              result: result,
               updatedAt: new Date(),
             })
             .where(eq(checks.id, existingDraft.id));
@@ -252,6 +253,7 @@ checkerRouter.post("/evaluate", async (c) => {
             userId,
             status: "completed",
             formData: normalizedAnswers,
+            result: result,
             currentStep: "0",
           });
         }
@@ -317,6 +319,7 @@ checkerRouter.get("/latest", authMiddleware, async (c) => {
       id: latest.id,
       status: latest.status,
       formData: latest.formData,
+      result: latest.result,
       currentStep: latest.currentStep,
       updatedAt: latest.updatedAt,
     },

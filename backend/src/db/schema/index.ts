@@ -25,6 +25,7 @@ export const checks = pgTable("checks", {
 
   currentStep: text("current_step").notNull().default("0"),
   formData: jsonb("form_data").notNull().default({}),
+  result: jsonb("result"),
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

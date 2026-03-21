@@ -96,6 +96,7 @@ export type SavedCheck = {
   id: string;
   status: "draft" | "completed";
   formData: CheckerAnswers;
+  result: CheckerResult | null;
   currentStep: string;
   updatedAt: string;
 };

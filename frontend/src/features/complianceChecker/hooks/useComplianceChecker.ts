@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as api from "../api/checkerApi";
-import { SavedCheck } from "../api/checkerApi";
+import { CheckerResult, SavedCheck } from "../api/checkerApi";
 
 type Status = "idle" | "loading" | "ready" | "saving" | "evaluating" | "error";
 
@@ -47,6 +47,7 @@ export function useComplianceChecker() {
   const [state, setState] = useState<api.CheckerState | null>(null);
 
   const [savedCheck, setSavedCheck] = useState<SavedCheck | null>(null);
+  const [savedResult, setSavedResult] = useState<CheckerResult | null>(null);
   const [showResumePrompt, setShowResumePrompt] = useState(false);
 
   const answers = useMemo(() => (state?.answers ?? {}) as api.CheckerAnswers, [state]);
@@ -73,10 +74,13 @@ export function useComplianceChecker() {
     // eingeloggt + draft-check vorhanden -> Auwahl anzeigen
     try {
       console.log("Checking for latest...");
-      const draft = await api.getLatestCheck();
-      console.log("Latest check result:", draft);
-      if (draft) {
-        setSavedCheck(draft);
+      const check = await api.getLatestCheck();
+      console.log("Latest check result:", check);
+      if (check) {
+        setSavedCheck(check);
+        if (check.status === "completed" && check.result) {
+          setSavedResult(check.result);
+        }
         setShowResumePrompt(true);
         setStatus("ready");
         return;
@@ -302,5 +306,6 @@ export function useComplianceChecker() {
     savedCheck,
     resumeCheck,
     startFresh,
+    savedResult,
   };
 }

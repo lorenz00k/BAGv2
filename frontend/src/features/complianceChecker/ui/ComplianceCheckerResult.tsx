@@ -21,11 +21,18 @@ export default function ComplianceCheckerResult() {
   const [isRestarting, setIsRestarting] = useState(false);
   const hasTriedRefresh = useRef(false);
 
-  const { status, state, error, refresh, restart } = useComplianceChecker();
+  const { status, state, error, refresh, restart, savedResult } = useComplianceChecker();
+
+  // result: either from active session or from saved check in db
+  const result = state?.result ?? savedResult;
 
   useEffect(() => {
     if (isRestarting) return;
     if (status !== "ready") return;
+
+    //show saved result
+    if (result) return;
+
     if (!state) return;
 
     if (state.status !== "finished") {
@@ -42,7 +49,7 @@ export default function ComplianceCheckerResult() {
     if (!state.result && hasTriedRefresh.current) {
       router.replace(href(locale as Locale, "complianceChecker"));
     }
-  }, [isRestarting, status, state, refresh, router]);
+  }, [isRestarting, status, state, result, refresh, router]);
 
   async function handleRestart() {
     setIsRestarting(true);
@@ -76,7 +83,7 @@ export default function ComplianceCheckerResult() {
     );
   }
 
-  if (!state || status === "loading" || status === "evaluating" || isRestarting) {
+  if (!result || status === "loading" || status === "evaluating" || isRestarting) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10">
         <Card variant="subtle" className="p-4 hover:translate-y-0">
@@ -88,13 +95,9 @@ export default function ComplianceCheckerResult() {
     );
   }
 
-  if (!state.result) {
-    return null;
-  }
-
   return (
     <ResultView
-      result={state.result}
+      result={result}
       onRestart={handleRestart}
       restartDisabled={isRestarting}
     />
