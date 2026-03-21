@@ -40,6 +40,7 @@ export default function ResultView({
           <Heading as="h1" className="mt-0">
             {actions("check.result")}
           </Heading>
+
           <Button
             type="button"
             variant="secondary"

@@ -116,6 +116,7 @@ export default function ComplianceCheckerWizard() {
     savedCheck,
     resumeCheck,
     startFresh,
+    state,
   } = useComplianceChecker();
 
   const [stepIndex, setStepIndex] = useState(0);
@@ -138,6 +139,14 @@ export default function ComplianceCheckerWizard() {
     setStepIndex(deriveInitialStepIndex(initialDraft));
     hasInitializedFromServer.current = true;
   }, [status, answers]);
+
+  // redirect to result-page if checker is already finished
+  useEffect(() => {
+    if (status !== "ready") return;
+    if (state?.status === "finished" && state?.result) {
+      router.replace(`${pathname}/result`);
+    }
+  }, [status, state, pathname, router]);
 
   useEffect(() => {
     setStepIndex((current) =>

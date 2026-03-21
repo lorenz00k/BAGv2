@@ -87,7 +87,7 @@ export function useComplianceChecker() {
       }
     } catch (e) {
       // Nicht eingeloggt oder kein Draft — weiter
-      console.error("getLatestCheck failed:", e);
+      //console.error("getLatestCheck failed:", e);
     }
 
     // nichts gefunden -> neue Session 
