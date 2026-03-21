@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/Input";
@@ -18,6 +18,9 @@ export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/";
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -25,7 +28,7 @@ export default function LoginForm() {
 
     try {
       await login(email, password);
-      router.push("/");
+      router.push(redirectTo);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Anmeldung fehlgeschlagen.");
     } finally {
@@ -116,7 +119,9 @@ export default function LoginForm() {
         <div className="mt-8 border-t border-zinc-100 pt-6 text-center dark:border-zinc-800">
           <p className="text-sm text-(--color-fg-subtle)">
             Noch kein Konto?{" "}
-            <Link href="/register" className="font-semibold text-(--color-accent) transition-colors hover:text-(--color-accent-emphasis)">
+            <Link
+              href={`/register${redirectTo !== "/" ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`}
+              className="font-semibold text-(--color-accent) transition-colors hover:text-(--color-accent-emphasis)">
               Jetzt registrieren
             </Link>
           </p>

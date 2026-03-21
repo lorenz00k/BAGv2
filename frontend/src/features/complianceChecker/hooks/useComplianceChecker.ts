@@ -219,9 +219,13 @@ export function useComplianceChecker() {
     try {
       await api.deleteSession();
     } catch (e: any) {
-      console.error("Failed to delete session", e);
+      //No active session -ok go on
+      //console.error("Failed to delete session", e);
     }
     setState(null);
+    setSavedCheck(null);
+    setSavedResult(null);
+    setShowResumePrompt(false);
 
     try {
       const fresh = await api.createSession();

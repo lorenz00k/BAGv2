@@ -52,7 +52,7 @@ auth.post("/register", registerRateLimiter, async (c) => {
   setCookie(c, "session_id", sessionId, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "Strict",
+    sameSite: "Lax",
     maxAge: 30 * 24 * 60 * 60,
     path: "/",
   });
@@ -92,7 +92,7 @@ auth.post("/login", loginRateLimiter, async (c) => {
   setCookie(c, "session_id", sessionId, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "Strict",
+    sameSite: "Lax",
     maxAge: 30 * 24 * 60 * 60, // 30 Tage
     path: "/",
   });
