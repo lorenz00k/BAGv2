@@ -30,7 +30,7 @@ export default function RegisterForm() {
 
     // Client-side Validierung
     if (password.length < 8) {
-      setError(tRegister("emailPlaceholder"));
+      setError(tRegister("errorPasswordLength"));
       return;
     }
     if (password !== confirmPassword) {
