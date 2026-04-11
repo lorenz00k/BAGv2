@@ -71,7 +71,7 @@ export default function ComplianceCheckerResult() {
     try {
       await api.createSession();
       await api.saveAnswers(answers as api.CheckerAnswers);
-      router.replace(href(locale as Locale, "complianceChecker"));
+      router.replace(href(locale as Locale, "complianceChecker") + "?edit=true");
     } catch (err) {
       console.error("Failed to edit", err);
     }
