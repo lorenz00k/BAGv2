@@ -49,6 +49,7 @@ export function useComplianceChecker() {
   const [savedCheck, setSavedCheck] = useState<SavedCheck | null>(null);
   const [savedResult, setSavedResult] = useState<CheckerResult | null>(null);
   const [showResumePrompt, setShowResumePrompt] = useState(false);
+  const [stateVersion, setStateVersion] = useState(0); 
 
   const answers = useMemo(() => (state?.answers ?? {}) as api.CheckerAnswers, [state]);
   const clearErrors = useCallback(() => { setError(null); setFieldErrors({}); }, []);
@@ -62,6 +63,7 @@ export function useComplianceChecker() {
       const existing = await api.getState();
       setState(existing);
       setStatus("ready");
+      setStateVersion((v) => v + 1);
       return existing;
     } catch (e: unknown) {
       if (!isNoSessionError(e)) {
@@ -95,6 +97,7 @@ export function useComplianceChecker() {
       const fresh = await api.createSession();
       setState(fresh);
       setStatus("ready");
+      setStateVersion((v) => v + 1);
       return fresh;
     } catch (e: unknown) {
       const message =
@@ -262,6 +265,7 @@ export function useComplianceChecker() {
       setState(restored);
       setSavedCheck(null);
       setStatus("ready");
+      setStateVersion((v) => v + 1);
       return restored;
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Failed to restore";
@@ -281,6 +285,7 @@ export function useComplianceChecker() {
       const fresh = await api.createSession();
       setState(fresh);
       setStatus("ready");
+      setStateVersion((v) => v + 1);
       return fresh;
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Failed to start";
@@ -311,5 +316,6 @@ export function useComplianceChecker() {
     resumeCheck,
     startFresh,
     savedResult,
+    stateVersion,
   };
 }

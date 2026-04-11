@@ -1,0 +1,31 @@
+{
+    "title": "Kontoeinstellungen",
+      "changePassword": {
+        "title": "Passwort ändern",
+        "currentLabel": "Aktuelles Passwort",
+        "newLabel": "Neues Passwort",
+        "confirmLabel": "Neues Passwort bestätigen",
+        "cta": "Passwort ändern",
+        "submitting": "Wird geändert...",
+        "success": "Passwort wurde erfolgreich geändert.",
+        "again": "Erneut ändern"
+      },
+      "sessions": {
+        "title": "Aktive Sitzungen",
+        "loading": "Wird geladen...",
+        "empty": "Keine aktiven Sitzungen.",
+        "createdAt": "Angemeldet am {date}",
+        "current": "Aktuelle Sitzung",
+        "revoke": "Beenden"
+      },
+      "deleteAccount": {
+        "title": "Account löschen",
+        "description": "Dein Account und alle zugehörigen Daten werden unwiderruflich gelöscht.",
+        "cta": "Account löschen",
+        "warning": "Diese Aktion kann nicht rückgängig gemacht werden!",
+        "passwordLabel": "Passwort zur Bestätigung",
+        "confirmCta": "Endgültig löschen",
+        "deleting": "Wird gelöscht...",
+        "cancel": "Abbrechen"
+      }
+}

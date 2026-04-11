@@ -28,3 +28,30 @@ export async function getMe(): Promise<AuthUser> {
     const data = await fetchApi<{ user: AuthUser }>("/api/user/me");
     return data.user;
 }
+
+export async function verifyEmail(token: string): Promise<void> {
+  await fetchApi("/api/auth/verify-email", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}
+
+export async function resendVerificationEmail(): Promise<void> {
+  await fetchApi("/api/auth/resend-verification", {
+    method: "POST",
+  });
+}
+
+export async function forgotPassword(email: string): Promise<void> {
+  await fetchApi("/api/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetPassword(token: string, password: string): Promise<void> {
+  await fetchApi("/api/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ token, password }),
+  });
+}

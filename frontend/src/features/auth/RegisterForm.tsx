@@ -8,10 +8,12 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { useTranslations } from "next-intl";
 
 export default function RegisterForm() {
   const { register } = useAuth();
   const router = useRouter();
+  const tRegister = useTranslations("pages.auth.register");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,11 +30,11 @@ export default function RegisterForm() {
 
     // Client-side Validierung
     if (password.length < 8) {
-      setError("Passwort muss mindestens 8 Zeichen lang sein.");
+      setError(tRegister("errorPasswordLength"));
       return;
     }
     if (password !== confirmPassword) {
-      setError("Passwörter stimmen nicht überein.");
+      setError(tRegister("errorPasswordMismatch"));
       return;
     }
 
@@ -42,7 +44,7 @@ export default function RegisterForm() {
       await register(email, password);
       router.push(redirectTo);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registrierung fehlgeschlagen.");
+      setError(err instanceof Error ? err.message : tRegister("errorDefault"));
     } finally {
       setIsSubmitting(false);
     }
@@ -52,12 +54,12 @@ export default function RegisterForm() {
     <main className="mx-auto flex min-h-[calc(100vh-var(--header-h)-8rem)] max-w-md items-center justify-center px-4 py-12">
       <Card className="w-full">
         <h1 className="text-2xl font-bold text-(--color-fg)">
-          Konto erstellen
+          {tRegister("title")}
         </h1>
 
         <form onSubmit={handleSubmit} className="grid gap-4">
           <div>
-            <Label htmlFor="email">E-Mail-Adresse</Label>
+            <Label htmlFor="email"> {tRegister("emailLabel")}</Label>
             <Input
               id="email"
               type="email"
@@ -69,7 +71,7 @@ export default function RegisterForm() {
           </div>
 
           <div>
-            <Label htmlFor="password">Passwort</Label>
+            <Label htmlFor="password">{tRegister("passwordLabel")}</Label>
             <Input
               id="password"
               type="password"
@@ -82,7 +84,7 @@ export default function RegisterForm() {
           </div>
 
           <div>
-            <Label htmlFor="confirmPassword">Passwort bestätigen</Label>
+            <Label htmlFor="confirmPassword">{tRegister("confirmPasswordLabel")}</Label>
             <Input
               id="confirmPassword"
               type="password"
@@ -101,17 +103,17 @@ export default function RegisterForm() {
           )}
 
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Wird registriert..." : "Registrieren"}
+            {isSubmitting ? tRegister("submittingButton") : tRegister("submitButton")}
           </Button>
         </form>
 
         <p className="mt-4 text-center text-sm text-(--color-fg-subtle)">
-          Bereits ein Konto?{" "}
+          {tRegister("hasAccountText")}{" "}
           <Link
             href={`/login${redirectTo !== "/" ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`}
             className="font-medium text-(--color-accent) hover:underline"
           >
-            Hier anmelden
+            {tRegister("loginLink")}
           </Link>
         </p>
       </Card>

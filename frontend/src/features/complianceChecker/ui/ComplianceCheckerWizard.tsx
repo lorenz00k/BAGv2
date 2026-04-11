@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { flow, type StepDef, type CheckerAnswers } from "../config/flow";
@@ -103,6 +103,9 @@ export default function ComplianceCheckerWizard() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const searchParams = useSearchParams();
+  const isEditRef = useRef(searchParams.get("edit") === "true");
+
   const {
     status,
     error,
@@ -117,6 +120,7 @@ export default function ComplianceCheckerWizard() {
     resumeCheck,
     startFresh,
     state,
+    stateVersion,
   } = useComplianceChecker();
 
   const [stepIndex, setStepIndex] = useState(0);
@@ -132,13 +136,16 @@ export default function ComplianceCheckerWizard() {
 
   useEffect(() => {
     if (status !== "ready") return;
-    if (hasInitializedFromServer.current && Object.keys(answers).length === 0) return;
 
     const initialDraft = cleanupDependentAnswers(answers);
+     
     setDraft(initialDraft);
-    setStepIndex(deriveInitialStepIndex(initialDraft));
-    hasInitializedFromServer.current = true;
-  }, [status, answers]);
+    setStepIndex(isEditRef.current ? 0 : deriveInitialStepIndex(initialDraft));
+    
+    //isEdit wieder auf false setzen damit 'weiter' wieder auf Seite 2 landet
+    isEditRef.current = false;
+
+  }, [stateVersion]);
 
   // redirect to result-page if checker is already finished
   useEffect(() => {
@@ -153,6 +160,8 @@ export default function ComplianceCheckerWizard() {
       Math.min(current, Math.max(visibleSteps.length - 1, 0))
     );
   }, [visibleSteps.length]);
+
+  
 
   const step = visibleSteps[Math.min(stepIndex, visibleSteps.length - 1)];
   const canGoBack = stepIndex > 0;

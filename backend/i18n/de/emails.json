@@ -1,0 +1,18 @@
+{
+  "verification": {
+    "subject": "E-Mail-Adresse bestätigen",
+    "heading": "Willkommen!",
+    "body": "Bitte bestätige deine E-Mail-Adresse, um dein Konto zu aktivieren.",
+    "cta": "E-Mail bestätigen",
+    "expiry": "Der Link ist 24 Stunden gültig.",
+    "ignore": "Falls du dich nicht registriert hast, kannst du diese E-Mail ignorieren."
+  },
+  "passwordReset": {
+    "subject": "Passwort zurücksetzen",
+    "heading": "Passwort zurücksetzen",
+    "body": "Du hast eine Anfrage zum Zurücksetzen deines Passworts gestellt.",
+    "cta": "Passwort zurücksetzen",
+    "expiry": "Der Link ist 1 Stunde gültig.",
+    "ignore": "Falls du diese Anfrage nicht gestellt hast, kannst du diese E-Mail ignorieren."
+  }
+}

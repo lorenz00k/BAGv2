@@ -11,7 +11,8 @@ export class ApiError extends Error {
     public readonly status: number,
     public readonly data: unknown,
   ) {
-    super(`API error ${status}`);
+    const message = (data as Record<string, unknown>)?.message ?? (data as Record<string, unknown>)?.error;
+    super(typeof message === "string" ? message : `API error ${status}`); 
     this.name = "ApiError";
   }
 }
