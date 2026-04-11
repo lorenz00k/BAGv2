@@ -15,6 +15,7 @@ import checksRouter from "./routes/checks.js";
 import checkerRouter from "./routes/checker.js";
 import viennagis from "./routes/viennagis.js";
 import { cleanupExpiredCheckerSessions } from "./utils/checkerSession.js";
+import account from "./routes/accounts.js";
 
 config();
 
@@ -34,6 +35,7 @@ app.options("/api/*", (c) => c.body(null, 204));
 app.route("/api/user", user);
 app.route("/api/checks", checksRouter);
 app.route("/api/checker", checkerRouter)
+app.route("/api/account", account);
 
 app.route("/api/viennagis", viennagis);
 

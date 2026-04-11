@@ -17,9 +17,11 @@ export function AuthButtons({ locale }: { locale: Locale }) {
 
     return user ? (
         <div className="flex items-center gap-2">
-            <span className="max-w-32 truncate text-sm text-(--color-header-fg-muted)">
-                {user.email}
-            </span>
+            <Link href={`/${locale}/account`}>
+                <span className="max-w-32 truncate text-sm text-(--color-header-fg-muted)">
+                    {user.email}
+                </span>
+            </Link>
             <Button variant="ghost" size="sm" onClick={async () => {
                 await logout();
                 window.location.href = `/${locale}`;
