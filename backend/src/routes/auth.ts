@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { db } from "../db/index.js";
-import { users } from "../db/schema/index.js";
+import { users, verificationTokens } from "../db/schema/index.js";
 import { registerSchema, loginSchema } from "../types/auth.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getCookie, setCookie } from "hono/cookie";
 import { createSession } from "../utils/session.js";
 import { deleteCookie } from "hono/cookie";
@@ -14,6 +14,8 @@ import { loginRateLimiter, registerRateLimiter } from "../middleware/rate-limit.
 import { HTTPException } from "hono/http-exception";
 import { clearSidCookie, readSid } from "../utils/checkerSession.js";
 import { mergeAnonymousChecker } from "../utils/sessionMerge.js";
+import { createVerificationToken, verifyToken } from "@/utils/verificationToken.js";
+import { sendVerificationEmail } from "@/utils/email.js";
 
 
 const auth = new Hono<{ Variables: Variables }>();
@@ -61,6 +63,10 @@ auth.post("/register", registerRateLimiter, async (c) => {
   const sid = readSid(c);
   await mergeAnonymousChecker(sid, newUser.id);
   clearSidCookie(c);
+
+  // Verification-Email senden
+  const token = await createVerificationToken(newUser.id, "email_verification");
+  await sendVerificationEmail(data.email, token);
 
   return c.json({ user: newUser }, 201);
 });
@@ -130,7 +136,7 @@ auth.post("/logout", async (c) => {
 auth.get("/me", authMiddleware, async (c) => {
   const userId = c.get("userId");
   const [user] = await db
-    .select({ id: users.id, email: users.email })
+    .select({ id: users.id, email: users.email, emailVerified: users.emailVerified })
     .from(users)
     .where(eq(users.id, userId))
     .limit(1);
@@ -140,6 +146,61 @@ auth.get("/me", authMiddleware, async (c) => {
   }
 
   return c.json({ user });
+});
+
+// POST /api/auth/verify-email 
+auth.post("/verify-email", async (c) => {
+  const { token } = await c.req.json();
+
+  if (!token || typeof token !== "string") {
+    throw new HTTPException(400, { message: "Token required" });
+  }
+
+  const record = await verifyToken(token, "email_verification");
+  if (!record) {
+    throw new HTTPException(400, { message: "Invalid or expired token" });
+  }
+
+  await db
+    .update(users)
+    .set({ emailVerified: true, updatedAt: new Date() })
+    .where(eq(users.id, record.userId));
+
+  return c.json({ message: "Email verified" });
+});
+
+//  POST /api/auth/resend-verification
+auth.post("/resend-verification", authMiddleware, async (c) => {
+  const userId = c.get("userId");
+
+  const [user] = await db
+    .select({ id: users.id, email: users.email, emailVerified: users.emailVerified })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!user) {
+    throw new HTTPException(404, { message: "User not found" });
+  }
+
+  if (user.emailVerified) {
+    return c.json({ message: "Already verified" });
+  }
+
+  // Alte Tokens löschen
+  await db
+    .delete(verificationTokens)
+    .where(
+      and(
+        eq(verificationTokens.userId, userId),
+        eq(verificationTokens.type, "email_verification")
+      )
+    );
+
+  const token = await createVerificationToken(userId, "email_verification");
+  await sendVerificationEmail(user.email, token);
+
+  return c.json({ message: "Verification email sent" });
 });
 
 export default auth;

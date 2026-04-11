@@ -7,6 +7,7 @@ export const KEBAB_TO_CAMEL: Record<string, string> = {
     "checks/compliance-checker/result": "checks/complianceChecker/result",
     "documents/required-documents": "documents/requiredDocuments",
     "documents/document-assistant": "documents/documentAssistant",
+    "verify-email": "verifyEmail"
 }
 
 export const CAMEL_TO_KEBAB: Record<string, string> = Object.fromEntries(

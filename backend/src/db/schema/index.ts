@@ -66,3 +66,19 @@ export const sessions = pgTable("sessions", {
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+
+// ===== Verfication mail =====
+
+export const verificationTokens = pgTable("verification_tokens", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull().unique(),
+  type: text("type", { enum: ["email_verification", "password_reset"] })
+    .notNull()
+    .default("email_verification"),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});

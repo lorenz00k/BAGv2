@@ -10,6 +10,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import Footer from "@/components/common/Footer/Footer";
 import type { Metadata } from "next"
 import CookieConsentMount from "@/components/common/cookie/CookieConsentMount";
+import { EmailVerificationBanner } from "@/features/auth/EmailVerificationBanner";
 
 export async function generateMetadata({
     params,
@@ -44,6 +45,7 @@ export default async function LocaleLayout({
 
             <AuthProvider>
                 <HeaderNav locale={locale} />
+                <EmailVerificationBanner />
                 {children}
                 <Footer locale={locale} />
             </AuthProvider>

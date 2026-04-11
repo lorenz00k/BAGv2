@@ -28,3 +28,16 @@ export async function getMe(): Promise<AuthUser> {
     const data = await fetchApi<{ user: AuthUser }>("/api/user/me");
     return data.user;
 }
+
+export async function verifyEmail(token: string): Promise<void> {
+  await fetchApi("/api/auth/verify-email", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}
+
+export async function resendVerificationEmail(): Promise<void> {
+  await fetchApi("/api/auth/resend-verification", {
+    method: "POST",
+  });
+}
