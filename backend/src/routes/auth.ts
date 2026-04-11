@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { db } from "../db/index.js";
-import { users, verificationTokens } from "../db/schema/index.js";
+import { sessions, users, verificationTokens } from "../db/schema/index.js";
 import { registerSchema, loginSchema } from "../types/auth.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
 import { and, eq } from "drizzle-orm";
@@ -10,12 +10,12 @@ import { deleteCookie } from "hono/cookie";
 import { deleteSession } from "../utils/session.js";
 import { authMiddleware } from "../middleware/auth.js";
 import type { Variables } from "../types/hono.js";
-import { loginRateLimiter, registerRateLimiter } from "../middleware/rate-limit.js";
+import { forgotPasswordRateLimiter, loginRateLimiter, registerRateLimiter, resendVerificationRateLimiter, resetPasswordRateLimiter, verifyEmailRateLimiter } from "../middleware/rate-limit.js";
 import { HTTPException } from "hono/http-exception";
 import { clearSidCookie, readSid } from "../utils/checkerSession.js";
 import { mergeAnonymousChecker } from "../utils/sessionMerge.js";
 import { createVerificationToken, verifyToken } from "@/utils/verificationToken.js";
-import { sendVerificationEmail } from "@/utils/email.js";
+import { sendPasswordResetEmail, sendVerificationEmail } from "@/utils/email.js";
 
 
 const auth = new Hono<{ Variables: Variables }>();
@@ -149,7 +149,7 @@ auth.get("/me", authMiddleware, async (c) => {
 });
 
 // POST /api/auth/verify-email 
-auth.post("/verify-email", async (c) => {
+auth.post("/verify-email", verifyEmailRateLimiter, async (c) => {
   const { token } = await c.req.json();
 
   if (!token || typeof token !== "string") {
@@ -170,7 +170,7 @@ auth.post("/verify-email", async (c) => {
 });
 
 //  POST /api/auth/resend-verification
-auth.post("/resend-verification", authMiddleware, async (c) => {
+auth.post("/resend-verification", authMiddleware, resendVerificationRateLimiter, async (c) => {
   const userId = c.get("userId");
 
   const [user] = await db
@@ -201,6 +201,72 @@ auth.post("/resend-verification", authMiddleware, async (c) => {
   await sendVerificationEmail(user.email, token);
 
   return c.json({ message: "Verification email sent" });
+});
+
+// POST /api/auth/forgot-password
+auth.post("/forgot-password", forgotPasswordRateLimiter, async (c) => {
+  const { email } = await c.req.json();
+
+  if (!email || typeof email !== "string") {
+    throw new HTTPException(400, { message: "Email required" });
+  }
+
+  // User suchen — aber NICHT verraten ob die Email existiert
+  const [user] = await db
+    .select({ id: users.id, email: users.email })
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
+
+  if (user) {
+    // Alte Reset-Tokens löschen
+    await db
+      .delete(verificationTokens)
+      .where(
+        and(
+          eq(verificationTokens.userId, user.id),
+          eq(verificationTokens.type, "password_reset")
+        )
+      );
+
+    const token = await createVerificationToken(user.id, "password_reset");
+    await sendPasswordResetEmail(user.email, token);
+  }
+
+  // Immer gleiche Antwort — verhindert Email-Enumeration
+  return c.json({ message: "If the email exists, a reset link has been sent." });
+});
+
+// POST /api/auth/reset-password
+auth.post("/reset-password", resetPasswordRateLimiter, async (c) => {
+  const { token, password } = await c.req.json();
+
+  if (!token || typeof token !== "string") {
+    throw new HTTPException(400, { message: "Token required" });
+  }
+
+  if (!password || typeof password !== "string" || password.length < 8) {
+    throw new HTTPException(400, { message: "Password must be at least 8 characters" });
+  }
+
+  const record = await verifyToken(token, "password_reset");
+  if (!record) {
+    throw new HTTPException(400, { message: "Invalid or expired token" });
+  }
+
+  // Neues Passwort setzen
+  const passwordHash = await hashPassword(password);
+  await db
+    .update(users)
+    .set({ passwordHash, updatedAt: new Date() })
+    .where(eq(users.id, record.userId));
+
+  // Alle Sessions dieses Users invalidieren
+  await db
+    .delete(sessions)
+    .where(eq(sessions.userId, record.userId));
+
+  return c.json({ message: "Password reset successful" });
 });
 
 export default auth;

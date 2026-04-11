@@ -10,7 +10,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import Footer from "@/components/common/Footer/Footer";
 import type { Metadata } from "next"
 import CookieConsentMount from "@/components/common/cookie/CookieConsentMount";
-import { EmailVerificationBanner } from "@/features/auth/EmailVerificationBanner";
+import { EmailVerificationBanner } from "@/features/auth/components/EmailVerificationBanner";
 
 export async function generateMetadata({
     params,

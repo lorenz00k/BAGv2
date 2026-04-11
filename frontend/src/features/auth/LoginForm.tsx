@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export default function LoginForm() {
   const { login } = useAuth();
@@ -23,6 +23,7 @@ export default function LoginForm() {
 
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/";
+  const locale = useLocale();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -79,7 +80,7 @@ export default function LoginForm() {
               <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider opacity-70">
                 {tLogin("passwordLabel")}
               </Label>
-              <Link href="#" className="text-xs text-(--color-accent) hover:underline">
+              <Link href={`/${locale}/forgot-password`} className="text-xs text-(--color-accent) hover:underline">
                 {tLogin("forgotPasswordLink")}
               </Link>
             </div>

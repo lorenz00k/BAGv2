@@ -29,3 +29,35 @@ export const registerRateLimiter = isDev ? noLimit : rateLimiter({
   keyGenerator,
   message: "Too many registration attempts, please try again later",
 });
+
+export const forgotPasswordRateLimiter = isDev ? noLimit : rateLimiter({
+  windowMs: 15 * 60 * 1000,  // 15 Minuten
+  limit: 3,
+  standardHeaders: "draft-6",
+  keyGenerator,
+  message: "Too many requests, please try again later",
+});
+
+export const resetPasswordRateLimiter = isDev ? noLimit : rateLimiter({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: "draft-6",
+  keyGenerator,
+  message: "Too many requests, please try again later",
+});
+
+export const verifyEmailRateLimiter = isDev ? noLimit : rateLimiter({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: "draft-6",
+  keyGenerator,
+  message: "Too many requests, please try again later",
+});
+
+export const resendVerificationRateLimiter = isDev ? noLimit : rateLimiter({
+  windowMs: 15 * 60 * 1000,
+  limit: 3,
+  standardHeaders: "draft-6",
+  keyGenerator,
+  message: "Too many requests, please try again later",
+});
