@@ -66,12 +66,12 @@ npm run dev
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/dbname
 PORT=3000
-# add further variables here
+NEXT_PUBLIC_GA_ID=G-XXXXXXX
+NEXT_PUBLIC_VERCEL_ENV=development
 ```
 
 ### `frontend/.env.example`
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3000
-# add further variables here
 ```
