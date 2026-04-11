@@ -68,7 +68,7 @@ auth.post("/register", registerRateLimiter, async (c) => {
   const token = await createVerificationToken(newUser.id, "email_verification");
   await sendVerificationEmail(data.email, token);
 
-  return c.json({ user: newUser }, 201);
+  return c.json({ user: { ...newUser, emailVerified: false } }, 201);
 });
 
 // POST /api/auth/login (ERSETZEN)
@@ -112,6 +112,7 @@ auth.post("/login", loginRateLimiter, async (c) => {
     user: {
       id: user.id,
       email: user.email,
+      emailVerified: user.emailVerified,
     },
   });
 });
