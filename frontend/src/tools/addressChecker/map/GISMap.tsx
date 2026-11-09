@@ -74,7 +74,7 @@ export default function GISMap({
       style: MAP_STYLE,
       center: VIENNA_CENTER,
       zoom: DEFAULT_ZOOM,
-      attributionControl: true,
+      attributionControl: {},
     });
 
     map.addControl(new maplibregl.NavigationControl(), "top-right");
