@@ -27,32 +27,43 @@ export class ApiError extends Error {
   }
 }
 
+type RawIssue = { path?: unknown; message?: string };
+
+type RawError = {
+  message?: string;
+  title?: string;
+  status?: number;
+  error?: unknown;
+  issues?: unknown;
+};
+
+function toIssue(issue: RawIssue): ApiFieldIssue {
+  return {
+    path: Array.isArray(issue?.path) ? (issue.path as (string | number)[]) : [],
+    message: issue?.message ?? "Invalid value",
+  };
+}
+
 function toApiError(error: unknown, httpStatus?: number): ApiError {
   if (typeof error === "string") {
     return new ApiError(error);
   }
 
-  const e = error as any;
+  const e = (error ?? {}) as RawError;
 
-  const issues = Array.isArray(e?.error)
-    ? e.error.map((issue: any) => ({
-      path: Array.isArray(issue?.path) ? issue.path : [],
-      message: issue?.message ?? "Invalid value",
-    }))
-    : Array.isArray(e?.issues)
-      ? e.issues.map((issue: any) => ({
-        path: Array.isArray(issue?.path) ? issue.path : [],
-        message: issue?.message ?? "Invalid value",
-      }))
+  const raw = Array.isArray(e.error)
+    ? e.error
+    : Array.isArray(e.issues)
+      ? e.issues
       : undefined;
 
+  const issues = raw ? (raw as RawIssue[]).map(toIssue) : undefined;
+
   const message =
-    e?.message ??
-    e?.title ??
-    (issues?.length ? "Validation failed" : "Request failed");
+    e.message ?? e.title ?? (issues?.length ? "Validation failed" : "Request failed");
 
   return new ApiError(message, {
-    status: httpStatus ?? e?.status,
+    status: httpStatus ?? e.status,
     issues,
   });
 }

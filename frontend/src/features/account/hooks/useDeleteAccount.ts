@@ -27,10 +27,10 @@ export function useDeleteAccount() {
       await deleteAccount(password);
       await logout();
       window.location.href = "/";
-    } catch (err: any) {
+    } catch (err) {
       setStatus("error");
-      const body = err?.data as { error?: string } | null;
-      setError(body?.error || "Account löschen fehlgeschlagen.");
+      const body = (err as { data?: { error?: string } } | null)?.data;
+      setError(body?.error || "Passwort ändern fehlgeschlagen.");
     }
   }
 

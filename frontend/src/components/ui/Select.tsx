@@ -19,9 +19,9 @@ const base =
 export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     ({ className, withIcon, withUnit, style, ...props }, ref) => {
         const mergedStyle = {
-            ["--form-padding-block" as any]: "0.5rem",
-            ["--form-padding-inline-start" as any]: withIcon ? "2.75rem" : "1rem",
-            ["--form-padding-inline-end" as any]: withUnit ? "4rem" : "1rem",
+            "--form-padding-block": "0.5rem",
+            "--form-padding-inline-start": withIcon ? "2.75rem" : "1rem",
+            "--form-padding-inline-end": withUnit ? "4rem" : "1rem",
             ...style,
         } as React.CSSProperties;
 

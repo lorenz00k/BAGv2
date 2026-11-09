@@ -19,9 +19,9 @@ const base =
 export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     ({ className, withIcon, withUnit, style, ...props }, ref) => {
         const mergedStyle = {
-            ["--form-padding-block" as any]: "0.75rem",
-            ["--form-padding-inline-start" as any]: withIcon ? "2.75rem" : "1rem",
-            ["--form-padding-inline-end" as any]: withUnit ? "4rem" : "1rem",
+            "--form-padding-block": "0.75rem",
+            "--form-padding-inline-start": withIcon ? "2.75rem" : "1rem",
+            "--form-padding-inline-end": withUnit ? "4rem" : "1rem",
             ...style,
         } as React.CSSProperties;
 

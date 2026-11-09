@@ -14,10 +14,7 @@ export function AutoGrid({
     min = "16rem",
     gap = "1rem",
 }: AutoGridProps) {
-    const style: CSSProperties = {
-        ["--min" as any]: min,
-        ["--gap" as any]: gap,
-    };
+    const style = { "--min": min, "--gap": gap } as CSSProperties;
 
     return (
         <div

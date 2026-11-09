@@ -1,5 +1,6 @@
 import { BreakText } from "@/components/common/BreakText";
 import styles from "./SectionHeading.module.css";
+import type { ElementType } from "react";
 
 type HeadingTag = "h1" | "h2" | "h3" | "h4";
 
@@ -18,8 +19,8 @@ export default function SectionHeading({
     as = "h2",
     subtitleAs = "p",
 }: SectionHeadingProps) {
-    const TitleTag = as as any;
-    const SubTag = subtitleAs as any;
+    const TitleTag: ElementType = as;
+    const SubTag: ElementType = subtitleAs;
 
     return (
         <div className={styles.heading}>
