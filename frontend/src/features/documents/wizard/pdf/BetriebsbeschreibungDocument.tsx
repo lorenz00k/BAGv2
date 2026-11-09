@@ -799,8 +799,7 @@ export function BetriebsbeschreibungDocument({ data }: { data: WizardData }) {
                                 },
                             ] as const
                         ).map(({ group, keys, labels }) => {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const ow = d.oberflaechenwasser as Record<string, string>
+                            const ow = d.oberflaechenwasser
                             const active = keys.filter(k => ow[k])
                             return (
                                 <View key={group} style={{ marginBottom: 5 }}>
@@ -811,7 +810,7 @@ export function BetriebsbeschreibungDocument({ data }: { data: WizardData }) {
                                         active.map(k => (
                                             <Bullet
                                                 key={k}
-                                                text={`${labels[keys.indexOf(k)]}: ${ow[k] === "bestand" ? "Bestand" : "Neu"}`}
+                                                text={`${labels[(keys as readonly string[]).indexOf(k)]}: ${ow[k] === "bestand" ? "Bestand" : "Neu"}`}
                                             />
                                         ))
                                     )}
