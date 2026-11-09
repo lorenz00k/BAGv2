@@ -1,17 +1,19 @@
-import type { Locale } from "@/i18n/locales";
+import { isLocale } from "@/i18n/locales";
+import { notFound } from 'next/navigation';
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 
 import AddressChecker from "@/tools/addressChecker/addressChecker";
 
 type PageProps = {
-  params: Promise<{ locale: Locale }>;
+  params: Promise<{ locale: string }>;
 };
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { locale } = await params;
+  if (!isLocale(locale)) notFound();
   const t = await getTranslations({ locale, namespace: "pages.addressChecker" });
 
   return {
