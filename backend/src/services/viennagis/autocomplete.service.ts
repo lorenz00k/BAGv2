@@ -71,7 +71,7 @@ function buildCqlFilter(query: string): string {
   // Try to split into street + house number (number at the end)
   const match = query.match(/^(.+?)\s+(\d+\S*)$/);
 
-  if (match) {
+  if (match?.[1] && match[2]) {
     const street = escapeCql(match[1]);
     const number = escapeCql(match[2]);
     return `NAME_STR ILIKE '${street}%' AND NAME_ONR LIKE '${number}%'`;
