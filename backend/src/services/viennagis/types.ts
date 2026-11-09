@@ -118,7 +118,7 @@ export interface TrafficZoneInfo {
 }
 
 export interface PlanDocumentInfo {
-  geometry?: GeoJSONGeometry;
+  geometry?: GeoJSONGeometry | undefined;
   pdNummer?: string | undefined;        // Plandokument-Nummer, z.B. "8200"
   url?: string | undefined;             // Direkt-Link zum Plandokument
   details: string;
@@ -160,7 +160,7 @@ export interface FactItem {
 export interface LayerResult {
   layerId: string;
   label: string;
-  geometry?: GeoJSONGeometry;
+  geometry?: GeoJSONGeometry | undefined;
   risk: SuitabilityRisk;
   color: TrafficLightColor;
   facts: FactItem[];
@@ -174,7 +174,7 @@ export interface ConflictWarning {
 }
 
 export interface AggregatedResult {
-  address?: Address;
+  address?: Address | undefined;
   overallRisk: SuitabilityRisk;
   overallColor: TrafficLightColor;
   overallLabel: string;
