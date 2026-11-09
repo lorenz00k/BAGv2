@@ -14,8 +14,8 @@ import { forgotPasswordRateLimiter, loginRateLimiter, registerRateLimiter, resen
 import { HTTPException } from "hono/http-exception";
 import { clearSidCookie, readSid } from "../utils/checkerSession.js";
 import { mergeAnonymousChecker } from "../utils/sessionMerge.js";
-import { createVerificationToken, verifyToken } from "@/utils/verificationToken.js";
-import { sendPasswordResetEmail, sendVerificationEmail } from "@/utils/email.js";
+import { createVerificationToken, verifyToken } from "../utils/verificationToken.js";
+import { sendPasswordResetEmail, sendVerificationEmail } from "../utils/email.js";
 
 
 const auth = new Hono<{ Variables: Variables }>();
