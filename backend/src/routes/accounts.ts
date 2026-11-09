@@ -6,7 +6,6 @@ import { authMiddleware } from "../middleware/auth.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
 import { HTTPException } from "hono/http-exception";
 import type { Variables } from "../types/hono.js";
-import { z } from "zod";
 
 const account = new Hono<{ Variables: Variables }>();
 
