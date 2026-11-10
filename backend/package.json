@@ -31,7 +31,7 @@
     "typescript-eslint": "^8.54.0"
   },
   "dependencies": {
-    "@hono/node-server": "^1.19.9",
+    "@hono/node-server": "^2.1.6",
     "@node-rs/argon2": "^2.0.2",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.1",
