@@ -1,0 +1,40 @@
+version: 2
+updates:
+  # Backend (Hono, Drizzle, ...)
+  - package-ecosystem: npm
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore"
+    groups:
+      backend-minor-patch:
+        update-types: ["minor", "patch"]
+
+  # Frontend (Next.js, React, maplibre-gl, ...)
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore"
+    groups:
+      frontend-minor-patch:
+        update-types: ["minor", "patch"]
+
+  # Versions of the actions used in the workflows
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: "chore"
+    groups:
+      actions:
+        patterns: ["*"]
