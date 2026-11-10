@@ -3,7 +3,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import {
     hashPassword,
     verifyPassword,
-} from "../../src/utils/password.ts"
+} from "../../../src/utils/password.ts"
 
 afterEach(() => {
     vi.unstubAllEnvs();

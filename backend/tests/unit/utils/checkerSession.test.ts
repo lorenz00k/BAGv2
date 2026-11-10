@@ -3,7 +3,7 @@ import { Hono } from "hono";
 
 const { returning } = vi.hoisted(() => ({ returning: vi.fn() }));
 
-vi.mock("../../src/db/index.js", () => ({
+vi.mock("../../../src/db/index.js", () => ({
   db: { delete: () => ({ where: () => ({ returning }) }) },
 }));
 
@@ -16,7 +16,7 @@ import {
   readSid,
   cleanupExpiredCheckerSessions,
   CHECKER_TTL_SECONDS,
-} from "../../src/utils/checkerSession.js";
+} from "../../../src/utils/checkerSession.js";
 
 afterEach(() => {
   vi.unstubAllEnvs();
