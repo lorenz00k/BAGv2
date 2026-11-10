@@ -87,7 +87,7 @@ export function useComplianceChecker() {
         setStatus("ready");
         return;
       }
-    } catch (e) {
+    } catch {
       // Nicht eingeloggt oder kein Draft — weiter
       //console.error("getLatestCheck failed:", e);
     }
@@ -221,7 +221,7 @@ export function useComplianceChecker() {
     setStatus("loading");
     try {
       await api.deleteSession();
-    } catch (e: any) {
+    } catch {
       //No active session -ok go on
       //console.error("Failed to delete session", e);
     }

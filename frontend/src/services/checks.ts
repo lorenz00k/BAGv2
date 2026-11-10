@@ -3,7 +3,7 @@ import type {
   Check,
   ComplianceFormData,
   ComplianceResult,
-} from "@/tools/complianceChecker/types";
+} from "@/types/complianceChecker"
 
 // ---------------------------------------------------------------------------
 // API response shapes

@@ -3,8 +3,7 @@ import HeaderNav from "@/components/common/navigation/Header/HeaderNav";
 import { NextIntlClientProvider } from "next-intl";
 import { notFound } from 'next/navigation';
 import { getMessages } from "next-intl/server";
-import type { Locale } from "@/i18n/locales";
-import { locales } from "@/i18n/locales";
+import { isLocale } from "@/i18n/locales";
 import { AuthProvider } from "@/context/AuthContext";
 
 import Footer from "@/components/common/Footer/Footer";
@@ -15,10 +14,10 @@ import { EmailVerificationBanner } from "@/features/auth/components/EmailVerific
 export async function generateMetadata({
     params,
 }: {
-    params: Promise<{ locale: Locale }>
+    params: Promise<{ locale: string }>
 }): Promise<Metadata> {
     const { locale } = await params
-    if (!locales.includes(locale)) notFound()
+    if (!isLocale(locale)) notFound()
 
     return {
         manifest: `/${locale}/manifest.webmanifest`,
@@ -30,11 +29,11 @@ export default async function LocaleLayout({
     params,
 }: {
     children: React.ReactNode;
-    params: Promise<{ locale: Locale }>;
+    params: Promise<{ locale: string }>;
 }) {
 
     const { locale } = await params;
-    if (!locales.includes(locale)) notFound();
+    if (!isLocale(locale)) notFound();
 
     const messages = await getMessages();
 

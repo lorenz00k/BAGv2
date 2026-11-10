@@ -1,11 +1,13 @@
 import { rateLimiter } from "hono-rate-limiter";
-import type { MiddlewareHandler } from "hono";
+import type { Context, MiddlewareHandler } from "hono";
 
 const isDev = process.env.NODE_ENV === "development";
 const noLimit: MiddlewareHandler = (_, next) => next();
 
-const keyGenerator = (c: any) =>
-  c.req.header("x-forwarded-for")?.split(",")[0] ?? c.req.header("x-real-ip") ?? "unknown";
+const keyGenerator = (c: Context): string =>
+  c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ||
+  c.req.header("x-real-ip") ||
+  "unknown";
 
 export const globalRateLimiter = isDev ? noLimit : rateLimiter({
   windowMs: 60 * 1000,

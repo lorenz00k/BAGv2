@@ -1,6 +1,7 @@
 import * as React from "react";
 import clsx from "clsx";
 import { Slot } from "@radix-ui/react-slot";
+import type { ElementType } from "react";
 
 type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "heroCta" | "next" | "previous" | "choice";
 type ButtonSize = "sm" | "md" | "lg" | "icon";
@@ -99,7 +100,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref
     ) => {
         const resolvedType = type ?? "button";
-        const Comp: any = asChild ? Slot : "button";
+        const Comp: ElementType = asChild ? Slot : "button";
 
         const variantClass =
             variant === "choice"

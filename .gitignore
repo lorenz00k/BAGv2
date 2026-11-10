@@ -1,52 +1,28 @@
-<<<<<<< ours
-# dependencies
+# Dependencies and build
 node_modules/
-
-# Next.js build output
 .next/
 out/
-
-# env files
-.env
-.env.*.local
-
-# logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# OS/editor
-.DS_Store
-.vscode/
-.idea/
-
-# misc
+dist/
 coverage/
 *.tsbuildinfo
+next-env.d.ts
 
-=======
-# Dependencies
-node_modules/
-
-# Build Output
-dist/
-
-# Environment Variables (wichtig für Security!)
+# Evironment variables
 .env
-.env.local
-.env.production
+.env.*
+!.env.example
 
 # Logs
-logs/
 *.log
+npm-debug.log*
 
-# OS-Dateien
+# OS and IDE
 .DS_Store
 Thumbs.db
-
-# IDE
 .idea/
 .vscode/
 *.swp
->>>>>>> theirs
+
+# intern docu
+cookies.txt
+structure.txt

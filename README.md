@@ -27,6 +27,7 @@ Then fill in the values in each `.env` file accordingly.
 Start the PostgreSQL database via Docker:
 
 ```bash
+cd backend
 docker compose up -d
 ```
 
@@ -73,5 +74,5 @@ NEXT_PUBLIC_VERCEL_ENV=development
 ### `frontend/.env.example`
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:3000
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
 ```

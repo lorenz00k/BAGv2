@@ -57,7 +57,7 @@ export function Step10_Oberflaechenwasser() {
             <div className="space-y-6">
                 <HintBox>
                     Wählen Sie für jede Methode: ist sie im <strong>Bestand</strong> vorhanden oder wird sie
-                    <strong> neu</strong> errichtet? Nicht zutreffende Felder lassen Sie auf „–".
+                    <strong> neu</strong> errichtet? Nicht zutreffende Felder lassen Sie auf „–“.
                 </HintBox>
 
                 <FieldDivider label="Dachflächen" />

@@ -15,8 +15,10 @@ const base =
 const PUBLIC_KEYS = [
     "home",
     "complianceChecker",
-    "gastroAi",
     "addressChecker",
+    "fundingChecker",
+    "requiredDocuments",
+    "documentAssistant",
     "faq",
     "imprint",
     "privacy",

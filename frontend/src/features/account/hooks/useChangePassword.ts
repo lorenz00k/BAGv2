@@ -23,9 +23,9 @@ export function useChangePassword() {
     try {
       await changePassword(currentPassword, newPassword);
       setStatus("success");
-    } catch (err: any) {
+    } catch (err) {
       setStatus("error");
-      const body = err?.data as { error?: string } | null;
+      const body = (err as { data?: { error?: string } } | null)?.data;
       setError(body?.error || "Passwort ändern fehlgeschlagen.");
     }
   }

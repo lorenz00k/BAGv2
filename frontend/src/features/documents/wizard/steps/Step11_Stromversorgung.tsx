@@ -19,7 +19,7 @@ export function Step11_Stromversorgung() {
             <div className="space-y-6">
                 <HintBox>
                     Wenn Sie ausschließlich über das öffentliche Netz versorgt werden und sich daran
-                    nichts ändert, genügt ein Haken bei „Unverändert". Bei eigenen Anlagen (PV, Notstrom)
+                    nichts ändert, genügt ein Haken bei „Unverändert“. Bei eigenen Anlagen (PV, Notstrom)
                     sind Typ und Leistung einzutragen.
                 </HintBox>
 

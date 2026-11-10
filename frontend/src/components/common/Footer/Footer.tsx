@@ -32,7 +32,9 @@ export default function Footer({ locale }: FooterProps) {
                 </div>
 
                 <div className={styles.links}>
-                    {SECONDARY_NAV.map((item) => (
+                    {SECONDARY_NAV.map((item) => 
+                        item.key?
+                    (
                         <Link
                             key={item.key}
                             href={href(locale, item.key)}
@@ -40,7 +42,7 @@ export default function Footer({ locale }: FooterProps) {
                         >
                             {tNav(item.labelKey)}
                         </Link>
-                    ))}
+                    ): null)}
 
                     <button
                         type="button"
