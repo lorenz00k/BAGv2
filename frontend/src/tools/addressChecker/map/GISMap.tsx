@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import maplibregl from "maplibre-gl";
+import { Map, Marker, NavigationControl, Popup , LngLatBoundsLike, setWorkerUrl} from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import type { Feature, FeatureCollection, Geometry } from "geojson";
 
 import type { AggregatedResult, GeoJSONGeometry } from "@/types/viennagis";
 import { getLayerColor, getLayerHighlightColor, RISK_STROKE_PATTERNS } from "./layerStyles";
@@ -11,6 +12,12 @@ import {
   buildPOIFeatures,
 } from "./buildGeoJSON";
 import MapLegend from "./MapLegend";
+
+
+setWorkerUrl(
+  new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).toString()
+);
+
 
 // ── Constants ───────────────────────────────────────────────────────────
 
@@ -62,14 +69,14 @@ export default function GISMap({
   className,
 }: GISMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
-  const markerRef = useRef<maplibregl.Marker | null>(null);
+  const mapRef = useRef<Map | null>(null);
+  const markerRef = useRef<Marker | null>(null);
 
   // ---- Initialize map once ----
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
-    const map = new maplibregl.Map({
+    const map = new Map({
       container: containerRef.current,
       style: MAP_STYLE,
       center: VIENNA_CENTER,
@@ -77,7 +84,7 @@ export default function GISMap({
       attributionControl: {},
     });
 
-    map.addControl(new maplibregl.NavigationControl(), "top-right");
+    map.addControl(new NavigationControl(), "top-right");
 
     mapRef.current = map;
 
@@ -89,7 +96,7 @@ export default function GISMap({
 
   // ---- Update layers when data changes ----
   const updateLayers = useCallback(
-    (map: maplibregl.Map, result: AggregatedResult) => {
+    (map: Map, result: AggregatedResult) => {
       // Remove old sources/layers
       cleanupSources(map);
 
@@ -169,10 +176,10 @@ export default function GISMap({
 
         const { lng, lat } = result.address.coordinates;
 
-        markerRef.current = new maplibregl.Marker({ color: "#1e40af" })
+        markerRef.current = new Marker({ color: "#1e40af" })
           .setLngLat([lng, lat])
           .setPopup(
-            new maplibregl.Popup({ offset: 25 }).setHTML(
+            new Popup({ offset: 25 }).setHTML(
               `<strong>${result.address.fullAddress}</strong>`,
             ),
           )
@@ -258,7 +265,7 @@ export default function GISMap({
 /** Compute a LngLatBounds from any GeoJSON geometry. */
 function geometryBounds(
   geom: GeoJSONGeometry,
-): maplibregl.LngLatBoundsLike | null {
+): LngLatBoundsLike | null {
   const coords: number[][] = [];
 
   function collect(arr: unknown): void {
@@ -299,7 +306,7 @@ function geometryBounds(
 }
 
 /** Remove all GIS sources/layers so we can re-add fresh data. */
-function cleanupSources(map: maplibregl.Map) {
+function cleanupSources(map: Map) {
   const sourceIds = ["gis-layers", "pois"];
 
   for (const sourceId of sourceIds) {
