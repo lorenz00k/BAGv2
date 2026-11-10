@@ -28,7 +28,7 @@
     "maplibre-gl": "^6.17.0",
     "next": "^16.1.6",
     "next-intl": "^4.3.12",
-    "openai": "^6.8.1",
+    "openai": "^7.53.0",
     "openapi-fetch": "^0.17.0",
     "pdf-parse": "^1.1.1",
     "pdfjs-dist": "^5.4.394",
