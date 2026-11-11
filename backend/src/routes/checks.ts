@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import type { Variables } from "../types/hono.js";
+import type { MiddlewareHandler } from "hono";
 import { authMiddleware } from "../middleware/auth.js";
 import { db } from "../db/index.js";
 import { checks } from "../db/schema/index.js";
@@ -10,8 +11,21 @@ import { evaluateCompliance } from "../services/compliance/index.js";
 
 const checksRouter = new Hono<{ Variables: Variables }>();
 
-// Alle Routes brauchen Auth
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+//all routes need auth
 checksRouter.use("*", authMiddleware);
+
+// An id that is not a UUID can never match a check, answer 404 instead of a database error
+const requireUuid: MiddlewareHandler = async (c, next) => {
+  if (!UUID.test(c.req.param("id") ?? "")) {
+    return c.json({ error: "Check not found" }, 404);
+  }
+  await next();
+};
+
+checksRouter.use("/:id", requireUuid);
+checksRouter.use("/:id/*", requireUuid);
 
 // Validation Schema
 const createCheckSchema = z.object({
@@ -45,6 +59,9 @@ checksRouter.post("/", async (c) => {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return c.json({ error: error.issues }, 400);
+    }
+    if (error instanceof SyntaxError) {
+      return c.json({ error: "Invalid JSON" }, 400);
     }
     return c.json({ error: "Internal server error" }, 500);
   }
@@ -115,6 +132,9 @@ checksRouter.patch("/:id", async (c) => {
     if (error instanceof z.ZodError) {
       return c.json({ error: error.issues }, 400);
     }
+        if (error instanceof SyntaxError) {
+      return c.json({ error: "Invalid JSON" }, 400);
+    }
     return c.json({ error: "Internal server error" }, 500);
   }
 });
@@ -157,10 +177,10 @@ checksRouter.post("/:id/evaluate", async (c) => {
     return c.json({ result, check: updated });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return c.json(
-        { error: "Invalid form data", issues: error.issues },
-        400
-      );
+      return c.json({ error: "Invalid form data", issues: error.issues }, 400);
+    }
+        if (error instanceof SyntaxError) {
+      return c.json({ error: "Invalid JSON" }, 400);
     }
     return c.json({ error: "Internal server error" }, 500);
   }
