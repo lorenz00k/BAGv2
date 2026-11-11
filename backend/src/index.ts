@@ -1,83 +1,42 @@
-import { config } from "dotenv";
 import { serve } from "@hono/node-server";
-import { Hono } from "hono";
-
-//Importiert deine Route (.js weil ES Modules das braucht, auch wenn die Datei .ts heißt)
-import health from "./routes/health.js";
-import auth from "./routes/auth.js";
-import { logger } from "./middleware/logger.js";
-import { corsMiddleware } from "./middleware/cors.js";
-import { errorHandler } from "./middleware/error-handler.js";
-import user from "./routes/user.js";
+import app from "./app.js";
 import { cleanupExpiredSessions } from "./utils/session.js";
-import { globalRateLimiter } from "./middleware/rate-limit.js";
-import checksRouter from "./routes/checks.js";
-import checkerRouter from "./routes/checker.js";
-import viennagis from "./routes/viennagis.js";
 import { cleanupExpiredCheckerSessions } from "./utils/checkerSession.js";
-import account from "./routes/accounts.js";
 
-config();
-
-//reihenfolge ist wichtig!!! Request → Logger → CORS → Route also middleware vor routing
-
-//Hono : Erstellt App-Instanz
-const app = new Hono();
-
-//Middleware einsetzten
-app.use(logger);
-app.use(corsMiddleware);
-app.route("/api/auth", auth);
-app.use(globalRateLimiter);
-
-app.options("/api/*", (c) => c.body(null, 204));
-
-app.route("/api/user", user);
-app.route("/api/checks", checksRouter);
-app.route("/api/checker", checkerRouter)
-app.route("/api/account", account);
-
-app.route("/api/viennagis", viennagis);
-
-//error handel
-app.onError(errorHandler);
-
-//Alles in health.ts ist jetzt unter /health erreichbar
-app.route("/health", health);
-
-// Cleanup beim Start
+// Cleanup on start
 cleanupExpiredSessions()
   .then((count) => console.log(`Cleaned up ${count} expired sessions`))
   .catch((err) => console.error("Cleanup error:", err));
 
-// Cleanup alle 24 Stunden
-setInterval(() => {
-  cleanupExpiredSessions()
-    .then((count) => console.log(`Cleaned up ${count} expired sessions`))
-    .catch((err) => console.error("Cleanup error:", err));
-}, 24 * 60 * 60 * 1000);
+// Cleanup every 24 hours
+setInterval(
+  () => {
+    cleanupExpiredSessions()
+      .then((count) => console.log(`Cleaned up ${count} expired sessions`))
+      .catch((err) => console.error("Cleanup error:", err));
+  },
+  24 * 60 * 60 * 1000
+);
 
-// cleanup checkerSession
+// cleanup checker session
 cleanupExpiredCheckerSessions()
   .then((count) => console.log(`Cleaned up ${count} expired checker sessions`))
   .catch((err) => console.error("Checker cleanup error:", err));
 
-setInterval(() => {
-  cleanupExpiredCheckerSessions()
-    .then((count) => console.log(`Cleaned up ${count} expired checker sessions`))
-    .catch((err) => console.error("Checker cleanup error:", err));
-}, 24 * 60 * 60 * 1000);
+setInterval(
+  () => {
+    cleanupExpiredCheckerSessions()
+      .then((count) =>
+        console.log(`Cleaned up ${count} expired checker sessions`)
+      )
+      .catch((err) => console.error("Checker cleanup error:", err));
+  },
+  24 * 60 * 60 * 1000
+);
 
-//Route definieren: Definiert: Bei GET-Request auf "/" führe diese Funktion aus
-// c = Das "Context"-Objekt – enthält Request-Infos und Response-Methoden
-app.get("/", (c) => {
-  return c.text("Backend läuft hoffentlich..."); // Sendet eine Text-Antwort zurück
-});
-
-//Nimmt sich die Port variable aus .env
+// Port comes from .env (loaded in app.ts)
 const port = Number(process.env.PORT);
 
-// Startet den Server auf Port 3000
 serve(
   {
     fetch: app.fetch,
