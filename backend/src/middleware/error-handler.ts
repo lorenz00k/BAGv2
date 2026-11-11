@@ -10,10 +10,22 @@ const errorLogger = pino({
 export const errorHandler: ErrorHandler = (err, c) => {
   // Zod-Validierungsfehler → 400
   if (err instanceof ZodError) {
-    return c.json({
-      success: false,
-      error: err.issues?.[0]?.message ?? "Validation error",
-    }, 400);
+    return c.json(
+      {
+        success: false,
+        error: err.issues?.[0]?.message ?? "Validation error",
+      },
+      400
+    );
+  }
+  if (err instanceof SyntaxError) {
+    return c.json(
+      {
+        success: false,
+        error: "Invalid JSON",
+      },
+      400
+    );
   }
 
   // Logge Fehler mit pino
