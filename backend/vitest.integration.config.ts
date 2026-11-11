@@ -6,6 +6,7 @@ export default defineConfig({
     environment: "node",
     include: ["tests/integration/**/*.test.ts"],
     globalSetup: ["tests/integration/globalSetup.ts"],
+    setupFiles: ["tests/integration/setup.ts"],
     fileParallelism: false,   // alle Testdateien teilen sich eine Datenbank
     env: {
       NODE_ENV: "test",
