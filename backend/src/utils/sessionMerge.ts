@@ -1,4 +1,3 @@
-// utils/session-merge.ts
 import { db } from "../db/index.js";
 import { checkerSessions } from "../db/schema/checker.js";
 import { checks } from "../db/schema/index.js";
