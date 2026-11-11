@@ -38,12 +38,13 @@ import {
 import { getUserIdFromSession } from "../utils/session.js";
 import { getCookie } from "hono/cookie";
 
-
 const checkerRouter = new Hono<{ Variables: Variables }>();
 
 async function requireActiveSession(
   c: Context
-): Promise<Response | { sid: string; sidHash: string; row: CheckerSessionRow }> {
+): Promise<
+  Response | { sid: string; sidHash: string; row: CheckerSessionRow }
+> {
   const sid = readSid(c);
   if (!sid) {
     return c.json({ error: "Missing session cookie" }, 401);
@@ -169,7 +170,6 @@ checkerRouter.put("/answers", async (c) => {
       }
     }
 
-
     return c.json(toState(updated), 200);
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -181,8 +181,11 @@ checkerRouter.put("/answers", async (c) => {
         400
       );
     }
+    if (err instanceof SyntaxError) {
+      return c.json({ error: "Invalid JSON" }, 400);
+    }
 
-    return c.json({ error: "Internal server error" }, 500);
+    throw err;
   }
 });
 
@@ -193,7 +196,7 @@ checkerRouter.post("/evaluate", async (c) => {
     if (active instanceof Response) return active;
 
     const normalizedAnswers = normalizeAnswers(
-      (answersSchema.parse(active.row.answers ?? {}))
+      answersSchema.parse(active.row.answers ?? {})
     );
 
     const issues = validateRequiredAnswers(normalizedAnswers);
@@ -270,8 +273,11 @@ checkerRouter.post("/evaluate", async (c) => {
         400
       );
     }
+    if (err instanceof SyntaxError) {
+      return c.json({ error: "Invalid JSON" }, 400);
+    }
 
-    return c.json({ error: "Internal server error" }, 500);
+    throw err;
   }
 });
 
@@ -325,6 +331,5 @@ checkerRouter.get("/latest", authMiddleware, async (c) => {
     },
   });
 });
-
 
 export default checkerRouter;
