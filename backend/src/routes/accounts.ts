@@ -9,6 +9,7 @@ import type { Variables } from "../types/hono.js";
 import { deleteCookie } from "hono/cookie";
 import { hashSessionId } from "../utils/session.js";
 import { z } from "zod";
+import { changePasswordSchema } from '../types/auth.js'; 
 
 const account = new Hono<{ Variables: Variables }>();
 
@@ -18,17 +19,9 @@ account.use("*", authMiddleware);
 // POST /api/account/change-password
 account.post("/change-password", async (c) => {
   const userId = c.get("userId");
-  const { currentPassword, newPassword } = await c.req.json();
-
-  if (!currentPassword || !newPassword) {
-    throw new HTTPException(400, { message: "Both passwords required" });
-  }
-
-  if (typeof newPassword !== "string" || newPassword.length < 8) {
-    throw new HTTPException(400, {
-      message: "New password must be at least 8 characters",
-    });
-  }
+  const { currentPassword, newPassword } = changePasswordSchema.parse(
+    await c.req.json()
+  );
 
   const [user] = await db
     .select()
@@ -101,7 +94,7 @@ account.delete("/sessions/:id", async (c) => {
   }
 
   const [target] = await db
-    .select({ id: sessions.id})
+    .select({ id: sessions.id })
     .from(sessions)
     .where(and(eq(sessions.publicId, publicId), eq(sessions.userId, userId)))
     .limit(1);

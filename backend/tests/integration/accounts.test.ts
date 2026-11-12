@@ -93,6 +93,21 @@ describe("POST /api/account/change-password", () => {
     );
   });
 
+  it.each([
+    [
+      "a too long new password",
+      { currentPassword: PASSWORD, newPassword: "a".repeat(101) },
+    ],
+    ["a missing new password", { currentPassword: PASSWORD }],
+    ["a missing current password", { newPassword: NEW_PASSWORD }],
+  ])("rejects %s", async (_label, payload) => {
+    await createUser();
+    const sid = await login();
+    expect((await call("POST", "/change-password", sid, payload)).status).toBe(
+      400
+    );
+  });
+
   it("ends all other sessions but keeps the current one", async () => {
     await createUser();
     const current = await login();
@@ -106,10 +121,6 @@ describe("POST /api/account/change-password", () => {
     expect((await call("GET", "/sessions", current)).status).toBe(200);
     expect((await call("GET", "/sessions", other)).status).toBe(401);
   });
-
-  it.todo(
-    "rejects a new password longer than 100 characters like registration does"
-  );
 });
 
 describe("GET /api/account/sessions", () => {

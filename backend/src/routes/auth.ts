@@ -10,13 +10,27 @@ import { deleteCookie } from "hono/cookie";
 import { deleteSession } from "../utils/session.js";
 import { authMiddleware } from "../middleware/auth.js";
 import type { Variables } from "../types/hono.js";
-import { forgotPasswordRateLimiter, loginRateLimiter, registerRateLimiter, resendVerificationRateLimiter, resetPasswordRateLimiter, verifyEmailRateLimiter } from "../middleware/rate-limit.js";
+import {
+  forgotPasswordRateLimiter,
+  loginRateLimiter,
+  registerRateLimiter,
+  resendVerificationRateLimiter,
+  resetPasswordRateLimiter,
+  verifyEmailRateLimiter,
+} from "../middleware/rate-limit.js";
 import { HTTPException } from "hono/http-exception";
 import { clearSidCookie, readSid } from "../utils/checkerSession.js";
 import { mergeAnonymousChecker } from "../utils/sessionMerge.js";
-import { createVerificationToken, verifyToken } from "../utils/verificationToken.js";
-import { sendPasswordResetEmail, sendVerificationEmail } from "../utils/email.js";
+import {
+  createVerificationToken,
+  verifyToken,
+} from "../utils/verificationToken.js";
+import {
+  sendPasswordResetEmail,
+  sendVerificationEmail,
+} from "../utils/email.js";
 
+import { resetPasswordSchema } from "../types/auth.js";
 
 const auth = new Hono<{ Variables: Variables }>();
 
@@ -92,7 +106,7 @@ auth.post("/login", loginRateLimiter, async (c) => {
   }
   // rotate: end the session this browser still holds before issuing a new one
   const oldSessionId = getCookie(c, "session_id");
-  if(oldSessionId){
+  if (oldSessionId) {
     await deleteSession(oldSessionId);
   }
 
@@ -108,8 +122,8 @@ auth.post("/login", loginRateLimiter, async (c) => {
     path: "/",
   });
 
-  //session merge: get anonymous data 
-  const sid = readSid(c)
+  //session merge: get anonymous data
+  const sid = readSid(c);
   await mergeAnonymousChecker(sid, user.id);
   clearSidCookie(c);
 
@@ -124,9 +138,9 @@ auth.post("/login", loginRateLimiter, async (c) => {
 
 // POST /api/auth/logout
 auth.post("/logout", async (c) => {
-  const sessionId = getCookie(c, "session_id")
+  const sessionId = getCookie(c, "session_id");
   if (sessionId) {
-    await deleteSession(sessionId).catch(() => { });
+    await deleteSession(sessionId).catch(() => {});
   }
 
   deleteCookie(c, "session_id", {
@@ -142,7 +156,11 @@ auth.post("/logout", async (c) => {
 auth.get("/me", authMiddleware, async (c) => {
   const userId = c.get("userId");
   const [user] = await db
-    .select({ id: users.id, email: users.email, emailVerified: users.emailVerified })
+    .select({
+      id: users.id,
+      email: users.email,
+      emailVerified: users.emailVerified,
+    })
     .from(users)
     .where(eq(users.id, userId))
     .limit(1);
@@ -154,7 +172,7 @@ auth.get("/me", authMiddleware, async (c) => {
   return c.json({ user });
 });
 
-// POST /api/auth/verify-email 
+// POST /api/auth/verify-email
 auth.post("/verify-email", verifyEmailRateLimiter, async (c) => {
   const { token } = await c.req.json();
 
@@ -176,38 +194,47 @@ auth.post("/verify-email", verifyEmailRateLimiter, async (c) => {
 });
 
 //  POST /api/auth/resend-verification
-auth.post("/resend-verification", authMiddleware, resendVerificationRateLimiter, async (c) => {
-  const userId = c.get("userId");
+auth.post(
+  "/resend-verification",
+  authMiddleware,
+  resendVerificationRateLimiter,
+  async (c) => {
+    const userId = c.get("userId");
 
-  const [user] = await db
-    .select({ id: users.id, email: users.email, emailVerified: users.emailVerified })
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
+    const [user] = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        emailVerified: users.emailVerified,
+      })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
 
-  if (!user) {
-    throw new HTTPException(404, { message: "User not found" });
+    if (!user) {
+      throw new HTTPException(404, { message: "User not found" });
+    }
+
+    if (user.emailVerified) {
+      return c.json({ message: "Already verified" });
+    }
+
+    // Alte Tokens löschen
+    await db
+      .delete(verificationTokens)
+      .where(
+        and(
+          eq(verificationTokens.userId, userId),
+          eq(verificationTokens.type, "email_verification")
+        )
+      );
+
+    const token = await createVerificationToken(userId, "email_verification");
+    await sendVerificationEmail(user.email, token);
+
+    return c.json({ message: "Verification email sent" });
   }
-
-  if (user.emailVerified) {
-    return c.json({ message: "Already verified" });
-  }
-
-  // Alte Tokens löschen
-  await db
-    .delete(verificationTokens)
-    .where(
-      and(
-        eq(verificationTokens.userId, userId),
-        eq(verificationTokens.type, "email_verification")
-      )
-    );
-
-  const token = await createVerificationToken(userId, "email_verification");
-  await sendVerificationEmail(user.email, token);
-
-  return c.json({ message: "Verification email sent" });
-});
+);
 
 // POST /api/auth/forgot-password
 auth.post("/forgot-password", forgotPasswordRateLimiter, async (c) => {
@@ -240,20 +267,14 @@ auth.post("/forgot-password", forgotPasswordRateLimiter, async (c) => {
   }
 
   // Immer gleiche Antwort — verhindert Email-Enumeration
-  return c.json({ message: "If the email exists, a reset link has been sent." });
+  return c.json({
+    message: "If the email exists, a reset link has been sent.",
+  });
 });
 
 // POST /api/auth/reset-password
 auth.post("/reset-password", resetPasswordRateLimiter, async (c) => {
-  const { token, password } = await c.req.json();
-
-  if (!token || typeof token !== "string") {
-    throw new HTTPException(400, { message: "Token required" });
-  }
-
-  if (!password || typeof password !== "string" || password.length < 8) {
-    throw new HTTPException(400, { message: "Password must be at least 8 characters" });
-  }
+  const { token, password } = resetPasswordSchema.parse(await c.req.json());
 
   const record = await verifyToken(token, "password_reset");
   if (!record) {
@@ -268,9 +289,7 @@ auth.post("/reset-password", resetPasswordRateLimiter, async (c) => {
     .where(eq(users.id, record.userId));
 
   // Alle Sessions dieses Users invalidieren
-  await db
-    .delete(sessions)
-    .where(eq(sessions.userId, record.userId));
+  await db.delete(sessions).where(eq(sessions.userId, record.userId));
 
   return c.json({ message: "Password reset successful" });
 });

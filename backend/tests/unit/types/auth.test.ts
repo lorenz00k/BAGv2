@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { registerSchema, loginSchema } from "../../../src/types/auth.js";
+import { registerSchema, loginSchema, changePasswordSchema, resetPasswordSchema } from "../../../src/types/auth.js";
 
 describe("registerSchema", () => {
   it("accepts a valid email and password", () => {
@@ -92,5 +92,30 @@ describe("email normalization", () => {
         password: "correct-horse-battery",
       }).success
     ).toBe(false);
+  });
+});
+
+describe.each([
+  [
+    "changePasswordSchema",
+    (pw: string) =>
+      changePasswordSchema.safeParse({
+        currentPassword: "old",
+        newPassword: pw,
+      }),
+  ],
+  [
+    "resetPasswordSchema",
+    (pw: string) =>
+      resetPasswordSchema.safeParse({ token: "abc", password: pw }),
+  ],
+])("%s password length", (_name, parse) => {
+  it.each([
+    [7, false],
+    [8, true],
+    [100, true],
+    [101, false],
+  ])("length %i -> valid: %s", (length, valid) => {
+    expect(parse("a".repeat(length)).success).toBe(valid);
   });
 });

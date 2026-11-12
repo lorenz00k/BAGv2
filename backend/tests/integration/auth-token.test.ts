@@ -176,6 +176,13 @@ describe("POST /api/auth/reset-password", () => {
     expect((await post("/api/auth/reset-password", { token, password: NEW_PASSWORD })).status).toBe(200);
   });
 
+  it("rejects a too long password without consuming the token", async () => {
+    const token = await requestReset();
+
+    expect((await post("/api/auth/reset-password", { token, password: "a".repeat(101) })).status).toBe(400);
+    expect((await post("/api/auth/reset-password", { token, password: NEW_PASSWORD })).status).toBe(200);
+  });
+
   it.each([
     ["an unknown token", { token: "made-up-token", password: NEW_PASSWORD }],
     ["a missing token", { password: NEW_PASSWORD }],
