@@ -1,7 +1,9 @@
 import { z } from "zod";
 
+const emailSchema = z.string().trim().toLowerCase().max(254, "Email too long").pipe(z.email());
+
 export const registerSchema = z.object({
-  email: z.email(), 
+  email: emailSchema,
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -9,7 +11,7 @@ export const registerSchema = z.object({
 });
 
 export const loginSchema = z.object({
-  email: z.email(), 
+  email: emailSchema,
   password: z.string(),
 });
 

@@ -76,6 +76,29 @@ describe("POST /api/auth/register", () => {
     expect(await db.select().from(users)).toHaveLength(1);
   });
 
+  it("stores the email trimmed and lowercased", async () => {
+    await post("/api/auth/register", {
+      email: "  Max@Example.com ",
+      password: "correct-horse-battery",
+    });
+
+    expect((await db.select().from(users)).map((u) => u.email)).toEqual([
+      "max@example.com",
+    ]);
+  });
+
+  it("does not create a second account for another spelling of the same email", async () => {
+    await post("/api/auth/register", {
+      email: "max@example.com",
+      password: "correct-horse-battery",
+    });
+    await post("/api/auth/register", {
+      email: "MAX@EXAMPLE.COM",
+      password: "correct-horse-battery",
+    });
+
+    expect(await db.select().from(users)).toHaveLength(1);
+  });
   it.todo(
     "does not reveal whether an email is already registered (enumeration)"
   );
@@ -216,6 +239,17 @@ describe("GET /api/auth/me", () => {
       headers: withSession(sid),
     });
     expect(res.status).toBe(401);
+  });
+
+  it("logs in with another spelling of the email", async () => {
+    await createUser();
+
+    const res = await post("/api/auth/login", {
+      email: EMAIL.toUpperCase(),
+      password: PASSWORD,
+    });
+
+    expect(res.status).toBe(200);
   });
 });
 

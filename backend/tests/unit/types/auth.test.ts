@@ -34,6 +34,21 @@ describe("registerSchema", () => {
     expect(result.success).toBe(valid);
   });
 
+  const emailOfLength = (n: number) =>
+    "a".repeat(n - "@example.com".length) + "@example.com";
+
+  it.each([
+    [254, true],
+    [255, false],
+  ])("checks email length %i -> valid: %s", (length, valid) => {
+    expect(
+      registerSchema.safeParse({
+        email: emailOfLength(length),
+        password: "correct-horse-battery",
+      }).success
+    ).toBe(valid);
+  });
+
   it("rejects missing fields", () => {
     expect(registerSchema.safeParse({}).success).toBe(false);
   });
@@ -50,6 +65,32 @@ describe("loginSchema", () => {
   it("rejects an invalid email", () => {
     expect(
       loginSchema.safeParse({ email: "nope", password: "x" }).success
+    ).toBe(false);
+  });
+});
+
+describe("email normalization", () => {
+  it.each([
+    ["registerSchema", registerSchema],
+    ["loginSchema", loginSchema],
+  ])("%s trims and lowercases the email", (_name, schema) => {
+    const parsed = schema.parse({
+      email: "  Max@Example.COM ",
+      password: "correct-horse-battery",
+    });
+
+    expect(parsed.email).toBe("max@example.com");
+  });
+
+  it.each([
+    ["registerSchema", registerSchema],
+    ["loginSchema", loginSchema],
+  ])("%s still rejects an invalid email after trimming", (_name, schema) => {
+    expect(
+      schema.safeParse({
+        email: " not-an-email ",
+        password: "correct-horse-battery",
+      }).success
     ).toBe(false);
   });
 });
