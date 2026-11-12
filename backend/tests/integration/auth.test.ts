@@ -9,6 +9,7 @@ import {
 } from "../../src/db/schema/index.js";
 import { sendVerificationEmail } from "../../src/utils/email.js";
 import { getCookie } from "./helpers.js";
+import { loginWithCookie, isSessionValid } from "./api.js";
 import {
   EMAIL,
   PASSWORD,
@@ -122,6 +123,51 @@ describe("POST /api/auth/login", () => {
       password: PASSWORD,
     });
     expect(res.status).toBe(400);
+  });
+
+  it("session rotation on login ends the old session and starts a new one", async () => {
+    await createUser();
+    const first = await login();
+
+    const { res, sid: second } = await loginWithCookie(first);
+
+    expect(res.status).toBe(200);
+    expect(second).toBeDefined();
+    expect(second).not.toBe(first);
+    expect(await isSessionValid(first)).toBe(401);
+    expect(await isSessionValid(second!)).toBe(200);
+  });
+
+  it("session rotation on login leaves exactly one session row for the user", async () => {
+    const user = await createUser();
+    const first = await login();
+    await loginWithCookie(first);
+
+    const rows = await db
+      .select()
+      .from(sessions)
+      .where(eq(sessions.userId, user.id));
+
+    expect(rows).toHaveLength(1);
+  });
+
+  it("session rotation on login keeps the old session when the login fails", async () => {
+    await createUser();
+    const first = await login();
+
+    const { res } = await loginWithCookie(first, "wrong-password");
+
+    expect(res.status).toBe(401);
+    expect(await isSessionValid(first)).toBe(200);
+  });
+
+  it("session rotation on login still logs in when the cookie matches no session", async () => {
+    await createUser();
+
+    const { res, sid } = await loginWithCookie("not-a-real-session");
+
+    expect(res.status).toBe(200);
+    expect(await isSessionValid(sid!)).toBe(200);
   });
 
   it("answers invalid JSON with a client error, not a server error", async () => {

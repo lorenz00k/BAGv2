@@ -27,7 +27,3 @@ export function getCookie(res: Response, name: string): string | undefined {
   return header?.split(";")[0]?.slice(name.length + 1);
 }
 
-// Builds the Cookie header for the next request.
-export function withCookie(name: string, value: string): HeadersInit {
-  return { Cookie: `${name}=${value}` };
-}
