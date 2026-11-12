@@ -37,7 +37,9 @@ export async function createUser(email = EMAIL, password = PASSWORD) {
 // Logs in through the API and returns the session cookie value
 export async function login(email = EMAIL, password = PASSWORD) {
   const res = await post("/api/auth/login", { email, password });
-  return getCookie(res, "session_id")!;
+  const sid = getCookie(res, "session_id");
+  if(!sid) throw new Error(`login failed (status ${res.status}): no session_id cookie`);
+  return sid;
 }
 
 // Tokens of the last mails, as a user would read them from the inbox

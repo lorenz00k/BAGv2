@@ -5,9 +5,12 @@ import { db } from "../../src/db/index.js";
 import { getCookie } from "./helpers.js";
 import { users, sessions, checks } from "../../src/db/schema/index.js";
 import { EMAIL, PASSWORD, post, createUser, login } from "./api.js";
+import { createHash } from "node:crypto";
 
 const NEW_PASSWORD = "a-brand-new-password";
 const OTHER_EMAIL = "other@example.com";
+
+const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
 
 const call = (method: string, path: string, sid?: string, body?: unknown) =>
   app.request(`/api/account${path}`, {
@@ -19,11 +22,14 @@ const call = (method: string, path: string, sid?: string, body?: unknown) =>
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 
-const listSessions = async (sid: string) =>
-  (await (await call("GET", "/sessions", sid)).json()).sessions as {
-    id: string;
-    isCurrent: boolean;
-  }[];
+const listSessions = async (sid: string) => {
+  const res = await call("GET", "/sessions", sid);
+  const body = await res.json();
+  if (!res.ok || !Array.isArray(body.sessions)) {
+    throw new Error(`GET /sessions -> ${res.status}: ${JSON.stringify(body)}`);
+  }
+  return body.sessions as { id: string; isCurrent: boolean }[];
+};
 
 describe("authentication", () => {
   it.each([
@@ -115,7 +121,6 @@ describe("GET /api/account/sessions", () => {
     const list = await listSessions(first);
     expect(list).toHaveLength(2);
     expect(list.filter((s) => s.isCurrent)).toHaveLength(1);
-    expect(list.find((s) => s.isCurrent)?.id).toBe(first);
   });
 
   it("does not list sessions of other users", async () => {
@@ -127,9 +132,24 @@ describe("GET /api/account/sessions", () => {
     expect(await listSessions(sid)).toHaveLength(1);
   });
 
-  it.todo(
-    "does not expose the raw session ids, which are the login credentials"
-  );
+  it("stores only the sha256 of the session id, never the raw id", async () => {
+    await createUser();
+    const raw_sid = await login();
+
+    const sid = (await db.select().from(sessions)).map((r) => r.id);
+
+    expect(sid).not.toContain(raw_sid);
+    expect(sid).toContain(sha256(raw_sid));
+  });
+
+  it("GET /sessions marks the current session", async () => {
+    await createUser();
+    const user = await login();
+
+    const list = await listSessions(user);
+
+    expect(list.filter((s) => s.isCurrent)).toHaveLength(1);
+  });
 });
 
 describe("DELETE /api/account/sessions/:id", () => {
@@ -138,7 +158,10 @@ describe("DELETE /api/account/sessions/:id", () => {
     const current = await login();
     const other = await login();
 
-    const res = await call("DELETE", `/sessions/${other}`, current);
+    const list = await listSessions(current);
+    const target = list.find((s) => !s.isCurrent)!.id;
+
+    const res = await call("DELETE", `/sessions/${target}`, current);
     expect(res.status).toBe(200);
     expect((await call("GET", "/sessions", other)).status).toBe(401);
   });

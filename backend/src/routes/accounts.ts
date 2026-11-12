@@ -7,6 +7,7 @@ import { hashPassword, verifyPassword } from "../utils/password.js";
 import { HTTPException } from "hono/http-exception";
 import type { Variables } from "../types/hono.js";
 import { deleteCookie } from "hono/cookie";
+import {hashSessionId} from "../utils/session.js"
 
 const account = new Hono<{ Variables: Variables }>();
 
@@ -54,7 +55,7 @@ account.post("/change-password", async (c) => {
     .where(
       and(
         eq(sessions.userId, userId),
-        ne(sessions.id, sessionId)
+        ne(sessions.id, hashSessionId(sessionId))
       )
     );
 
@@ -79,7 +80,7 @@ account.get("/sessions", async (c) => {
   return c.json({
     sessions: userSessions.map((s) => ({
       ...s,
-      isCurrent: s.id === currentSessionId,
+      isCurrent: s.id === hashSessionId(currentSessionId),
     })),
   });
 });
