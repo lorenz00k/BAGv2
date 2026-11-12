@@ -18,6 +18,13 @@ import {
   createUser,
   login,
 } from "./api.js";
+import * as password from "../../src/utils/password.js";
+
+vi.mock("../../src/utils/password.js", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../../src/utils/password.js")>();
+  return { ...actual, verifyPassword: vi.fn(actual.verifyPassword) };
+});
 
 describe("POST /api/auth/register", () => {
   it("creates the user, logs them in and sends a verification mail", async () => {
@@ -201,6 +208,18 @@ describe("POST /api/auth/login", () => {
     });
     expect(res.status).toBeGreaterThanOrEqual(400);
     expect(res.status).toBeLessThan(500);
+  });
+
+  it("still checks a password hash when the email is unknown (no timing leak)", async () => {
+    vi.mocked(password.verifyPassword).mockClear();
+
+    const res = await post("/api/auth/login", {
+      email: "nobody@example.com",
+      password: PASSWORD,
+    });
+
+    expect(res.status).toBe(401);
+    expect(password.verifyPassword).toHaveBeenCalledTimes(1);
   });
 });
 

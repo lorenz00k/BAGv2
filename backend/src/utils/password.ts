@@ -6,6 +6,9 @@ const hashOptions = {
   timeCost: 2,
   parallelism: 1,
 };
+// Hash of a throwaway value. Verifying against it costs as much as a real
+// check, so an unknown email takes as long as a wrong password.
+export const DUMMY_HASH: Promise<string> = hashPassword("not-a-real-password");
 
 export async function hashPassword(password: string): Promise<string> {
   return hash(password, hashOptions);

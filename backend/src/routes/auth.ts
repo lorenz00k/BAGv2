@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { db } from "../db/index.js";
 import { sessions, users, verificationTokens } from "../db/schema/index.js";
 import { registerSchema, loginSchema } from "../types/auth.js";
-import { hashPassword, verifyPassword } from "../utils/password.js";
+import { hashPassword, verifyPassword, DUMMY_HASH } from "../utils/password.js";
 import { and, eq } from "drizzle-orm";
 import { getCookie, setCookie } from "hono/cookie";
 import { createSession } from "../utils/session.js";
@@ -96,14 +96,13 @@ auth.post("/login", loginRateLimiter, async (c) => {
     .where(eq(users.email, data.email))
     .limit(1);
 
-  if (!user) {
+  const hash = user?.passwordHash ?? (await DUMMY_HASH);
+  const valid = await verifyPassword(hash, data.password);
+
+  if (!user || !valid) {
     throw new HTTPException(401, { message: "Invalid credentials" });
   }
 
-  const valid = await verifyPassword(user.passwordHash, data.password);
-  if (!valid) {
-    throw new HTTPException(401, { message: "Invalid credentials" });
-  }
   // rotate: end the session this browser still holds before issuing a new one
   const oldSessionId = getCookie(c, "session_id");
   if (oldSessionId) {
