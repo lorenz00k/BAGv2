@@ -1,18 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-const { values, limit, deleteWhere } = vi.hoisted(() => ({
+const { values, returning } = vi.hoisted(() => ({
   values: vi.fn().mockResolvedValue(undefined),
-  limit: vi.fn(),
-  deleteWhere: vi.fn().mockResolvedValue(undefined),
+  returning: vi.fn(),
 }));
 
 vi.mock("../../../src/db/index.js", () => ({
   db: {
     insert: () => ({ values }),
-    select: () => ({ from: () => ({ where: () => ({ limit }) }) }),
-    delete: () => ({ where: deleteWhere }),
+    delete: () => ({ where: () => ({ returning }) }),
   },
 }));
+
 
 import {
   generateToken,
@@ -79,17 +78,17 @@ describe("createVerificationToken", () => {
 });
 
 describe("verifyToken", () => {
-  it("returns null and deletes nothing when no valid record exists", async () => {
-    limit.mockResolvedValueOnce([]);
+  it("returns null when no valid record exists", async () => {
+    returning.mockResolvedValueOnce([]);
+
     expect(await verifyToken("unknown", "password_reset")).toBeNull();
-    expect(deleteWhere).not.toHaveBeenCalled();
   });
 
-  it("returns the record and deletes it so the token works only once", async () => {
+  it("returns the deleted record, so the token works only once", async () => {
     const record = { id: "rec-1", userId: "user-1", type: "password_reset" };
-    limit.mockResolvedValueOnce([record]);
+    returning.mockResolvedValueOnce([record]);
 
     expect(await verifyToken("some-token", "password_reset")).toEqual(record);
-    expect(deleteWhere).toHaveBeenCalledTimes(1);
+    expect(returning).toHaveBeenCalledTimes(1);
   });
 });

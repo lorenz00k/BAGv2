@@ -19,7 +19,8 @@ export async function createVerificationToken(
   const token = generateToken();
   const tokenHash = hashToken(token);
   const expiresAt = new Date(
-    Date.now() + (type === "email_verification" ? 24 * 60 * 60 * 1000 : 60 * 60 * 1000)
+    Date.now() +
+      (type === "email_verification" ? 24 * 60 * 60 * 1000 : 60 * 60 * 1000)
   );
 
   await db.insert(verificationTokens).values({
@@ -32,25 +33,20 @@ export async function createVerificationToken(
   return token;
 }
 
-export async function verifyToken(token: string, type: "email_verification" | "password_reset") {
-  const tokenHash = hashToken(token);
-
+export async function verifyToken(
+  token: string,
+  type: "email_verification" | "password_reset"
+) {
   const [record] = await db
-    .select()
-    .from(verificationTokens)
+    .delete(verificationTokens)
     .where(
       and(
-        eq(verificationTokens.tokenHash, tokenHash),
+        eq(verificationTokens.tokenHash, hashToken(token)),
         eq(verificationTokens.type, type),
         gt(verificationTokens.expiresAt, new Date())
       )
     )
-    .limit(1);
+    .returning();
 
-  if (!record) return null;
-
-  // Token einmalig verwendbar — löschen
-  await db.delete(verificationTokens).where(eq(verificationTokens.id, record.id));
-
-  return record;
+  return record ?? null;
 }
