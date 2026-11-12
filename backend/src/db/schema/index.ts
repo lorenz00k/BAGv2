@@ -58,6 +58,7 @@ export const files = pgTable("files", {
 // ===== SESSIONS =====
 export const sessions = pgTable("sessions", {
   id: text("id").primaryKey(),
+  publicId: uuid("public_id").defaultRandom().notNull().unique(),
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),

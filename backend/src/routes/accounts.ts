@@ -7,7 +7,8 @@ import { hashPassword, verifyPassword } from "../utils/password.js";
 import { HTTPException } from "hono/http-exception";
 import type { Variables } from "../types/hono.js";
 import { deleteCookie } from "hono/cookie";
-import {hashSessionId} from "../utils/session.js"
+import { hashSessionId } from "../utils/session.js";
+import { z } from "zod";
 
 const account = new Hono<{ Variables: Variables }>();
 
@@ -24,7 +25,9 @@ account.post("/change-password", async (c) => {
   }
 
   if (typeof newPassword !== "string" || newPassword.length < 8) {
-    throw new HTTPException(400, { message: "New password must be at least 8 characters" });
+    throw new HTTPException(400, {
+      message: "New password must be at least 8 characters",
+    });
   }
 
   const [user] = await db
@@ -65,11 +68,12 @@ account.post("/change-password", async (c) => {
 // GET /api/account/sessions — aktive Sessions auflisten
 account.get("/sessions", async (c) => {
   const userId = c.get("userId");
-  const currentSessionId = c.get("sessionId");
+  const currentHash = hashSessionId(c.get("sessionId"));
 
   const userSessions = await db
     .select({
-      id: sessions.id,
+      hashedId: sessions.id,
+      publicId: sessions.publicId,
       createdAt: sessions.createdAt,
       expiresAt: sessions.expiresAt,
     })
@@ -78,9 +82,10 @@ account.get("/sessions", async (c) => {
     .orderBy(sessions.createdAt);
 
   return c.json({
-    sessions: userSessions.map((s) => ({
-      ...s,
-      isCurrent: s.id === hashSessionId(currentSessionId),
+    sessions: userSessions.map(({ hashedId, publicId, ...rest }) => ({
+      id: publicId,
+      ...rest,
+      isCurrent: hashedId === currentHash,
     })),
   });
 });
@@ -88,26 +93,29 @@ account.get("/sessions", async (c) => {
 // DELETE /api/account/sessions/:id — einzelne Session beenden
 account.delete("/sessions/:id", async (c) => {
   const userId = c.get("userId");
-  const sessionId = c.req.param("id");
-  const currentSessionId = c.get("sessionId");
+  const publicId = c.req.param("id");
 
-  if (sessionId === currentSessionId) {
-    throw new HTTPException(400, { message: "Cannot delete current session. Use logout instead." });
-  }
-
-  const [deleted] = await db
-    .delete(sessions)
-    .where(
-      and(
-        eq(sessions.id, sessionId),
-        eq(sessions.userId, userId)
-      )
-    )
-    .returning({ id: sessions.id });
-
-  if (!deleted) {
+  //check for trash values
+  if (!z.uuid().safeParse(publicId).success) {
     throw new HTTPException(404, { message: "Session not found" });
   }
+
+  const [target] = await db
+    .select({ id: sessions.id})
+    .from(sessions)
+    .where(and(eq(sessions.publicId, publicId), eq(sessions.userId, userId)))
+    .limit(1);
+
+  if (!target) {
+    throw new HTTPException(404, { message: "Session not found" });
+  }
+
+  if (target.id === hashSessionId(c.get("sessionId"))) {
+    throw new HTTPException(400, {
+      message: "Cannot delete current session. Use logout instead.",
+    });
+  }
+  await db.delete(sessions).where(eq(sessions.id, target.id));
 
   return c.json({ message: "Session deleted" });
 });

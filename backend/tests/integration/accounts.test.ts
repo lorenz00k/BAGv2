@@ -142,6 +142,16 @@ describe("GET /api/account/sessions", () => {
     expect(sid).toContain(sha256(raw_sid));
   });
 
+  it("GET /sessions does not expose raw session ids or their hashes", async () => {
+    await createUser();
+    const raw_sid = await login();
+
+    const list = await listSessions(raw_sid);
+
+    expect(JSON.stringify(list)).not.toContain(raw_sid);
+    expect(JSON.stringify(list)).not.toContain(sha256(raw_sid));
+  });
+
   it("GET /sessions marks the current session", async () => {
     await createUser();
     const user = await login();
@@ -149,6 +159,17 @@ describe("GET /api/account/sessions", () => {
     const list = await listSessions(user);
 
     expect(list.filter((s) => s.isCurrent)).toHaveLength(1);
+  });
+
+  it("GET /sessions returns a uuid as id", async () => {
+    await createUser();
+    const sid = await login();
+
+    const [first] = await listSessions(sid);
+
+    expect(first?.id).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    );
   });
 });
 
@@ -160,7 +181,6 @@ describe("DELETE /api/account/sessions/:id", () => {
 
     const list = await listSessions(current);
     const target = list.find((s) => !s.isCurrent)!.id;
-
     const res = await call("DELETE", `/sessions/${target}`, current);
     expect(res.status).toBe(200);
     expect((await call("GET", "/sessions", other)).status).toBe(401);
@@ -169,8 +189,11 @@ describe("DELETE /api/account/sessions/:id", () => {
   it("refuses to end the current session", async () => {
     await createUser();
     const sid = await login();
+    const current = (await listSessions(sid)).find((s) => s.isCurrent)!;
 
-    expect((await call("DELETE", `/sessions/${sid}`, sid)).status).toBe(400);
+    expect((await call("DELETE", `/sessions/${current.id}`, sid)).status).toBe(
+      400
+    );
     expect((await call("GET", "/sessions", sid)).status).toBe(200);
   });
 
