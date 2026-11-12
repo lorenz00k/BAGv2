@@ -71,7 +71,7 @@ auth.post("/register", registerRateLimiter, async (c) => {
   return c.json({ user: { ...newUser, emailVerified: false } }, 201);
 });
 
-// POST /api/auth/login (ERSETZEN)
+// POST /api/auth/login
 auth.post("/login", loginRateLimiter, async (c) => {
   const body = await c.req.json();
   const data = loginSchema.parse(body);
@@ -89,6 +89,11 @@ auth.post("/login", loginRateLimiter, async (c) => {
   const valid = await verifyPassword(user.passwordHash, data.password);
   if (!valid) {
     throw new HTTPException(401, { message: "Invalid credentials" });
+  }
+  // rotate: end the session this browser still holds before issuing a new one
+  const oldSessionId = getCookie(c, "session_id");
+  if(oldSessionId){
+    await deleteSession(oldSessionId);
   }
 
   // Session erstellen

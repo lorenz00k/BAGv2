@@ -24,5 +24,6 @@ Thumbs.db
 *.swp
 
 # intern docu
+local_docu/*
 cookies.txt
 structure.txt
