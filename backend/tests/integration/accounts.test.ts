@@ -6,6 +6,7 @@ import { getCookie } from "./helpers.js";
 import { users, sessions, checks } from "../../src/db/schema/index.js";
 import { EMAIL, PASSWORD, post, createUser, login } from "./api.js";
 import { createHash } from "node:crypto";
+import { withBlockedDeletes } from "./helpers.js";
 
 const NEW_PASSWORD = "a-brand-new-password";
 const OTHER_EMAIL = "other@example.com";
@@ -93,6 +94,21 @@ describe("POST /api/account/change-password", () => {
     );
   });
 
+  it.each([
+    [
+      "a too long new password",
+      { currentPassword: PASSWORD, newPassword: "a".repeat(101) },
+    ],
+    ["a missing new password", { currentPassword: PASSWORD }],
+    ["a missing current password", { newPassword: NEW_PASSWORD }],
+  ])("rejects %s", async (_label, payload) => {
+    await createUser();
+    const sid = await login();
+    expect((await call("POST", "/change-password", sid, payload)).status).toBe(
+      400
+    );
+  });
+
   it("ends all other sessions but keeps the current one", async () => {
     await createUser();
     const current = await login();
@@ -107,9 +123,25 @@ describe("POST /api/account/change-password", () => {
     expect((await call("GET", "/sessions", other)).status).toBe(401);
   });
 
-  it.todo(
-    "rejects a new password longer than 100 characters like registration does"
-  );
+  it("keeps the old password when ending the other sessions fails", async () => {
+    await createUser();
+    const sid = await login();
+    await login(); // a second session, so there is something to delete
+
+    await withBlockedDeletes("sessions", async () => {
+      const res = await call("POST", "/change-password", sid, {
+        currentPassword: PASSWORD,
+        newPassword: NEW_PASSWORD,
+      });
+      expect(res.status).toBe(500);
+    });
+
+    const res = await post("/api/auth/login", {
+      email: EMAIL,
+      password: PASSWORD,
+    });
+    expect(res.status).toBe(200); // the old password still works
+  });
 });
 
 describe("GET /api/account/sessions", () => {

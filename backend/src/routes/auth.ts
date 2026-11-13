@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { db } from "../db/index.js";
 import { sessions, users, verificationTokens } from "../db/schema/index.js";
 import { registerSchema, loginSchema } from "../types/auth.js";
-import { hashPassword, verifyPassword } from "../utils/password.js";
+import { hashPassword, verifyPassword, DUMMY_HASH } from "../utils/password.js";
 import { and, eq } from "drizzle-orm";
 import { getCookie, setCookie } from "hono/cookie";
 import { createSession } from "../utils/session.js";
@@ -10,15 +10,38 @@ import { deleteCookie } from "hono/cookie";
 import { deleteSession } from "../utils/session.js";
 import { authMiddleware } from "../middleware/auth.js";
 import type { Variables } from "../types/hono.js";
-import { forgotPasswordRateLimiter, loginRateLimiter, registerRateLimiter, resendVerificationRateLimiter, resetPasswordRateLimiter, verifyEmailRateLimiter } from "../middleware/rate-limit.js";
+import {
+  forgotPasswordRateLimiter,
+  loginRateLimiter,
+  registerRateLimiter,
+  resendVerificationRateLimiter,
+  resetPasswordRateLimiter,
+  verifyEmailRateLimiter,
+} from "../middleware/rate-limit.js";
 import { HTTPException } from "hono/http-exception";
 import { clearSidCookie, readSid } from "../utils/checkerSession.js";
 import { mergeAnonymousChecker } from "../utils/sessionMerge.js";
-import { createVerificationToken, verifyToken } from "../utils/verificationToken.js";
-import { sendPasswordResetEmail, sendVerificationEmail } from "../utils/email.js";
-
+import {
+  createVerificationToken,
+  verifyToken,
+} from "../utils/verificationToken.js";
+import {
+  sendVerificationEmail,
+  sendPasswordResetEmail,
+} from "../utils/email.js";
+import { resetPasswordSchema } from "../types/auth.js";
+import { baseLogger } from "../middleware/logger.js";
 
 const auth = new Hono<{ Variables: Variables }>();
+
+// A failed mail must not fail the request: log it and carry on
+async function sendQuietly(send: () => Promise<void>, what: string) {
+  try {
+    await send();
+  } catch (err) {
+    baseLogger.error({ err }, `Could not send ${what} email`);
+  }
+}
 
 // POST /api/auth/register
 auth.post("/register", registerRateLimiter, async (c) => {
@@ -66,7 +89,10 @@ auth.post("/register", registerRateLimiter, async (c) => {
 
   // Verification-Email senden
   const token = await createVerificationToken(newUser.id, "email_verification");
-  await sendVerificationEmail(data.email, token);
+  await sendQuietly(
+    () => sendVerificationEmail(data.email, token),
+    "verification"
+  );
 
   return c.json({ user: { ...newUser, emailVerified: false } }, 201);
 });
@@ -82,17 +108,16 @@ auth.post("/login", loginRateLimiter, async (c) => {
     .where(eq(users.email, data.email))
     .limit(1);
 
-  if (!user) {
+  const hash = user?.passwordHash ?? (await DUMMY_HASH);
+  const valid = await verifyPassword(hash, data.password);
+
+  if (!user || !valid) {
     throw new HTTPException(401, { message: "Invalid credentials" });
   }
 
-  const valid = await verifyPassword(user.passwordHash, data.password);
-  if (!valid) {
-    throw new HTTPException(401, { message: "Invalid credentials" });
-  }
   // rotate: end the session this browser still holds before issuing a new one
   const oldSessionId = getCookie(c, "session_id");
-  if(oldSessionId){
+  if (oldSessionId) {
     await deleteSession(oldSessionId);
   }
 
@@ -108,8 +133,8 @@ auth.post("/login", loginRateLimiter, async (c) => {
     path: "/",
   });
 
-  //session merge: get anonymous data 
-  const sid = readSid(c)
+  //session merge: get anonymous data
+  const sid = readSid(c);
   await mergeAnonymousChecker(sid, user.id);
   clearSidCookie(c);
 
@@ -124,9 +149,9 @@ auth.post("/login", loginRateLimiter, async (c) => {
 
 // POST /api/auth/logout
 auth.post("/logout", async (c) => {
-  const sessionId = getCookie(c, "session_id")
+  const sessionId = getCookie(c, "session_id");
   if (sessionId) {
-    await deleteSession(sessionId).catch(() => { });
+    await deleteSession(sessionId).catch(() => {});
   }
 
   deleteCookie(c, "session_id", {
@@ -142,7 +167,11 @@ auth.post("/logout", async (c) => {
 auth.get("/me", authMiddleware, async (c) => {
   const userId = c.get("userId");
   const [user] = await db
-    .select({ id: users.id, email: users.email, emailVerified: users.emailVerified })
+    .select({
+      id: users.id,
+      email: users.email,
+      emailVerified: users.emailVerified,
+    })
     .from(users)
     .where(eq(users.id, userId))
     .limit(1);
@@ -154,7 +183,7 @@ auth.get("/me", authMiddleware, async (c) => {
   return c.json({ user });
 });
 
-// POST /api/auth/verify-email 
+// POST /api/auth/verify-email
 auth.post("/verify-email", verifyEmailRateLimiter, async (c) => {
   const { token } = await c.req.json();
 
@@ -176,38 +205,54 @@ auth.post("/verify-email", verifyEmailRateLimiter, async (c) => {
 });
 
 //  POST /api/auth/resend-verification
-auth.post("/resend-verification", authMiddleware, resendVerificationRateLimiter, async (c) => {
-  const userId = c.get("userId");
+auth.post(
+  "/resend-verification",
+  authMiddleware,
+  resendVerificationRateLimiter,
+  async (c) => {
+    const userId = c.get("userId");
 
-  const [user] = await db
-    .select({ id: users.id, email: users.email, emailVerified: users.emailVerified })
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
+    const [user] = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        emailVerified: users.emailVerified,
+      })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
 
-  if (!user) {
-    throw new HTTPException(404, { message: "User not found" });
+    if (!user) {
+      throw new HTTPException(404, { message: "User not found" });
+    }
+
+    if (user.emailVerified) {
+      return c.json({ message: "Already verified" });
+    }
+
+    // Alte Tokens löschen
+    await db
+      .delete(verificationTokens)
+      .where(
+        and(
+          eq(verificationTokens.userId, userId),
+          eq(verificationTokens.type, "email_verification")
+        )
+      );
+
+    const token = await createVerificationToken(userId, "email_verification");
+    try {
+      await sendVerificationEmail(user.email, token);
+    } catch (err) {
+      baseLogger.error({ err }, "Could not send verification email");
+      throw new HTTPException(502, {
+        message: "Could not send the email, please try again later",
+      });
+    }
+
+    return c.json({ message: "Verification email sent" });
   }
-
-  if (user.emailVerified) {
-    return c.json({ message: "Already verified" });
-  }
-
-  // Alte Tokens löschen
-  await db
-    .delete(verificationTokens)
-    .where(
-      and(
-        eq(verificationTokens.userId, userId),
-        eq(verificationTokens.type, "email_verification")
-      )
-    );
-
-  const token = await createVerificationToken(userId, "email_verification");
-  await sendVerificationEmail(user.email, token);
-
-  return c.json({ message: "Verification email sent" });
-});
+);
 
 // POST /api/auth/forgot-password
 auth.post("/forgot-password", forgotPasswordRateLimiter, async (c) => {
@@ -234,26 +279,22 @@ auth.post("/forgot-password", forgotPasswordRateLimiter, async (c) => {
           eq(verificationTokens.type, "password_reset")
         )
       );
-
     const token = await createVerificationToken(user.id, "password_reset");
-    await sendPasswordResetEmail(user.email, token);
+    await sendQuietly(
+      () => sendPasswordResetEmail(user.email, token),
+      "password reset"
+    );
   }
 
   // Immer gleiche Antwort — verhindert Email-Enumeration
-  return c.json({ message: "If the email exists, a reset link has been sent." });
+  return c.json({
+    message: "If the email exists, a reset link has been sent.",
+  });
 });
 
 // POST /api/auth/reset-password
 auth.post("/reset-password", resetPasswordRateLimiter, async (c) => {
-  const { token, password } = await c.req.json();
-
-  if (!token || typeof token !== "string") {
-    throw new HTTPException(400, { message: "Token required" });
-  }
-
-  if (!password || typeof password !== "string" || password.length < 8) {
-    throw new HTTPException(400, { message: "Password must be at least 8 characters" });
-  }
+  const { token, password } = resetPasswordSchema.parse(await c.req.json());
 
   const record = await verifyToken(token, "password_reset");
   if (!record) {
@@ -262,15 +303,15 @@ auth.post("/reset-password", resetPasswordRateLimiter, async (c) => {
 
   // Neues Passwort setzen
   const passwordHash = await hashPassword(password);
-  await db
-    .update(users)
-    .set({ passwordHash, updatedAt: new Date() })
-    .where(eq(users.id, record.userId));
 
-  // Alle Sessions dieses Users invalidieren
-  await db
-    .delete(sessions)
-    .where(eq(sessions.userId, record.userId));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(users)
+      .set({ passwordHash, updatedAt: new Date() })
+      .where(eq(users.id, record.userId));
+
+    await tx.delete(sessions).where(eq(sessions.userId, record.userId));
+  });
 
   return c.json({ message: "Password reset successful" });
 });

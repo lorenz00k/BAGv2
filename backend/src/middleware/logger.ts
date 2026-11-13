@@ -12,6 +12,10 @@ const prodLogger = pino({
   level: process.env.LOG_LEVEL || "info",
 });
 
-export const logger = pinoLogger({
-  pino: isDev ? devLogger : prodLogger,
-});
+
+const baseLogger = isDev ? devLogger : prodLogger;
+export { baseLogger };
+
+export const logger = pinoLogger({ pino: baseLogger });
+
+

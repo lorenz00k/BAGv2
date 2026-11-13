@@ -2,23 +2,44 @@ import { vi, describe, it, expect } from "vitest";
 import { eq } from "drizzle-orm";
 import app from "../../src/app.js";
 import { db } from "../../src/db/index.js";
-import { users, sessions, verificationTokens } from "../../src/db/schema/index.js";
-import { sendVerificationEmail, sendPasswordResetEmail } from "../../src/utils/email.js";
+import {
+  users,
+  sessions,
+  verificationTokens,
+} from "../../src/db/schema/index.js";
+import {
+  sendVerificationEmail,
+  sendPasswordResetEmail,
+} from "../../src/utils/email.js";
 import { getCookie } from "./helpers.js";
 import {
-  EMAIL, PASSWORD, post, withSession, createUser, login,
-  lastVerificationToken, lastResetToken,
+  EMAIL,
+  PASSWORD,
+  post,
+  withSession,
+  createUser,
+  login,
+  lastVerificationToken,
+  lastResetToken,
 } from "./api.js";
+import {
+  createVerificationToken,
+  verifyToken,
+} from "../../src/utils/verificationToken.js";
 
 const NEW_PASSWORD = "a-brand-new-password";
 
 async function register() {
-  const res = await post("/api/auth/register", { email: EMAIL, password: PASSWORD });
+  const res = await post("/api/auth/register", {
+    email: EMAIL,
+    password: PASSWORD,
+  });
   return { sid: getCookie(res, "session_id")!, token: lastVerificationToken() };
 }
 
 const isVerified = async () =>
-  (await db.select().from(users).where(eq(users.email, EMAIL)))[0]?.emailVerified;
+  (await db.select().from(users).where(eq(users.email, EMAIL)))[0]
+    ?.emailVerified;
 
 describe("POST /api/auth/verify-email", () => {
   it("verifies the email and consumes the token", async () => {
@@ -49,7 +70,9 @@ describe("POST /api/auth/verify-email", () => {
 
   it("rejects an expired token", async () => {
     const { token } = await register();
-    await db.update(verificationTokens).set({ expiresAt: new Date(Date.now() - 1000) });
+    await db
+      .update(verificationTokens)
+      .set({ expiresAt: new Date(Date.now() - 1000) });
 
     expect((await post("/api/auth/verify-email", { token })).status).toBe(400);
     expect(await isVerified()).toBe(false);
@@ -59,12 +82,23 @@ describe("POST /api/auth/verify-email", () => {
     await createUser();
     await post("/api/auth/forgot-password", { email: EMAIL });
 
-    const res = await post("/api/auth/verify-email", { token: lastResetToken() });
+    const res = await post("/api/auth/verify-email", {
+      token: lastResetToken(),
+    });
     expect(res.status).toBe(400);
     expect(await isVerified()).toBe(false);
   });
 
-  it.todo("lets only one of two parallel requests redeem the same token");
+  it("redeems a token only once under parallel calls", async () => {
+    const user = await createUser();
+    const token = await createVerificationToken(user.id, "email_verification");
+
+    const results = await Promise.all(
+      Array.from({ length: 20 }, () => verifyToken(token, "email_verification"))
+    );
+
+    expect(results.filter((r) => r !== null)).toHaveLength(1);
+  });
 });
 
 describe("POST /api/auth/resend-verification", () => {
@@ -75,21 +109,48 @@ describe("POST /api/auth/resend-verification", () => {
   it("sends a new token and invalidates the old one", async () => {
     const { sid, token: oldToken } = await register();
 
-    const res = await post("/api/auth/resend-verification", {}, withSession(sid));
+    const res = await post(
+      "/api/auth/resend-verification",
+      {},
+      withSession(sid)
+    );
     expect(res.status).toBe(200);
     expect(sendVerificationEmail).toHaveBeenCalledTimes(2);
     const newToken = lastVerificationToken();
     expect(newToken).not.toBe(oldToken);
 
-    expect((await post("/api/auth/verify-email", { token: oldToken })).status).toBe(400);
-    expect((await post("/api/auth/verify-email", { token: newToken })).status).toBe(200);
+    expect(
+      (await post("/api/auth/verify-email", { token: oldToken })).status
+    ).toBe(400);
+    expect(
+      (await post("/api/auth/verify-email", { token: newToken })).status
+    ).toBe(200);
+  });
+
+  it("answers with an error when the mail cannot be sent", async () => {
+    const { sid } = await register();
+    vi.mocked(sendVerificationEmail).mockRejectedValueOnce(
+      new Error("Email delivery failed")
+    );
+
+    const res = await post(
+      "/api/auth/resend-verification",
+      {},
+      withSession(sid)
+    );
+
+    expect(res.status).toBe(502);
   });
 
   it("does not send a mail when the email is already verified", async () => {
     const { sid, token } = await register();
     await post("/api/auth/verify-email", { token });
 
-    const res = await post("/api/auth/resend-verification", {}, withSession(sid));
+    const res = await post(
+      "/api/auth/resend-verification",
+      {},
+      withSession(sid)
+    );
     expect(res.status).toBe(200);
     expect((await res.json()).message).toBe("Already verified");
     expect(sendVerificationEmail).toHaveBeenCalledTimes(1);
@@ -109,7 +170,9 @@ describe("POST /api/auth/forgot-password", () => {
   it("answers an unknown email exactly like a known one and sends nothing", async () => {
     await createUser();
     const known = await post("/api/auth/forgot-password", { email: EMAIL });
-    const unknown = await post("/api/auth/forgot-password", { email: "nobody@example.com" });
+    const unknown = await post("/api/auth/forgot-password", {
+      email: "nobody@example.com",
+    });
 
     expect(unknown.status).toBe(known.status);
     expect(await unknown.text()).toBe(await known.text());
@@ -122,12 +185,30 @@ describe("POST /api/auth/forgot-password", () => {
     const first = lastResetToken();
     await post("/api/auth/forgot-password", { email: EMAIL });
 
-    const res = await post("/api/auth/reset-password", { token: first, password: NEW_PASSWORD });
+    const res = await post("/api/auth/reset-password", {
+      token: first,
+      password: NEW_PASSWORD,
+    });
     expect(res.status).toBe(400);
   });
 
   it("rejects a missing email", async () => {
     expect((await post("/api/auth/forgot-password", {})).status).toBe(400);
+  });
+
+  it("answers the same when the reset mail cannot be sent (no account enumeration)", async () => {
+    await createUser();
+    const unknown = await post("/api/auth/forgot-password", {
+      email: "nobody@example.com",
+    });
+
+    vi.mocked(sendPasswordResetEmail).mockRejectedValueOnce(
+      new Error("Email delivery failed")
+    );
+    const known = await post("/api/auth/forgot-password", { email: EMAIL });
+
+    expect(known.status).toBe(unknown.status);
+    expect(await known.json()).toEqual(await unknown.json());
   });
 });
 
@@ -141,11 +222,20 @@ describe("POST /api/auth/reset-password", () => {
   it("sets the new password and the old one stops working", async () => {
     const token = await requestReset();
 
-    const res = await post("/api/auth/reset-password", { token, password: NEW_PASSWORD });
+    const res = await post("/api/auth/reset-password", {
+      token,
+      password: NEW_PASSWORD,
+    });
     expect(res.status).toBe(200);
 
-    expect((await post("/api/auth/login", { email: EMAIL, password: PASSWORD })).status).toBe(401);
-    expect((await post("/api/auth/login", { email: EMAIL, password: NEW_PASSWORD })).status).toBe(200);
+    expect(
+      (await post("/api/auth/login", { email: EMAIL, password: PASSWORD }))
+        .status
+    ).toBe(401);
+    expect(
+      (await post("/api/auth/login", { email: EMAIL, password: NEW_PASSWORD }))
+        .status
+    ).toBe(200);
   });
 
   it("logs out every existing session of the user", async () => {
@@ -155,25 +245,64 @@ describe("POST /api/auth/reset-password", () => {
     })();
     await post("/api/auth/forgot-password", { email: EMAIL });
 
-    await post("/api/auth/reset-password", { token: lastResetToken(), password: NEW_PASSWORD });
+    await post("/api/auth/reset-password", {
+      token: lastResetToken(),
+      password: NEW_PASSWORD,
+    });
 
     expect(await db.select().from(sessions)).toHaveLength(0);
-    expect((await app.request("/api/auth/me", { headers: withSession(sid) })).status).toBe(401);
+    expect(
+      (await app.request("/api/auth/me", { headers: withSession(sid) })).status
+    ).toBe(401);
   });
 
   it("accepts a token only once", async () => {
     const token = await requestReset();
     await post("/api/auth/reset-password", { token, password: NEW_PASSWORD });
 
-    const again = await post("/api/auth/reset-password", { token, password: "yet-another-password" });
+    const again = await post("/api/auth/reset-password", {
+      token,
+      password: "yet-another-password",
+    });
     expect(again.status).toBe(400);
   });
 
   it("rejects a too short password without consuming the token", async () => {
     const token = await requestReset();
 
-    expect((await post("/api/auth/reset-password", { token, password: "short" })).status).toBe(400);
-    expect((await post("/api/auth/reset-password", { token, password: NEW_PASSWORD })).status).toBe(200);
+    expect(
+      (await post("/api/auth/reset-password", { token, password: "short" }))
+        .status
+    ).toBe(400);
+    expect(
+      (
+        await post("/api/auth/reset-password", {
+          token,
+          password: NEW_PASSWORD,
+        })
+      ).status
+    ).toBe(200);
+  });
+
+  it("rejects a too long password without consuming the token", async () => {
+    const token = await requestReset();
+
+    expect(
+      (
+        await post("/api/auth/reset-password", {
+          token,
+          password: "a".repeat(101),
+        })
+      ).status
+    ).toBe(400);
+    expect(
+      (
+        await post("/api/auth/reset-password", {
+          token,
+          password: NEW_PASSWORD,
+        })
+      ).status
+    ).toBe(200);
   });
 
   it.each([
@@ -186,7 +315,10 @@ describe("POST /api/auth/reset-password", () => {
 
   it("rejects an email verification token", async () => {
     await createUser();
-    await post("/api/auth/register", { email: "other@example.com", password: PASSWORD });
+    await post("/api/auth/register", {
+      email: "other@example.com",
+      password: PASSWORD,
+    });
 
     const res = await post("/api/auth/reset-password", {
       token: lastVerificationToken(),
@@ -194,6 +326,4 @@ describe("POST /api/auth/reset-password", () => {
     });
     expect(res.status).toBe(400);
   });
-
-  it.todo("rejects a password longer than 100 characters like registration does");
 });

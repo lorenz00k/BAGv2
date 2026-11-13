@@ -18,6 +18,13 @@ import {
   createUser,
   login,
 } from "./api.js";
+import * as password from "../../src/utils/password.js";
+
+vi.mock("../../src/utils/password.js", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../../src/utils/password.js")>();
+  return { ...actual, verifyPassword: vi.fn(actual.verifyPassword) };
+});
 
 describe("POST /api/auth/register", () => {
   it("creates the user, logs them in and sends a verification mail", async () => {
@@ -73,6 +80,44 @@ describe("POST /api/auth/register", () => {
       password: PASSWORD,
     });
     expect(res.status).toBe(400);
+    expect(await db.select().from(users)).toHaveLength(1);
+  });
+
+  it("stores the email trimmed and lowercased", async () => {
+    await post("/api/auth/register", {
+      email: "  Max@Example.com ",
+      password: "correct-horse-battery",
+    });
+
+    expect((await db.select().from(users)).map((u) => u.email)).toEqual([
+      "max@example.com",
+    ]);
+  });
+
+  it("does not create a second account for another spelling of the same email", async () => {
+    await post("/api/auth/register", {
+      email: "max@example.com",
+      password: "correct-horse-battery",
+    });
+    await post("/api/auth/register", {
+      email: "MAX@EXAMPLE.COM",
+      password: "correct-horse-battery",
+    });
+
+    expect(await db.select().from(users)).toHaveLength(1);
+  });
+
+  it("still creates the account when the verification mail cannot be sent", async () => {
+    vi.mocked(sendVerificationEmail).mockRejectedValueOnce(
+      new Error("Email delivery failed")
+    );
+
+    const res = await post("/api/auth/register", {
+      email: EMAIL,
+      password: PASSWORD,
+    });
+
+    expect(res.status).toBe(201);
     expect(await db.select().from(users)).toHaveLength(1);
   });
 
@@ -179,6 +224,18 @@ describe("POST /api/auth/login", () => {
     expect(res.status).toBeGreaterThanOrEqual(400);
     expect(res.status).toBeLessThan(500);
   });
+
+  it("still checks a password hash when the email is unknown (no timing leak)", async () => {
+    vi.mocked(password.verifyPassword).mockClear();
+
+    const res = await post("/api/auth/login", {
+      email: "nobody@example.com",
+      password: PASSWORD,
+    });
+
+    expect(res.status).toBe(401);
+    expect(password.verifyPassword).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe("GET /api/auth/me", () => {
@@ -216,6 +273,17 @@ describe("GET /api/auth/me", () => {
       headers: withSession(sid),
     });
     expect(res.status).toBe(401);
+  });
+
+  it("logs in with another spelling of the email", async () => {
+    await createUser();
+
+    const res = await post("/api/auth/login", {
+      email: EMAIL.toUpperCase(),
+      password: PASSWORD,
+    });
+
+    expect(res.status).toBe(200);
   });
 });
 

@@ -27,3 +27,28 @@ export function getCookie(res: Response, name: string): string | undefined {
   return header?.split(";")[0]?.slice(name.length + 1);
 }
 
+// Runs fn while every DELETE on the table fails, like a lost connection would.
+export async function withBlockedDeletes<T>(
+  table: string,
+  fn: () => Promise<T>
+): Promise<T> {
+  const name = `block_delete_${table}`;
+  await db.execute(
+    sql.raw(
+      `CREATE OR REPLACE FUNCTION ${name}() RETURNS trigger AS $$
+     BEGIN RAISE EXCEPTION 'delete blocked for test'; END; $$ LANGUAGE plpgsql`
+    )
+  );
+  await db.execute(
+    sql.raw(
+      `CREATE TRIGGER ${name} BEFORE DELETE ON ${table}
+     FOR EACH ROW EXECUTE FUNCTION ${name}()`
+    )
+  );
+  try {
+    return await fn();
+  } finally {
+    await db.execute(sql.raw(`DROP TRIGGER ${name} ON ${table}`));
+    await db.execute(sql.raw(`DROP FUNCTION ${name}()`));
+  }
+}
