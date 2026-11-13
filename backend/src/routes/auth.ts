@@ -4,9 +4,8 @@ import { sessions, users, verificationTokens } from "../db/schema/index.js";
 import { registerSchema, loginSchema } from "../types/auth.js";
 import { hashPassword, verifyPassword, DUMMY_HASH } from "../utils/password.js";
 import { and, eq } from "drizzle-orm";
-import { getCookie, setCookie } from "hono/cookie";
+import { getCookie } from "hono/cookie";
 import { createSession } from "../utils/session.js";
-import { deleteCookie } from "hono/cookie";
 import { deleteSession } from "../utils/session.js";
 import { authMiddleware } from "../middleware/auth.js";
 import type { Variables } from "../types/hono.js";
@@ -31,6 +30,7 @@ import {
 } from "../utils/email.js";
 import { resetPasswordSchema } from "../types/auth.js";
 import { baseLogger } from "../middleware/logger.js";
+import { setSessionCookie, clearSessionCookie } from '../utils/cookies.js';
 
 const auth = new Hono<{ Variables: Variables }>();
 
@@ -74,13 +74,7 @@ auth.post("/register", registerRateLimiter, async (c) => {
   }
   // direkt einloggen:
   const sessionId = await createSession(newUser.id);
-  setCookie(c, "session_id", sessionId, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Lax",
-    maxAge: 30 * 24 * 60 * 60,
-    path: "/",
-  });
+  setSessionCookie(c, sessionId);
 
   // Anonyme Checker-Session migrieren
   const sid = readSid(c);
@@ -125,13 +119,7 @@ auth.post("/login", loginRateLimiter, async (c) => {
   const sessionId = await createSession(user.id);
 
   // Cookie setzen
-  setCookie(c, "session_id", sessionId, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Lax",
-    maxAge: 30 * 24 * 60 * 60, // 30 Tage
-    path: "/",
-  });
+  setSessionCookie(c, sessionId);
 
   //session merge: get anonymous data
   const sid = readSid(c);
@@ -154,9 +142,8 @@ auth.post("/logout", async (c) => {
     await deleteSession(sessionId).catch(() => {});
   }
 
-  deleteCookie(c, "session_id", {
-    path: "/",
-  });
+  clearSessionCookie(c);
+
   //damit daten nach logout nicht mehr angezeigt werden
   clearSidCookie(c);
 
