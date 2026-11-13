@@ -1,11 +1,8 @@
 import { drizzle } from "drizzle-orm/postgres-js"; 
 import postgres from "postgres";
-import { config } from "dotenv";
+import { env } from "../env.js";
 
-config();
+// postgres() -> connection to db
+const client = postgres(env.DATABASE_URL);
 
-//postgres client
-const client = postgres(process.env.DATABASE_URL!); // postgres() → Verbindung zur DB
-
-//DRIZZLE Instance
-export const db = drizzle(client); // export const db → Wird in Routes importiert
+export const db = drizzle(client);

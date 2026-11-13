@@ -1,10 +1,20 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { Hono } from "hono";
-import { setSessionCookie, clearSessionCookie } from "../../../src/utils/cookies.js";
+import { withNodeEnv } from "./helpers.js";
+import {
+  setSessionCookie,
+  clearSessionCookie,
+} from "../../../src/utils/cookies.js";
 
 const app = new Hono();
-app.get("/set", (c) => { setSessionCookie(c, "abc"); return c.text("ok"); });
-app.get("/clear", (c) => { clearSessionCookie(c); return c.text("ok"); });
+app.get("/set", (c) => {
+  setSessionCookie(c, "abc");
+  return c.text("ok");
+});
+app.get("/clear", (c) => {
+  clearSessionCookie(c);
+  return c.text("ok");
+});
 
 const setCookieHeader = async (path: string) =>
   (await app.request(path)).headers.get("set-cookie")!;
@@ -22,12 +32,20 @@ describe("setSessionCookie", () => {
     expect(cookie).toContain(`Max-Age=${30 * 24 * 60 * 60}`);
   });
 
-  it("marks the cookie Secure only in production", async () => {
-    vi.stubEnv("NODE_ENV", "production");
-    expect(await setCookieHeader("/set")).toContain("Secure");
+  it("sets Secure in production", async () => {
+    const { baseCookieOptions } = await withNodeEnv(
+      "production",
+      () => import("../../../src/utils/cookies.js")
+    );
+    expect(baseCookieOptions().secure).toBe(true);
+  });
 
-    vi.stubEnv("NODE_ENV", "development");
-    expect(await setCookieHeader("/set")).not.toContain("Secure");
+  it("does not set Secure in development", async () => {
+    const { baseCookieOptions } = await withNodeEnv(
+      "development",
+      () => import("../../../src/utils/cookies.js")
+    );
+    expect(baseCookieOptions().secure).toBe(false);
   });
 });
 

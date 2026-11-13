@@ -1,6 +1,7 @@
 import type { Context } from "hono";
 import { setCookie, deleteCookie } from "hono/cookie";
 import { SESSION_TTL_SECONDS } from "./session.js";
+import { isProduction } from '../env.js';
 
 export const SESSION_COOKIE_NAME = "session_id";
 
@@ -9,7 +10,7 @@ export function baseCookieOptions() {
   return {
     httpOnly: true,
     sameSite: "Lax" as const,
-    secure: process.env.NODE_ENV === "production",
+    secure: isProduction,
     path: "/",
   };
 }

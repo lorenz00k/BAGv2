@@ -31,15 +31,26 @@ describe("parseEnv", () => {
     ["port 0", { PORT: "0" }],
     ["a port above 65535", { PORT: "70000" }],
     ["a database url with another scheme", { DATABASE_URL: "mysql://x" }],
-    ["a frontend url with a trailing slash", { FRONTEND_URL: "http://localhost:3001/" }],
+    [
+      "a frontend url with a trailing slash",
+      { FRONTEND_URL: "http://localhost:3001/" },
+    ],
     ["an unknown NODE_ENV", { NODE_ENV: "staging" }],
   ])("rejects %s", (_label, override) => {
-    expect(() => parseEnv({ ...valid, ...override })).toThrow("Invalid environment");
+    expect(() => parseEnv({ ...valid, ...override })).toThrow(
+      "Invalid environment"
+    );
   });
 
   it("reports every problem at once", () => {
-    expect(() => parseEnv({ ...valid, PORT: "abc", RESEND_API_KEY: "" })).toThrow(
-      /PORT[\s\S]*RESEND_API_KEY/
-    );
+    expect(() =>
+      parseEnv({ ...valid, PORT: "abc", RESEND_API_KEY: "" })
+    ).toThrow(/PORT[\s\S]*RESEND_API_KEY/);
+  });
+
+  it("falls back to the default sender when RESEND_FROM_EMAIL is empty", () => {
+    const env = parseEnv({ ...valid, RESEND_FROM_EMAIL: "" });
+
+    expect(env.RESEND_FROM_EMAIL).toBe("onboarding@resend.dev");
   });
 });

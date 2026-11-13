@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import app from "./app.js";
 import { cleanupExpiredSessions } from "./utils/session.js";
 import { cleanupExpiredCheckerSessions } from "./utils/checkerSession.js";
+import { env } from "./env.js";
 
 // Cleanup on start
 cleanupExpiredSessions()
@@ -34,13 +35,10 @@ setInterval(
   24 * 60 * 60 * 1000
 );
 
-// Port comes from .env (loaded in app.ts)
-const port = Number(process.env.PORT);
-
 serve(
   {
     fetch: app.fetch,
-    port,
+    port: env.PORT,
   },
   (info) => {
     console.log(`Server läuft unter http://localhost:${info.port}`);

@@ -15,7 +15,10 @@ const envSchema = z.object({
     .url()
     .refine((u) => !u.endsWith("/"), "must not end with a slash"),
   RESEND_API_KEY: z.string().min(1),
-  RESEND_FROM_EMAIL: z.string().min(1).default("onboarding@resend.dev"),
+  RESEND_FROM_EMAIL: z
+    .string()
+    .transform((v) => v.trim() || "onboarding@resend.dev")
+    .default("onboarding@resend.dev"),
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
     .default("info"),

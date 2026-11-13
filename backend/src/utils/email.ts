@@ -1,9 +1,9 @@
 import { Resend } from "resend";
-
+import { env } from "../env.js";
 import emailTexts from "../i18n/de/emails.json" with { type: "json" };
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+const resend = new Resend(env.RESEND_API_KEY);
+const FROM_EMAIL = env.RESEND_FROM_EMAIL;
 
 function emailTemplate(
   heading: string,
@@ -33,7 +33,7 @@ async function deliver(message: { to: string; subject: string; html: string }) {
 
 export async function sendVerificationEmail(email: string, token: string) {
   const t = emailTexts.verification;
-  const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+  const verifyUrl = `${env.FRONTEND_URL}/verify-email?token=${token}`;
 
   await deliver({
     to: email,
@@ -51,7 +51,7 @@ export async function sendVerificationEmail(email: string, token: string) {
 
 export async function sendPasswordResetEmail(email: string, token: string) {
   const t = emailTexts.passwordReset;
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+  const resetUrl = `${env.FRONTEND_URL}/reset-password?token=${token}`;
 
   await deliver({
     to: email,
