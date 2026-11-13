@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { Hono } from "hono";
-import { withNodeEnv } from "./helpers.js";
+import { withNodeEnv } from "../helpers.js";
 const { returning } = vi.hoisted(() => ({ returning: vi.fn() }));
 
 vi.mock("../../../src/db/index.js", () => ({

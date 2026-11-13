@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { Hono } from "hono";
-import { withNodeEnv } from "./helpers.js";
+import { withNodeEnv } from "../helpers.js";
 import {
   setSessionCookie,
   clearSessionCookie,
