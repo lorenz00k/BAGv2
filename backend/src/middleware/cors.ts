@@ -1,4 +1,5 @@
 import { cors } from "hono/cors";
+import { env, isDevelopment } from "../env.js";
 
 // An origin is scheme + host + port. Compare the parsed parts, not the text:
 // a prefix check also lets through "http://localhost.evil.com".
@@ -15,28 +16,31 @@ function isLocalhostOrigin(origin: string): boolean {
   }
 }
 
-export const corsMiddleware = cors({
-  origin: (origin) => {
-    // Erlaubte Origins (später aus .env)
-    const allowedOrigins = [
-      "http://localhost:5173", // Vite Dev
-      "http://localhost:3001", // Alternative
-      "https://betriebsanlage-check.at", // Production
-    ];
+type CorsOptions = {
+  frontendUrl: string;
+  allowAnyLocalhost: boolean;
+};
 
-    // Während Development: auch localhost ohne Port erlauben
-    if (
-      process.env.NODE_ENV === "development" &&
-      origin &&
-      isLocalhostOrigin(origin)
-    ) {
-      return origin;
-    }
+export function createCorsMiddleware({
+  frontendUrl,
+  allowAnyLocalhost,
+}: CorsOptions) {
+  const allowedOrigin = new URL(frontendUrl).origin;
 
-    return allowedOrigins.includes(origin) ? origin : undefined;
-  },
-  credentials: true,
-  allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowHeaders: ["Content-Type", "Authorization"],
-  maxAge: 86400,
+  return cors({
+    origin: (origin) => {
+      if (origin === allowedOrigin) return origin;
+      if (allowAnyLocalhost && isLocalhostOrigin(origin)) return origin;
+      return undefined;
+    },
+    credentials: true,
+    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    maxAge: 86400,
+  });
+}
+
+export const corsMiddleware = createCorsMiddleware({
+  frontendUrl: env.FRONTEND_URL,
+  allowAnyLocalhost: isDevelopment,
 });
