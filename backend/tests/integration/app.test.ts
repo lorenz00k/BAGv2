@@ -78,3 +78,18 @@ describe("CORS", () => {
     expect(allowOrigin(res)).toBeNull();
   });
 });
+
+describe("security headers", () => {
+  it.each(["/health", "/does-not-exist"])(
+    "sets the baseline headers on %s",
+    async (path) => {
+      const res = await app.request(path);
+
+      expect(res.headers.get("x-content-type-options")).toBe("nosniff");
+      expect(res.headers.get("x-frame-options")).toBeTruthy();
+      expect(res.headers.get("strict-transport-security")).toContain(
+        "max-age="
+      );
+    }
+  );
+});

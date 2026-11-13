@@ -10,12 +10,14 @@ import account from "./routes/accounts.js";
 import viennagis from "./routes/viennagis.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import health from "./routes/health.js";
+import { secureHeaders } from "hono/secure-headers";
 
-// Order matters: Request → Logger → CORS → Route (middleware before routing)
+// Order matters: Request → Logger → Security headers → CORS → Route (middleware before routing)
 const app = new Hono(); //create app-instance
 
 // middleware
 app.use(logger);
+app.use(secureHeaders());
 app.use(corsMiddleware);
 app.route("/api/auth", auth);
 app.use(globalRateLimiter);
