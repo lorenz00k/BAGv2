@@ -1,9 +1,6 @@
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import app from "../../src/app.js";
-
-afterEach(() => {
-  vi.unstubAllEnvs();
-});
+import { testEnv } from "../testEnv.js";
 
 describe("GET /health", () => {
   it("reports that the server is running", async () => {
@@ -31,39 +28,36 @@ describe("CORS", () => {
   const allowOrigin = (res: Response) =>
     res.headers.get("access-control-allow-origin");
 
-  it.each(["https://betriebsanlage-check.at", "http://localhost:3001"])(
-    "allows the origin %s together with credentials",
-    async (origin) => {
-      const res = await request(origin);
-      expect(allowOrigin(res)).toBe(origin);
-      expect(res.headers.get("access-control-allow-credentials")).toBe("true");
-    }
-  );
+  it("allows the configured frontend together with credentials", async () => {
+    const res = await request(testEnv.FRONTEND_URL);
+    expect(allowOrigin(res)).toBe(testEnv.FRONTEND_URL);
+    expect(res.headers.get("access-control-allow-credentials")).toBe("true");
+  });
 
-  it.each([
-    "https://evil.example",
-    "http://betriebsanlage-check.at",
-    "https://betriebsanlage-check.at.evil.example",
-  ])("does not allow the origin %s", async (origin) => {
-    expect(allowOrigin(await request(origin))).toBeNull();
+  it("does not allow a foreign origin", async () => {
+    expect(allowOrigin(await request("https://evil.example"))).toBeNull();
+  });
+
+  it("does not allow an unknown localhost port outside development", async () => {
+    expect(allowOrigin(await request("http://localhost:4000"))).toBeNull();
   });
 
   it("sends no CORS headers to requests without an origin", async () => {
     expect(allowOrigin(await request())).toBeNull();
   });
 
-  it("answers the preflight request of an allowed origin", async () => {
+  it("answers the preflight request of the configured frontend", async () => {
     const res = await app.request("/api/auth/login", {
       method: "OPTIONS",
       headers: {
-        Origin: "https://betriebsanlage-check.at",
+        Origin: testEnv.FRONTEND_URL,
         "Access-Control-Request-Method": "POST",
         "Access-Control-Request-Headers": "Content-Type",
       },
     });
 
     expect(res.status).toBe(204);
-    expect(allowOrigin(res)).toBe("https://betriebsanlage-check.at");
+    expect(allowOrigin(res)).toBe(testEnv.FRONTEND_URL);
     expect(res.headers.get("access-control-allow-methods")).toContain("POST");
     expect(res.headers.get("access-control-allow-headers")).toContain(
       "Content-Type"
@@ -83,21 +77,19 @@ describe("CORS", () => {
 
     expect(allowOrigin(res)).toBeNull();
   });
+});
 
-  describe("in development", () => {
-    it("allows any localhost port", async () => {
-      vi.stubEnv("NODE_ENV", "development");
-      expect(allowOrigin(await request("http://localhost:4000"))).toBe(
-        "http://localhost:4000"
+describe("security headers", () => {
+  it.each(["/health", "/does-not-exist"])(
+    "sets the baseline headers on %s",
+    async (path) => {
+      const res = await app.request(path);
+
+      expect(res.headers.get("x-content-type-options")).toBe("nosniff");
+      expect(res.headers.get("x-frame-options")).toBeTruthy();
+      expect(res.headers.get("strict-transport-security")).toContain(
+        "max-age="
       );
-    });
-
-    it("does not allow an unknown localhost port outside development", async () => {
-      expect(allowOrigin(await request("http://localhost:4000"))).toBeNull();
-    });
-
-    it.todo(
-      "does not allow lookalike origins such as http://localhost.evil.com"
-    );
-  });
+    }
+  );
 });

@@ -4,6 +4,7 @@ import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import { db } from "../db/index.js";
 import { checkerSessions } from "../db/schema/checker.js";
 import { lt } from "drizzle-orm";
+import { baseCookieOptions } from "../utils/cookies.js";
 
 export const CHECKER_COOKIE_NAME = "sid";
 export const CHECKER_TTL_SECONDS = 60 * 60 * 24; // 24h
@@ -23,10 +24,7 @@ export function readSid(c: Context): string | undefined {
 
 export function setSidCookie(c: Context, sid: string) {
   setCookie(c, CHECKER_COOKIE_NAME, sid, {
-    httpOnly: true,
-    sameSite: "Lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
+    ...baseCookieOptions(),
     maxAge: CHECKER_TTL_SECONDS,
   });
 }
@@ -38,7 +36,6 @@ export function clearSidCookie(c: Context) {
 export function computeExpiresAt(now = new Date()): Date {
   return new Date(now.getTime() + CHECKER_TTL_SECONDS * 1000);
 }
-
 
 export async function cleanupExpiredCheckerSessions(): Promise<number> {
   const result = await db

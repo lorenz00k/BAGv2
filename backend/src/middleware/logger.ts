@@ -1,21 +1,15 @@
 import { pinoLogger } from "hono-pino";
 import pino from "pino";
-
-const isDev = process.env.NODE_ENV !== "production";
+import { env, isProduction } from "../env.js";
 
 const devLogger = pino({
-  level: process.env.LOG_LEVEL || "info",
+  level: env.LOG_LEVEL,
   transport: { target: "pino-pretty" },
 });
 
-const prodLogger = pino({
-  level: process.env.LOG_LEVEL || "info",
-});
+const prodLogger = pino({ level: env.LOG_LEVEL });
 
-
-const baseLogger = isDev ? devLogger : prodLogger;
+const baseLogger = isProduction ? prodLogger : devLogger;
 export { baseLogger };
 
 export const logger = pinoLogger({ pino: baseLogger });
-
-

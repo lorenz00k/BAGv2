@@ -4,10 +4,11 @@ import { eq } from "drizzle-orm";
 import { randomBytes, createHash } from "crypto";
 import { lt } from "drizzle-orm";
 
-const SESSION_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 Tage
+export const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
+const SESSION_DURATION = SESSION_TTL_SECONDS * 1000; // 30 Tage
 
 function generateSessionId(): string {
-  return randomBytes(32).toString("base64url");  //  256 bits, URL-safe
+  return randomBytes(32).toString("base64url"); //  256 bits, URL-safe
 }
 
 // Fast, deterministic hash: the raw ID is random with 256 bits of entropy (no salt or slow KDF needed)
@@ -20,7 +21,7 @@ export async function createSession(userId: string): Promise<string> {
   const expiresAt = new Date(Date.now() + SESSION_DURATION);
 
   await db.insert(sessions).values({
-    id: hashSessionId(rawSessionId),  // hash is stored
+    id: hashSessionId(rawSessionId), // hash is stored
     userId,
     expiresAt,
   });
@@ -58,7 +59,9 @@ export async function deleteSession(rawSessionId: string): Promise<void> {
   await db.delete(sessions).where(eq(sessions.id, hashSessionId(rawSessionId)));
 }
 
-export async function getUserIdFromSession(rawSessionId: string): Promise<string | null> {
+export async function getUserIdFromSession(
+  rawSessionId: string
+): Promise<string | null> {
   const [session] = await db
     .select({ userId: sessions.userId })
     .from(sessions)

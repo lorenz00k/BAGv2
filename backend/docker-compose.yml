@@ -5,10 +5,10 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: bag_user
-      POSTGRES_PASSWORD: bag_local_password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in backend/.env}
       POSTGRES_DB: bag_database
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
   db-test:
@@ -19,7 +19,7 @@ services:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: bag_test
     ports:
-      - "5434:5432"
+      - "127.0.0.1:5434:5432"
     tmpfs: # data are put into RAM & are gone if stopped
       - /var/lib/postgresql/data 
 

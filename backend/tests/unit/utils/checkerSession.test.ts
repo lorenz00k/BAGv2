@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { Hono } from "hono";
-
+import { withNodeEnv } from "../helpers.js";
 const { returning } = vi.hoisted(() => ({ returning: vi.fn() }));
 
 vi.mock("../../../src/db/index.js", () => ({
@@ -21,6 +21,19 @@ import {
 afterEach(() => {
   vi.unstubAllEnvs();
 });
+
+async function setCookieHeaderIn(nodeEnv: "production" | "development") {
+  const { setSidCookie } = await withNodeEnv(
+    nodeEnv,
+    () => import("../../../src/utils/checkerSession.js")
+  );
+  const modeApp = new Hono();
+  modeApp.get("/set", (c) => {
+    setSidCookie(c, "my-sid");
+    return c.text("ok");
+  });
+  return (await modeApp.request("/set")).headers.get("set-cookie") ?? "";
+}
 
 describe("createSid", () => {
   it("returns a cookie-safe base64url string of 43 characters", () => {
@@ -47,8 +60,12 @@ describe("hashSid", () => {
 describe("computeExpiresAt", () => {
   it("adds exactly the TTL to the given time", () => {
     const now = new Date("2026-01-01T00:00:00.000Z");
-    expect(computeExpiresAt(now).toISOString()).toBe("2026-01-02T00:00:00.000Z");
-    expect(computeExpiresAt(now).getTime() - now.getTime()).toBe(CHECKER_TTL_SECONDS * 1000);
+    expect(computeExpiresAt(now).toISOString()).toBe(
+      "2026-01-02T00:00:00.000Z"
+    );
+    expect(computeExpiresAt(now).getTime() - now.getTime()).toBe(
+      CHECKER_TTL_SECONDS * 1000
+    );
   });
 });
 
@@ -74,21 +91,24 @@ describe("cookie helpers", () => {
     expect(cookie).toContain(`Max-Age=${CHECKER_TTL_SECONDS}`);
   });
 
-  it("marks the cookie Secure only in production", async () => {
-    vi.stubEnv("NODE_ENV", "production");
-    expect((await app.request("/set")).headers.get("set-cookie")).toContain("Secure");
+  it("marks the cookie Secure in production", async () => {
+    expect(await setCookieHeaderIn("production")).toContain("Secure");
+  });
 
-    vi.stubEnv("NODE_ENV", "development");
-    expect((await app.request("/set")).headers.get("set-cookie")).not.toContain("Secure");
+  it("does not mark the cookie Secure in development", async () => {
+    expect(await setCookieHeaderIn("development")).not.toContain("Secure");
   });
 
   it("clears the cookie", async () => {
-    const cookie = (await app.request("/clear")).headers.get("set-cookie") ?? "";
+    const cookie =
+      (await app.request("/clear")).headers.get("set-cookie") ?? "";
     expect(cookie).toContain("sid=;");
   });
 
   it("reads the sid from the request cookie", async () => {
-    const res = await app.request("/read", { headers: { Cookie: "sid=abc123" } });
+    const res = await app.request("/read", {
+      headers: { Cookie: "sid=abc123" },
+    });
     expect(await res.text()).toBe("abc123");
   });
 });

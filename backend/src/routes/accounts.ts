@@ -6,10 +6,10 @@ import { authMiddleware } from "../middleware/auth.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
 import { HTTPException } from "hono/http-exception";
 import type { Variables } from "../types/hono.js";
-import { deleteCookie } from "hono/cookie";
 import { hashSessionId } from "../utils/session.js";
 import { z } from "zod";
 import { changePasswordSchema } from "../types/auth.js";
+import { clearSessionCookie } from "../utils/cookies.js";
 
 const account = new Hono<{ Variables: Variables }>();
 
@@ -141,7 +141,7 @@ account.delete("/", async (c) => {
 
   // Cascade löscht Sessions, Checks, Files automatisch
   await db.delete(users).where(eq(users.id, userId));
-  deleteCookie(c, "session_id", { path: "/" });
+  clearSessionCookie(c);
 
   return c.json({ message: "Account deleted" });
 });
