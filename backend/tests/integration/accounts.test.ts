@@ -6,6 +6,7 @@ import { getCookie } from "./helpers.js";
 import { users, sessions, checks } from "../../src/db/schema/index.js";
 import { EMAIL, PASSWORD, post, createUser, login } from "./api.js";
 import { createHash } from "node:crypto";
+import { withBlockedDeletes } from "./helpers.js";
 
 const NEW_PASSWORD = "a-brand-new-password";
 const OTHER_EMAIL = "other@example.com";
@@ -120,6 +121,26 @@ describe("POST /api/account/change-password", () => {
 
     expect((await call("GET", "/sessions", current)).status).toBe(200);
     expect((await call("GET", "/sessions", other)).status).toBe(401);
+  });
+
+  it("keeps the old password when ending the other sessions fails", async () => {
+    await createUser();
+    const sid = await login();
+    await login(); // a second session, so there is something to delete
+
+    await withBlockedDeletes("sessions", async () => {
+      const res = await call("POST", "/change-password", sid, {
+        currentPassword: PASSWORD,
+        newPassword: NEW_PASSWORD,
+      });
+      expect(res.status).toBe(500);
+    });
+
+    const res = await post("/api/auth/login", {
+      email: EMAIL,
+      password: PASSWORD,
+    });
+    expect(res.status).toBe(200); // the old password still works
   });
 });
 

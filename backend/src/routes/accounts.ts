@@ -9,7 +9,7 @@ import type { Variables } from "../types/hono.js";
 import { deleteCookie } from "hono/cookie";
 import { hashSessionId } from "../utils/session.js";
 import { z } from "zod";
-import { changePasswordSchema } from '../types/auth.js'; 
+import { changePasswordSchema } from "../types/auth.js";
 
 const account = new Hono<{ Variables: Variables }>();
 
@@ -39,21 +39,23 @@ account.post("/change-password", async (c) => {
   }
 
   const passwordHash = await hashPassword(newPassword);
-  await db
-    .update(users)
-    .set({ passwordHash, updatedAt: new Date() })
-    .where(eq(users.id, userId));
 
-  // Alle ANDEREN Sessions invalidieren (aktuelle bleibt)
-  const sessionId = c.get("sessionId");
-  await db
-    .delete(sessions)
-    .where(
-      and(
-        eq(sessions.userId, userId),
-        ne(sessions.id, hashSessionId(sessionId))
-      )
-    );
+  await db.transaction(async (tx) => {
+    await tx
+      .update(users)
+      .set({ passwordHash, updatedAt: new Date() })
+      .where(eq(users.id, userId));
+
+    // end all OTHER sessions (the current one stays)
+    await tx
+      .delete(sessions)
+      .where(
+        and(
+          eq(sessions.userId, userId),
+          ne(sessions.id, hashSessionId(c.get("sessionId")))
+        )
+      );
+  });
 
   return c.json({ message: "Password changed" });
 });

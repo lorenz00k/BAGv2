@@ -29,7 +29,6 @@ import {
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "../utils/email.js";
-
 import { resetPasswordSchema } from "../types/auth.js";
 
 const auth = new Hono<{ Variables: Variables }>();
@@ -282,13 +281,15 @@ auth.post("/reset-password", resetPasswordRateLimiter, async (c) => {
 
   // Neues Passwort setzen
   const passwordHash = await hashPassword(password);
-  await db
-    .update(users)
-    .set({ passwordHash, updatedAt: new Date() })
-    .where(eq(users.id, record.userId));
 
-  // Alle Sessions dieses Users invalidieren
-  await db.delete(sessions).where(eq(sessions.userId, record.userId));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(users)
+      .set({ passwordHash, updatedAt: new Date() })
+      .where(eq(users.id, record.userId));
+
+    await tx.delete(sessions).where(eq(sessions.userId, record.userId));
+  });
 
   return c.json({ message: "Password reset successful" });
 });
