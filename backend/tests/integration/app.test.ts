@@ -96,8 +96,13 @@ describe("CORS", () => {
       expect(allowOrigin(await request("http://localhost:4000"))).toBeNull();
     });
 
-    it.todo(
-      "does not allow lookalike origins such as http://localhost.evil.com"
-    );
+    it.each([
+      "http://localhost.evil.com",
+      "http://localhostevil.com",
+      "http://localhost@evil.com",
+    ])("does not allow the lookalike origin %s", async (origin) => {
+      vi.stubEnv("NODE_ENV", "development");
+      expect(allowOrigin(await request(origin))).toBeNull();
+    });
   });
 });
