@@ -1,18 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { values, limit, deleteWhere } = vi.hoisted(() => ({
+const { values, returning } = vi.hoisted(() => ({
   values: vi.fn().mockResolvedValue(undefined),
-  limit: vi.fn(),
-  deleteWhere: vi.fn().mockResolvedValue(undefined),
+  returning: vi.fn(),
 }));
 
-vi.mock("../../../src/db/index.js", () => ({
-  db: {
+vi.mock("../../../src/db/index.js", () => {
+  const tx = {
     insert: () => ({ values }),
-    select: () => ({ from: () => ({ where: () => ({ limit }) }) }),
-    delete: () => ({ where: deleteWhere }),
-  },
-}));
+    delete: () => ({ where: () => ({ returning }) }),
+  };
+  return { db: { transaction: (fn: (t: typeof tx) => unknown) => fn(tx) } };
+});
 
 import { mergeAnonymousChecker } from "../../../src/utils/sessionMerge.ts";
 
@@ -23,21 +22,19 @@ beforeEach(() => {
 describe("mergeAnonymousChecker", () => {
   it("does nothing without a session cookie", async () => {
     await mergeAnonymousChecker(undefined, "user-1");
-    expect(limit).not.toHaveBeenCalled();
+    expect(returning).not.toHaveBeenCalled();
     expect(values).not.toHaveBeenCalled();
-    expect(deleteWhere).not.toHaveBeenCalled();
   });
 
   it("does nothing when no anonymous session exists", async () => {
-    limit.mockResolvedValueOnce([]);
+    returning.mockResolvedValueOnce([]);
     await mergeAnonymousChecker("sid", "user-1");
     expect(values).not.toHaveBeenCalled();
-    expect(deleteWhere).not.toHaveBeenCalled();
   });
 
   it("saves a finished session as a completed check for the user and deletes it", async () => {
     const answers = { betriebsart: "restaurant" };
-    limit.mockResolvedValueOnce([{ id: "s1", status: "finished", answers }]);
+    returning.mockResolvedValueOnce([{ id: "s1", status: "finished", answers }]);
 
     await mergeAnonymousChecker("sid", "user-1");
 
@@ -47,11 +44,11 @@ describe("mergeAnonymousChecker", () => {
       currentStep: "0",
       formData: answers,
     });
-    expect(deleteWhere).toHaveBeenCalledTimes(1);
+    expect(returning).toHaveBeenCalledTimes(1);
   });
 
   it("saves an unfinished session as a draft", async () => {
-    limit.mockResolvedValueOnce([{ id: "s1", status: "in_progress", answers: { a: 1 } }]);
+    returning.mockResolvedValueOnce([{ id: "s1", status: "in_progress", answers: { a: 1 } }]);
     await mergeAnonymousChecker("sid", "user-1");
     expect(values.mock.calls[0]![0].status).toBe("draft");
   });
@@ -60,9 +57,9 @@ describe("mergeAnonymousChecker", () => {
     ["empty answers", {}],
     ["null answers", null],
   ])("creates no check for %s but still deletes the session", async (_label, answers) => {
-    limit.mockResolvedValueOnce([{ id: "s1", status: "finished", answers }]);
+    returning.mockResolvedValueOnce([{ id: "s1", status: "finished", answers }]);
     await mergeAnonymousChecker("sid", "user-1");
     expect(values).not.toHaveBeenCalled();
-    expect(deleteWhere).toHaveBeenCalledTimes(1);
+    expect(returning).toHaveBeenCalledTimes(1);
   });
 });

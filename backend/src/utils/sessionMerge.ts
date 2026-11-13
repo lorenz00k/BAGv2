@@ -5,36 +5,30 @@ import { eq } from "drizzle-orm";
 import { hashSid } from "./checkerSession.js";
 
 export async function mergeAnonymousChecker(
-    sid: string | undefined,
-    userId: string
+  sid: string | undefined,
+  userId: string
 ): Promise<void> {
-    if (!sid) return;
+  if (!sid) return;
 
-    const sidHash = hashSid(sid);
+  await db.transaction(async (tx) => {
+    // Claim the anonymous session: only one caller can delete it
+    const [anonymousSession] = await tx
+      .delete(checkerSessions)
+      .where(eq(checkerSessions.sidHash, hashSid(sid)))
+      .returning();
 
-    // Anonyme Session suchen
-    const [anonSession] = await db
-        .select()
-        .from(checkerSessions)
-        .where(eq(checkerSessions.sidHash, sidHash))
-        .limit(1);
+    if (!anonymousSession) return;
 
-    if (!anonSession) return;
-
-    // only migrate if answers are exitsing 
-    const answers = anonSession.answers as Record<string, unknown>;
+    // migrate if answers are exitsing
+    const answers = anonymousSession.answers as Record<string, unknown>;
     if (answers && Object.keys(answers).length > 0) {
-        // connect the data to the correct user
-        await db.insert(checks).values({
-            userId,
-            status: anonSession.status === "finished" ? "completed" : "draft",
-            currentStep: "0",
-            formData: anonSession.answers,
-        });
+      // connect the data to the correct user
+      await tx.insert(checks).values({
+        userId,
+        status: anonymousSession.status === "finished" ? "completed" : "draft",
+        currentStep: "0",
+        formData: anonymousSession.answers,
+      });
     }
-
-    // delete anonymus sessions —> data is now saved in account
-    await db
-        .delete(checkerSessions)
-        .where(eq(checkerSessions.id, anonSession.id));
+  });
 }
