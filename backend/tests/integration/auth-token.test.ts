@@ -22,7 +22,10 @@ import {
   lastVerificationToken,
   lastResetToken,
 } from "./api.js";
-import { createVerificationToken, verifyToken } from "../../src/utils/verificationToken.js";
+import {
+  createVerificationToken,
+  verifyToken,
+} from "../../src/utils/verificationToken.js";
 
 const NEW_PASSWORD = "a-brand-new-password";
 
@@ -124,6 +127,21 @@ describe("POST /api/auth/resend-verification", () => {
     ).toBe(200);
   });
 
+  it("answers with an error when the mail cannot be sent", async () => {
+    const { sid } = await register();
+    vi.mocked(sendVerificationEmail).mockRejectedValueOnce(
+      new Error("Email delivery failed")
+    );
+
+    const res = await post(
+      "/api/auth/resend-verification",
+      {},
+      withSession(sid)
+    );
+
+    expect(res.status).toBe(502);
+  });
+
   it("does not send a mail when the email is already verified", async () => {
     const { sid, token } = await register();
     await post("/api/auth/verify-email", { token });
@@ -176,6 +194,21 @@ describe("POST /api/auth/forgot-password", () => {
 
   it("rejects a missing email", async () => {
     expect((await post("/api/auth/forgot-password", {})).status).toBe(400);
+  });
+
+  it("answers the same when the reset mail cannot be sent (no account enumeration)", async () => {
+    await createUser();
+    const unknown = await post("/api/auth/forgot-password", {
+      email: "nobody@example.com",
+    });
+
+    vi.mocked(sendPasswordResetEmail).mockRejectedValueOnce(
+      new Error("Email delivery failed")
+    );
+    const known = await post("/api/auth/forgot-password", { email: EMAIL });
+
+    expect(known.status).toBe(unknown.status);
+    expect(await known.json()).toEqual(await unknown.json());
   });
 });
 

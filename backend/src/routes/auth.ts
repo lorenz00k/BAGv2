@@ -26,12 +26,22 @@ import {
   verifyToken,
 } from "../utils/verificationToken.js";
 import {
-  sendPasswordResetEmail,
   sendVerificationEmail,
+  sendPasswordResetEmail,
 } from "../utils/email.js";
 import { resetPasswordSchema } from "../types/auth.js";
+import { baseLogger } from "../middleware/logger.js";
 
 const auth = new Hono<{ Variables: Variables }>();
+
+// A failed mail must not fail the request: log it and carry on
+async function sendQuietly(send: () => Promise<void>, what: string) {
+  try {
+    await send();
+  } catch (err) {
+    baseLogger.error({ err }, `Could not send ${what} email`);
+  }
+}
 
 // POST /api/auth/register
 auth.post("/register", registerRateLimiter, async (c) => {
@@ -79,7 +89,10 @@ auth.post("/register", registerRateLimiter, async (c) => {
 
   // Verification-Email senden
   const token = await createVerificationToken(newUser.id, "email_verification");
-  await sendVerificationEmail(data.email, token);
+  await sendQuietly(
+    () => sendVerificationEmail(data.email, token),
+    "verification"
+  );
 
   return c.json({ user: { ...newUser, emailVerified: false } }, 201);
 });
@@ -228,7 +241,14 @@ auth.post(
       );
 
     const token = await createVerificationToken(userId, "email_verification");
-    await sendVerificationEmail(user.email, token);
+    try {
+      await sendVerificationEmail(user.email, token);
+    } catch (err) {
+      baseLogger.error({ err }, "Could not send verification email");
+      throw new HTTPException(502, {
+        message: "Could not send the email, please try again later",
+      });
+    }
 
     return c.json({ message: "Verification email sent" });
   }
@@ -259,9 +279,11 @@ auth.post("/forgot-password", forgotPasswordRateLimiter, async (c) => {
           eq(verificationTokens.type, "password_reset")
         )
       );
-
     const token = await createVerificationToken(user.id, "password_reset");
-    await sendPasswordResetEmail(user.email, token);
+    await sendQuietly(
+      () => sendPasswordResetEmail(user.email, token),
+      "password reset"
+    );
   }
 
   // Immer gleiche Antwort — verhindert Email-Enumeration

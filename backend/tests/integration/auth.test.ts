@@ -106,6 +106,21 @@ describe("POST /api/auth/register", () => {
 
     expect(await db.select().from(users)).toHaveLength(1);
   });
+
+  it("still creates the account when the verification mail cannot be sent", async () => {
+    vi.mocked(sendVerificationEmail).mockRejectedValueOnce(
+      new Error("Email delivery failed")
+    );
+
+    const res = await post("/api/auth/register", {
+      email: EMAIL,
+      password: PASSWORD,
+    });
+
+    expect(res.status).toBe(201);
+    expect(await db.select().from(users)).toHaveLength(1);
+  });
+
   it.todo(
     "does not reveal whether an email is already registered (enumeration)"
   );

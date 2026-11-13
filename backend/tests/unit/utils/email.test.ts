@@ -47,7 +47,9 @@ describe("sendVerificationEmail", () => {
     await sendVerificationEmail("user@example.com", "tok123");
 
     const html: string = send.mock.calls[0]![0].html;
-    expect(html).toContain('href="http://localhost:3001/verify-email?token=tok123"');
+    expect(html).toContain(
+      'href="http://localhost:3001/verify-email?token=tok123"'
+    );
     expect(html).toContain(emailTexts.verification.heading);
     expect(html).toContain(emailTexts.verification.cta);
   });
@@ -61,22 +63,41 @@ describe("sendPasswordResetEmail", () => {
     const mail = send.mock.calls[0]![0];
     expect(mail.to).toBe("user@example.com");
     expect(mail.subject).toBe(emailTexts.passwordReset.subject);
-    expect(mail.html).toContain('href="http://localhost:3001/reset-password?token=tok456"');
+    expect(mail.html).toContain(
+      'href="http://localhost:3001/reset-password?token=tok456"'
+    );
   });
 
   it("uses the configured frontend url", async () => {
-    const { sendPasswordResetEmail } = await loadEmailModule({ FRONTEND_URL: "https://bag.example.org" });
+    const { sendPasswordResetEmail } = await loadEmailModule({
+      FRONTEND_URL: "https://bag.example.org",
+    });
     await sendPasswordResetEmail("user@example.com", "tok456");
 
-    expect(send.mock.calls[0]![0].html).toContain("https://bag.example.org/reset-password?token=tok456");
+    expect(send.mock.calls[0]![0].html).toContain(
+      "https://bag.example.org/reset-password?token=tok456"
+    );
   });
 });
 
 describe("sender address", () => {
   it("falls back to a default sender when RESEND_FROM_EMAIL is empty", async () => {
-    const { sendVerificationEmail } = await loadEmailModule({ RESEND_FROM_EMAIL: "" });
+    const { sendVerificationEmail } = await loadEmailModule({
+      RESEND_FROM_EMAIL: "",
+    });
     await sendVerificationEmail("user@example.com", "tok");
 
     expect(send.mock.calls[0]![0].from).toMatch(/@/);
+  });
+  it("throws when Resend reports an error", async () => {
+    send.mockResolvedValueOnce({
+      data: null,
+      error: { name: "validation_error", message: "invalid from" },
+    });
+    const { sendVerificationEmail } = await loadEmailModule();
+
+    await expect(
+      sendVerificationEmail("user@example.com", "tok")
+    ).rejects.toThrow("Email delivery failed");
   });
 });
