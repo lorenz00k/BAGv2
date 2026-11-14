@@ -3,6 +3,8 @@ import { Hono, MiddlewareHandler } from "hono";
 import { withNodeEnv } from "../helpers.js";
 import { MemoryStore, type Store } from "hono-rate-limiter";
 import { createRateLimiters } from "../../../src/middleware/rate-limit.js";
+import { withFallback } from "../../../src/utils/rateLimitStore.js";
+
 type Limiters = typeof import("../../../src/middleware/rate-limit.js");
 
 afterEach(() => {
@@ -166,5 +168,25 @@ describe("createRateLimiters", () => {
 
     expect((await hit(limiters.login, 10)).every((s) => s === 200)).toBe(true);
     expect(createStore).not.toHaveBeenCalled();
+  });
+
+  it("survives a failing store only when it is wrapped in a fallback", async () => {
+    const failing = (): Store => {
+      const fail = () => Promise.reject(new Error("redis down"));
+      return { increment: fail, decrement: fail, resetKey: fail };
+    };
+
+    // The library does not catch store errors: the request ends in a 500.
+    const bare = createRateLimiters({ disabled: false, createStore: failing });
+    expect(await hit(bare.login, 1)).toEqual([500]);
+
+    // With a fallback the route keeps working and the limit still holds.
+    const wrapped = createRateLimiters({
+      disabled: false,
+      createStore: () => withFallback(failing(), new MemoryStore(), () => {}),
+    });
+    const statuses = await hit(wrapped.login, 6);
+    expect(statuses.slice(0, 5)).toEqual([200, 200, 200, 200, 200]);
+    expect(statuses[5]).toBe(429);
   });
 });
