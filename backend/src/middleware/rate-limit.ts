@@ -1,7 +1,10 @@
-import { rateLimiter, MemoryStore, type Store } from "hono-rate-limiter";
+import { rateLimiter, type Store } from "hono-rate-limiter";
 import type { MiddlewareHandler } from "hono";
 import { env, isDevelopment } from "../env.js";
 import { createClientKeyGenerator } from "../utils/clientIp.js";
+import pino from "pino";
+import { createStoreFactory } from "../utils/rateLimitStore.js";
+import { throttle } from "../utils/throttle.js";
 
 const noLimit: MiddlewareHandler = (_, next) => next();
 
@@ -74,8 +77,26 @@ export function createRateLimiters({ createStore, disabled }: Options) {
   };
 }
 
+// Own plain logger: the shared one starts a pretty-printing worker thread
+// when it is imported, which the unit tests would pay for on every reload.
+const log = pino({ name: "rate-limit", level: env.LOG_LEVEL });
+
+// During a Redis outage every call fails; report it at most every 30 seconds.
+const reportStoreFailure = throttle(
+  (error: unknown, operation: string) =>
+    log.error(
+      { err: error, operation },
+      "Rate limit store failed, counting in memory"
+    ),
+  30_000
+);
+
+const stores = createStoreFactory(env.REDIS_URL, reportStoreFailure);
+// For the graceful shutdown that comes with the deployment work.
+export const closeRateLimitStores = stores.close;
+
 const limiters = createRateLimiters({
-  createStore: () => new MemoryStore(),
+  createStore: stores.createStore,
   disabled: isDevelopment,
 });
 

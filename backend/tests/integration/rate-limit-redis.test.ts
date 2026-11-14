@@ -3,7 +3,7 @@ import { describe, it, expect, vi, afterAll } from "vitest";
 import type { Redis } from "ioredis";
 import { MemoryStore, RedisStore } from "hono-rate-limiter";
 import { createRedis, toRateLimitClient } from "../../src/utils/redisClient.js";
-import { withFallback } from "../../src/utils/rateLimitStore.js";
+import { withFallback, createStoreFactory } from "../../src/utils/rateLimitStore.js";
 import { TEST_REDIS_URL } from "./testRedis.js";
 
 // RedisStore only reads windowMs from the options
@@ -80,5 +80,37 @@ describe("RedisStore through the ioredis adapter", () => {
 
     expect((await guarded.increment("a")).totalHits).toBe(1);
     expect(onFailure).toHaveBeenCalled();
+  });
+});
+describe("createStoreFactory with a Redis URL", () => {
+  it("counts in Redis under one prefix per limiter", async () => {
+    const { createStore, close } = createStoreFactory(TEST_REDIS_URL, () => {});
+    const name = randomUUID();
+    const store = createStore(name);
+    store.init?.(options);
+    const redis = await connect();
+
+    // The first calls may still be counted in memory while the connection is
+    // being established, so wait until the key shows up in Redis.
+    await vi.waitFor(async () => {
+      await store.increment("a");
+      expect(await redis.exists(`rl:${name}:a`)).toBe(1);
+    });
+    await close();
+  });
+
+  it("counts in memory and reports when Redis is unreachable", async () => {
+    const onFailure = vi.fn();
+    const { createStore, close } = createStoreFactory(
+      "redis://127.0.0.1:1",
+      onFailure
+    );
+    const store = createStore("login");
+    store.init?.(options);
+
+    expect((await store.increment("a")).totalHits).toBe(1);
+    expect((await store.increment("a")).totalHits).toBe(2);
+    expect(onFailure).toHaveBeenCalled();
+    await close();
   });
 });

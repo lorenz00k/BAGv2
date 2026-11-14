@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { MemoryStore, type Store } from "hono-rate-limiter";
-import { withFallback } from "../../../src/utils/rateLimitStore.js";
+import { withFallback, createStoreFactory } from "../../../src/utils/rateLimitStore.js";
 
 // MemoryStore only reads windowMs from the options
 const options = { windowMs: 60_000 } as never;
@@ -53,5 +53,22 @@ describe("withFallback", () => {
       withFallback(primary, new MemoryStore(), onFailure).init?.(options)
     ).not.toThrow();
     expect(onFailure).toHaveBeenCalledWith(expect.any(Error), "init");
+  });
+});
+
+describe("createStoreFactory", () => {
+  it("counts in memory without a Redis URL, separately per limiter", async () => {
+    const onFailure = vi.fn();
+    const { createStore, close } = createStoreFactory(undefined, onFailure);
+    const login = createStore("login");
+    const register = createStore("register");
+    login.init?.(options);
+    register.init?.(options);
+
+    expect((await login.increment("a")).totalHits).toBe(1);
+    expect((await login.increment("a")).totalHits).toBe(2);
+    expect((await register.increment("a")).totalHits).toBe(1);
+    expect(onFailure).not.toHaveBeenCalled();
+    await close();
   });
 });

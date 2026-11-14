@@ -1,4 +1,6 @@
-import type { Store } from "hono-rate-limiter";
+import { MemoryStore, RedisStore, type Store } from "hono-rate-limiter";
+import type { Redis } from "ioredis";
+import { createRedis, toRateLimitClient } from "./redisClient.js";
 
 type FailureHandler = (error: unknown, operation: string) => void;
 
@@ -36,5 +38,37 @@ export function withFallback(
     increment: (key) => run("increment", (store) => store.increment(key)),
     decrement: (key) => run("decrement", (store) => store.decrement(key)),
     resetKey: (key) => run("resetKey", (store) => store.resetKey(key)),
+  };
+}
+
+// Builds the store for each limiter: Redis with an in-memory fallback when a
+// URL is configured, plain memory otherwise. The Redis connection is created
+// on first use and shared by all limiters, so nothing connects while the
+// limiters are switched off (development).
+export function createStoreFactory(
+  redisUrl: string | undefined,
+  onFailure: FailureHandler
+) {
+  let redis: Redis | undefined;
+
+  return {
+    createStore(name: string): Store {
+      if (!redisUrl) return new MemoryStore();
+
+      redis ??= createRedis(redisUrl, (error) =>
+        onFailure(error, "connection")
+      );
+      return withFallback(
+        new RedisStore({
+          client: toRateLimitClient(redis),
+          prefix: `rl:${name}:`,
+        }),
+        new MemoryStore(),
+        onFailure
+      );
+    },
+    async close(): Promise<void> {
+      await redis?.quit().catch(() => redis?.disconnect());
+    },
   };
 }
