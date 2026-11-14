@@ -75,3 +75,13 @@ export const resendVerificationRateLimiter = isDevelopment
       keyGenerator,
       message: "Too many requests, please try again later",
     });
+
+export const viennagisRateLimiter = isDevelopment
+  ? noLimit
+  : rateLimiter({
+      windowMs: 60 * 1000,
+      limit: 30,
+      standardHeaders: "draft-6",
+      keyGenerator,
+      message: "Too many requests to Vienna GIS API",
+    });

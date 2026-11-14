@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
-import { Hono } from "hono";
+import { Hono, MiddlewareHandler } from "hono";
 import { withNodeEnv } from "../helpers.js";
+type Limiters = typeof import("../../../src/middleware/rate-limit.js");
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -51,13 +52,16 @@ describe("rate limiters", () => {
 describe("client identification", () => {
   // Six login attempts from ONE connection, each with a different forged
   // X-Forwarded-For header. A real attacker would do exactly this.
-  async function loginStatusesFromOneSocket(count: number) {
-    const { loginRateLimiter } = await withNodeEnv(
+  async function statusesFromOneSocket(
+    pick: (m: Limiters) => MiddlewareHandler,
+    count: number
+  ) {
+    const limiters = await withNodeEnv(
       "test",
       () => import("../../../src/middleware/rate-limit.js")
     );
     const app = new Hono();
-    app.use(loginRateLimiter);
+    app.use(pick(limiters));
     app.get("/", (c) => c.text("ok"));
 
     // Hono passes the third argument on as c.env; this is how the Node server
@@ -65,7 +69,6 @@ describe("client identification", () => {
     const bindings = {
       incoming: { socket: { remoteAddress: "198.51.100.7" } },
     };
-
     const statuses: number[] = [];
     for (let i = 0; i < count; i++) {
       const res = await app.request(
@@ -78,8 +81,16 @@ describe("client identification", () => {
     return statuses;
   }
 
-  it("cannot be bypassed with a forged X-Forwarded-For header", async () => {
-    const statuses = await loginStatusesFromOneSocket(6);
+  it("cannot be bypassed with a forged X-Forwarded-For header (login)", async () => {
+    const statuses = await statusesFromOneSocket((m) => m.loginRateLimiter, 6);
     expect(statuses[5]).toBe(429);
+  });
+
+  it("cannot be bypassed with a forged X-Forwarded-For header (Vienna GIS)", async () => {
+    const statuses = await statusesFromOneSocket(
+      (m) => m.viennagisRateLimiter,
+      31
+    );
+    expect(statuses[30]).toBe(429);
   });
 });
