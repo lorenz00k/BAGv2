@@ -1,6 +1,8 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { Hono, MiddlewareHandler } from "hono";
 import { withNodeEnv } from "../helpers.js";
+import { MemoryStore, type Store } from "hono-rate-limiter";
+import { createRateLimiters } from "../../../src/middleware/rate-limit.js";
 type Limiters = typeof import("../../../src/middleware/rate-limit.js");
 
 afterEach(() => {
@@ -92,5 +94,77 @@ describe("client identification", () => {
       31
     );
     expect(statuses[30]).toBe(429);
+  });
+});
+
+describe("createRateLimiters", () => {
+  const bindings = { incoming: { socket: { remoteAddress: "198.51.100.7" } } };
+
+  // Sends `times` requests from the same client through one limiter.
+  async function hit(limiter: MiddlewareHandler, times: number) {
+    const app = new Hono();
+    app.use(limiter);
+    app.get("/", (c) => c.text("ok"));
+
+    const statuses: number[] = [];
+    for (let i = 0; i < times; i++) {
+      statuses.push((await app.request("/", {}, bindings)).status);
+    }
+    return statuses;
+  }
+
+  const memory = { createStore: () => new MemoryStore(), disabled: false };
+
+  it("asks for a separate store for every limiter", () => {
+    const names: string[] = [];
+    createRateLimiters({
+      disabled: false,
+      createStore: (name) => {
+        names.push(name);
+        return new MemoryStore();
+      },
+    });
+
+    expect(new Set(names).size).toBe(names.length);
+    expect(names).toEqual(
+      expect.arrayContaining(["global", "login", "register", "viennagis"])
+    );
+  });
+
+  it("does not mix the counters of different limiters", async () => {
+    const limiters = createRateLimiters(memory);
+
+    // Use up the login limit (5 attempts, the 6th is refused) ...
+    expect((await hit(limiters.login, 6))[5]).toBe(429);
+    // ... the same client may still register.
+    expect(await hit(limiters.register, 1)).toEqual([200]);
+  });
+
+  it("counts in the store it is given", async () => {
+    const increment = vi.fn(async () => ({
+      totalHits: 999,
+      resetTime: new Date(Date.now() + 1000),
+    }));
+    const fakeStore: Store = {
+      increment,
+      decrement: async () => {},
+      resetKey: async () => {},
+    };
+
+    const limiters = createRateLimiters({
+      disabled: false,
+      createStore: () => fakeStore,
+    });
+
+    expect(await hit(limiters.login, 1)).toEqual([429]);
+    expect(increment).toHaveBeenCalled();
+  });
+
+  it("limits nothing and creates no stores when disabled", async () => {
+    const createStore = vi.fn(() => new MemoryStore());
+    const limiters = createRateLimiters({ disabled: true, createStore });
+
+    expect((await hit(limiters.login, 10)).every((s) => s === 200)).toBe(true);
+    expect(createStore).not.toHaveBeenCalled();
   });
 });

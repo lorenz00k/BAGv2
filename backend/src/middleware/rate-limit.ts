@@ -1,4 +1,4 @@
-import { rateLimiter } from "hono-rate-limiter";
+import { rateLimiter, MemoryStore, type Store } from "hono-rate-limiter";
 import type { MiddlewareHandler } from "hono";
 import { env, isDevelopment } from "../env.js";
 import { createClientKeyGenerator } from "../utils/clientIp.js";
@@ -6,82 +6,84 @@ import { createClientKeyGenerator } from "../utils/clientIp.js";
 const noLimit: MiddlewareHandler = (_, next) => next();
 
 const keyGenerator = createClientKeyGenerator(env.TRUSTED_PROXY_COUNT);
+type LimiterConfig = { windowMs: number; limit: number; message?: string };
 
-export const globalRateLimiter = isDevelopment
-  ? noLimit
-  : rateLimiter({
-      windowMs: 60 * 1000,
-      limit: 100,
-      standardHeaders: "draft-6",
-      keyGenerator,
-    });
+type Options = {
+  // Called once per limiter. Every limiter needs its own counters.
+  createStore: (name: string) => Store;
+  disabled: boolean;
+};
 
-export const loginRateLimiter = isDevelopment
-  ? noLimit
-  : rateLimiter({
-      windowMs: 15 * 60 * 1000,
+export function createRateLimiters({ createStore, disabled }: Options) {
+  const limiter = (
+    name: string,
+    { message, ...config }: LimiterConfig
+  ): MiddlewareHandler =>
+    disabled
+      ? noLimit
+      : rateLimiter({
+          ...config,
+          ...(message ? { message } : {}),
+          standardHeaders: "draft-6",
+          keyGenerator,
+          store: createStore(name),
+        });
+
+  const generic = "Too many requests, please try again later";
+  const minutes1 = 60 * 1000;
+  const minutes15 = 15 * 60 * 1000;
+  const minutes60 = 60 * 60 * 1000;
+
+  return {
+    global: limiter("global", { windowMs: minutes1, limit: 100 }),
+    login: limiter("login", {
+      windowMs: minutes15,
       limit: 5,
-      standardHeaders: "draft-6",
-      keyGenerator,
       message: "Too many login attempts, please try again later",
-    });
-
-export const registerRateLimiter = isDevelopment
-  ? noLimit
-  : rateLimiter({
-      windowMs: 60 * 60 * 1000,
+    }),
+    register: limiter("register", {
+      windowMs: minutes60,
       limit: 3,
-      standardHeaders: "draft-6",
-      keyGenerator,
       message: "Too many registration attempts, please try again later",
-    });
-
-export const forgotPasswordRateLimiter = isDevelopment
-  ? noLimit
-  : rateLimiter({
-      windowMs: 15 * 60 * 1000, // 15 Minuten
+    }),
+    forgotPassword: limiter("forgot-password", {
+      windowMs: minutes15,
       limit: 3,
-      standardHeaders: "draft-6",
-      keyGenerator,
-      message: "Too many requests, please try again later",
-    });
-
-export const resetPasswordRateLimiter = isDevelopment
-  ? noLimit
-  : rateLimiter({
-      windowMs: 15 * 60 * 1000,
+      message: generic,
+    }),
+    resetPassword: limiter("reset-password", {
+      windowMs: minutes15,
       limit: 5,
-      standardHeaders: "draft-6",
-      keyGenerator,
-      message: "Too many requests, please try again later",
-    });
-
-export const verifyEmailRateLimiter = isDevelopment
-  ? noLimit
-  : rateLimiter({
-      windowMs: 15 * 60 * 1000,
+      message: generic,
+    }),
+    verifyEmail: limiter("verify-email", {
+      windowMs: minutes15,
       limit: 5,
-      standardHeaders: "draft-6",
-      keyGenerator,
-      message: "Too many requests, please try again later",
-    });
-
-export const resendVerificationRateLimiter = isDevelopment
-  ? noLimit
-  : rateLimiter({
-      windowMs: 15 * 60 * 1000,
+      message: generic,
+    }),
+    resendVerification: limiter("resend-verification", {
+      windowMs: minutes15,
       limit: 3,
-      standardHeaders: "draft-6",
-      keyGenerator,
-      message: "Too many requests, please try again later",
-    });
-
-export const viennagisRateLimiter = isDevelopment
-  ? noLimit
-  : rateLimiter({
-      windowMs: 60 * 1000,
+      message: generic,
+    }),
+    viennagis: limiter("viennagis", {
+      windowMs: minutes1,
       limit: 30,
-      standardHeaders: "draft-6",
-      keyGenerator,
       message: "Too many requests to Vienna GIS API",
-    });
+    }),
+  };
+}
+
+const limiters = createRateLimiters({
+  createStore: () => new MemoryStore(),
+  disabled: isDevelopment,
+});
+
+export const globalRateLimiter = limiters.global;
+export const loginRateLimiter = limiters.login;
+export const registerRateLimiter = limiters.register;
+export const forgotPasswordRateLimiter = limiters.forgotPassword;
+export const resetPasswordRateLimiter = limiters.resetPassword;
+export const verifyEmailRateLimiter = limiters.verifyEmail;
+export const resendVerificationRateLimiter = limiters.resendVerification;
+export const viennagisRateLimiter = limiters.viennagis;
