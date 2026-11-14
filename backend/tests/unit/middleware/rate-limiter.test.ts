@@ -41,7 +41,7 @@ describe("rate limiters", () => {
     expect(statuses.every((s) => s === 200)).toBe(true);
   });
 
-  it("limit login attempts in production", async () => {
+  it("limit login attempts in production, even when Redis is unreachable", async () => {
     const statuses = await loginStatuses("production", 6);
     expect(statuses.slice(0, 5)).toEqual([200, 200, 200, 200, 200]);
     expect(statuses[5]).toBe(429);

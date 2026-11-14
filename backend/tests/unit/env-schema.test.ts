@@ -53,6 +53,35 @@ describe("parseEnv", () => {
     ).toBe(2);
   });
 
+  it.each(["redis://localhost:6379", "rediss://:secret@cache.example:6380"])(
+    "accepts the redis url %s",
+    (url) => {
+      expect(parseEnv({ ...valid, REDIS_URL: url }).REDIS_URL).toBe(url);
+    }
+  );
+
+  it("rejects a redis url with another scheme", () => {
+    expect(() => parseEnv({ ...valid, REDIS_URL: "http://localhost" })).toThrow(
+      /REDIS_URL/
+    );
+  });
+
+  it("requires REDIS_URL in production and names it", () => {
+    expect(() => parseEnv({ ...valid, NODE_ENV: "production" })).toThrow(
+      /REDIS_URL/
+    );
+  });
+
+  it("accepts a production environment with REDIS_URL", () => {
+    expect(
+      parseEnv({
+        ...valid,
+        NODE_ENV: "production",
+        REDIS_URL: "redis://cache:6379",
+      }).NODE_ENV
+    ).toBe("production");
+  });
+
   it("reports every problem at once", () => {
     expect(() =>
       parseEnv({ ...valid, PORT: "abc", RESEND_API_KEY: "" })
