@@ -16,6 +16,7 @@ describe("parseEnv", () => {
     expect(env.NODE_ENV).toBe("development");
     expect(env.LOG_LEVEL).toBe("info");
     expect(env.RESEND_FROM_EMAIL).toBe("onboarding@resend.dev");
+    expect(env.TRUSTED_PROXY_COUNT).toBe(0);
   });
 
   it.each(["PORT", "DATABASE_URL", "FRONTEND_URL", "RESEND_API_KEY"])(
@@ -36,10 +37,20 @@ describe("parseEnv", () => {
       { FRONTEND_URL: "http://localhost:3001/" },
     ],
     ["an unknown NODE_ENV", { NODE_ENV: "staging" }],
+    ["a non-numeric number of trusted proxies", { TRUSTED_PROXY_COUNT: "abc" }],
+    ["a negative number of trusted proxies", { TRUSTED_PROXY_COUNT: "-1" }],
+    ["a fractional number of trusted proxies", { TRUSTED_PROXY_COUNT: "1.5" }],
+    ["more than five trusted proxies", { TRUSTED_PROXY_COUNT: "6" }],
   ])("rejects %s", (_label, override) => {
     expect(() => parseEnv({ ...valid, ...override })).toThrow(
       "Invalid environment"
     );
+  });
+
+  it("converts the number of trusted proxies", () => {
+    expect(
+      parseEnv({ ...valid, TRUSTED_PROXY_COUNT: "2" }).TRUSTED_PROXY_COUNT
+    ).toBe(2);
   });
 
   it("reports every problem at once", () => {

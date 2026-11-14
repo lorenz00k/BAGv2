@@ -22,6 +22,9 @@ const envSchema = z.object({
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
     .default("info"),
+  // How many reverse proxies in front of the server append to X-Forwarded-For.
+  // 0 = no proxy, the header is ignored and the connection address is used.
+  TRUSTED_PROXY_COUNT: z.coerce.number().int().min(0).max(5).default(0),
 });
 
 export type Env = z.infer<typeof envSchema>;

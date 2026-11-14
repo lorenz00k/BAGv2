@@ -8,9 +8,13 @@ afterEach(() => {
 
 // Fires `count` requests from the same client through the login limiter
 // of a freshly loaded module and returns the status codes.
-async function loginStatuses(nodeEnv: "production" | "development" | "test", count: number) {
-  const { loginRateLimiter } = await withNodeEnv(nodeEnv, () =>
-    import("../../../src/middleware/rate-limit.js"),
+async function loginStatuses(
+  nodeEnv: "production" | "development" | "test",
+  count: number
+) {
+  const { loginRateLimiter } = await withNodeEnv(
+    nodeEnv,
+    () => import("../../../src/middleware/rate-limit.js")
   );
   const app = new Hono();
   app.use(loginRateLimiter);
@@ -18,7 +22,9 @@ async function loginStatuses(nodeEnv: "production" | "development" | "test", cou
 
   const statuses: number[] = [];
   for (let i = 0; i < count; i++) {
-    const res = await app.request("/", { headers: { "x-forwarded-for": "1.2.3.4" } });
+    const res = await app.request("/", {
+      headers: { "x-forwarded-for": "1.2.3.4" },
+    });
     statuses.push(res.status);
   }
   return statuses;
@@ -38,6 +44,42 @@ describe("rate limiters", () => {
 
   it("stay active in test mode", async () => {
     const statuses = await loginStatuses("test", 6);
+    expect(statuses[5]).toBe(429);
+  });
+});
+
+describe("client identification", () => {
+  // Six login attempts from ONE connection, each with a different forged
+  // X-Forwarded-For header. A real attacker would do exactly this.
+  async function loginStatusesFromOneSocket(count: number) {
+    const { loginRateLimiter } = await withNodeEnv(
+      "test",
+      () => import("../../../src/middleware/rate-limit.js")
+    );
+    const app = new Hono();
+    app.use(loginRateLimiter);
+    app.get("/", (c) => c.text("ok"));
+
+    // Hono passes the third argument on as c.env; this is how the Node server
+    // hands over the connection, so the test can fake a real socket.
+    const bindings = {
+      incoming: { socket: { remoteAddress: "198.51.100.7" } },
+    };
+
+    const statuses: number[] = [];
+    for (let i = 0; i < count; i++) {
+      const res = await app.request(
+        "/",
+        { headers: { "x-forwarded-for": `10.0.0.${i}` } },
+        bindings
+      );
+      statuses.push(res.status);
+    }
+    return statuses;
+  }
+
+  it("cannot be bypassed with a forged X-Forwarded-For header", async () => {
+    const statuses = await loginStatusesFromOneSocket(6);
     expect(statuses[5]).toBe(429);
   });
 });
