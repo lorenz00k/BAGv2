@@ -1,79 +1,110 @@
-import { rateLimiter } from "hono-rate-limiter";
-import type { Context, MiddlewareHandler } from "hono";
-import { isDevelopment } from "../env.js";
+import { rateLimiter, type Store } from "hono-rate-limiter";
+import type { MiddlewareHandler } from "hono";
+import { env, isDevelopment } from "../env.js";
+import { createClientKeyGenerator } from "../utils/clientIp.js";
+import pino from "pino";
+import { createStoreFactory } from "../utils/rateLimitStore.js";
+import { throttle } from "../utils/throttle.js";
 
 const noLimit: MiddlewareHandler = (_, next) => next();
 
-const keyGenerator = (c: Context): string =>
-  c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ||
-  c.req.header("x-real-ip") ||
-  "unknown";
+const keyGenerator = createClientKeyGenerator(env.TRUSTED_PROXY_COUNT);
+type LimiterConfig = { windowMs: number; limit: number; message?: string };
 
-export const globalRateLimiter = isDevelopment
-  ? noLimit
-  : rateLimiter({
-      windowMs: 60 * 1000,
-      limit: 100,
-      standardHeaders: "draft-6",
-      keyGenerator,
-    });
+type Options = {
+  // Called once per limiter. Every limiter needs its own counters.
+  createStore: (name: string) => Store;
+  disabled: boolean;
+};
 
-export const loginRateLimiter = isDevelopment
-  ? noLimit
-  : rateLimiter({
-      windowMs: 15 * 60 * 1000,
+export function createRateLimiters({ createStore, disabled }: Options) {
+  const limiter = (
+    name: string,
+    { message, ...config }: LimiterConfig
+  ): MiddlewareHandler =>
+    disabled
+      ? noLimit
+      : rateLimiter({
+          ...config,
+          ...(message ? { message } : {}),
+          standardHeaders: "draft-6",
+          keyGenerator,
+          store: createStore(name),
+        });
+
+  const generic = "Too many requests, please try again later";
+  const minutes1 = 60 * 1000;
+  const minutes15 = 15 * 60 * 1000;
+  const minutes60 = 60 * 60 * 1000;
+
+  return {
+    global: limiter("global", { windowMs: minutes1, limit: 100 }),
+    login: limiter("login", {
+      windowMs: minutes15,
       limit: 5,
-      standardHeaders: "draft-6",
-      keyGenerator,
       message: "Too many login attempts, please try again later",
-    });
-
-export const registerRateLimiter = isDevelopment
-  ? noLimit
-  : rateLimiter({
-      windowMs: 60 * 60 * 1000,
+    }),
+    register: limiter("register", {
+      windowMs: minutes60,
       limit: 3,
-      standardHeaders: "draft-6",
-      keyGenerator,
       message: "Too many registration attempts, please try again later",
-    });
-
-export const forgotPasswordRateLimiter = isDevelopment
-  ? noLimit
-  : rateLimiter({
-      windowMs: 15 * 60 * 1000, // 15 Minuten
+    }),
+    forgotPassword: limiter("forgot-password", {
+      windowMs: minutes15,
       limit: 3,
-      standardHeaders: "draft-6",
-      keyGenerator,
-      message: "Too many requests, please try again later",
-    });
-
-export const resetPasswordRateLimiter = isDevelopment
-  ? noLimit
-  : rateLimiter({
-      windowMs: 15 * 60 * 1000,
+      message: generic,
+    }),
+    resetPassword: limiter("reset-password", {
+      windowMs: minutes15,
       limit: 5,
-      standardHeaders: "draft-6",
-      keyGenerator,
-      message: "Too many requests, please try again later",
-    });
-
-export const verifyEmailRateLimiter = isDevelopment
-  ? noLimit
-  : rateLimiter({
-      windowMs: 15 * 60 * 1000,
+      message: generic,
+    }),
+    verifyEmail: limiter("verify-email", {
+      windowMs: minutes15,
       limit: 5,
-      standardHeaders: "draft-6",
-      keyGenerator,
-      message: "Too many requests, please try again later",
-    });
-
-export const resendVerificationRateLimiter = isDevelopment
-  ? noLimit
-  : rateLimiter({
-      windowMs: 15 * 60 * 1000,
+      message: generic,
+    }),
+    resendVerification: limiter("resend-verification", {
+      windowMs: minutes15,
       limit: 3,
-      standardHeaders: "draft-6",
-      keyGenerator,
-      message: "Too many requests, please try again later",
-    });
+      message: generic,
+    }),
+    viennagis: limiter("viennagis", {
+      windowMs: minutes1,
+      limit: 30,
+      message: "Too many requests to Vienna GIS API",
+    }),
+  };
+}
+
+// Own plain logger: the shared one starts a pretty-printing worker thread
+// when it is imported, which the unit tests would pay for on every reload.
+const log = pino({ name: "rate-limit", level: env.LOG_LEVEL });
+
+// During a Redis outage every call fails; report it at most every 30 seconds.
+const reportStoreFailure = throttle(
+  (error: unknown, operation: string) =>
+    log.error(
+      { err: error, operation },
+      "Rate limit store failed, counting in memory"
+    ),
+  30_000
+);
+
+const stores = createStoreFactory(env.REDIS_URL, reportStoreFailure);
+// For the graceful shutdown that comes with the deployment work.
+export const closeRateLimitStores = stores.close;
+
+const limiters = createRateLimiters({
+  createStore: stores.createStore,
+  disabled: isDevelopment,
+});
+
+export const globalRateLimiter = limiters.global;
+export const loginRateLimiter = limiters.login;
+export const registerRateLimiter = limiters.register;
+export const forgotPasswordRateLimiter = limiters.forgotPassword;
+export const resetPasswordRateLimiter = limiters.resetPassword;
+export const verifyEmailRateLimiter = limiters.verifyEmail;
+export const resendVerificationRateLimiter = limiters.resendVerification;
+export const viennagisRateLimiter = limiters.viennagis;
