@@ -23,5 +23,11 @@ services:
     tmpfs: # data are put into RAM & are gone if stopped
       - /var/lib/postgresql/data 
 
+  redis-test:
+    image: redis:7-alpine
+    container_name: bag_redis_test
+    command: ["redis-server", "--save", ""]
+    ports:
+      - "127.0.0.1:6380:6379"
 volumes:
   postgres_data:
