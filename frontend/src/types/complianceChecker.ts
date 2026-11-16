@@ -62,7 +62,7 @@ export interface ComplianceFormData {
 
   hasWellnessFacilities?: BooleanChoice;
   servesFullMeals?: BooleanChoice;
-  buildingUseExclusive?: BooleanChoice;
+  hasOtherResidents?: BooleanChoice;
 
   existingPermitHistory?: BooleanChoice;
 }

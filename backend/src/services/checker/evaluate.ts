@@ -27,7 +27,7 @@ export type CheckerAnswers = {
   isOnlyTemporary?: boolean | undefined;
 
   bedCount?: number | undefined;
-  buildingUseExclusive?: boolean | undefined;
+  hasOtherResidents?: boolean | undefined;
   hasWellnessFacilities?: boolean | undefined;
   servesFullMeals?: boolean | undefined;
 
@@ -161,7 +161,7 @@ function collectBlockingReasons(a: CheckerAnswers): ReasonKey[] {
 
   if (isAccommodation && typeof a.bedCount === "number") {
     if (a.bedCount > 30) reasons.push("accommodationBeds");
-    if (a.buildingUseExclusive === false) reasons.push("accommodationBuildingUse");
+    if (a.hasOtherResidents === true) reasons.push("accommodationBuildingUse");
     if (a.hasWellnessFacilities) reasons.push("accommodationWellness");
     if (a.servesFullMeals) reasons.push("accommodationMeals");
   }

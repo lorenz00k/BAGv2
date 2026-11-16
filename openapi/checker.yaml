@@ -303,7 +303,7 @@ components:
           type: boolean
 
         # accommodation specifics
-        buildingUseExclusive:
+        hasOtherResidents:
           type: boolean
         hasWellnessFacilities:
           type: boolean

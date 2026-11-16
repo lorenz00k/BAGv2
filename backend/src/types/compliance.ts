@@ -89,7 +89,8 @@ export const complianceInputSchema = z.object({
 
   hasWellnessFacilities: booleanChoiceSchema.optional(),
   servesFullMeals: booleanChoiceSchema.optional(),
-  buildingUseExclusive: booleanChoiceSchema.optional(),
+  hasOtherResidents: booleanChoiceSchema.optional(),
+  hasNonEmergencyCombustion: booleanChoiceSchema.optional(),
 
   existingPermitHistory: booleanChoiceSchema.optional(),
 });

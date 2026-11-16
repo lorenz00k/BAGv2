@@ -40,7 +40,8 @@
     "specialNotes": {
         "selfService": "Containershops/Selbstbedienungsläden: Widmung und Baukonsens klären; je nach Immissionen genehmigungspflichtig.",
         "buildingProcedure": "Bau- und Gewerbeverfahren laufen getrennt – Nutzungsänderungen sind baurechtlich gesondert zu genehmigen.",
-        "existingPermits": "Bestehende Genehmigungen/Eignungsfeststellungen dokumentieren und dem Antrag beilegen."
+        "existingPermits": "Bestehende Genehmigungen/Eignungsfeststellungen dokumentieren und dem Antrag beilegen.",
+        "generalPermitTimes": "Betrieb innerhalb einer genehmigten Gesamtanlage: Es gelten die Betriebs- und Lieferzeiten laut Generalgenehmigungsbescheid, nicht das Zeitfenster der GFVO."
     },
     "quickReferences": {
         "definition": "Definition & Schritte: WKO Leitfaden \"Weg zum genehmigten Betrieb\".",

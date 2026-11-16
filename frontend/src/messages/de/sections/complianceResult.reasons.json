@@ -10,7 +10,7 @@
         "operatingHours": "Geplante Betriebszeiten überschreiten den Rahmen der 2. GFVO (§ 1 Abs. 2).",
         "areaExceeded": "Die angegebene Fläche überschreitet die Höchstgrenze der gewählten Freistellungskategorie.",
         "accommodationBeds": "Mehr als 30 Gästebetten führen zur Genehmigungspflicht (§ 1 Abs. 1 Z 8 2. GFVO).",
-        "accommodationBuildingUse": "Das Gebäude wird nicht ausschließlich für Wohn-/Beherbergungszwecke genutzt – Voraussetzung der Freistellung fehlt.",
+        "accommodationBuildingUse": "Im Gebäude wohnen dauerhaft andere Personen als der Betriebsinhaber – Voraussetzung der Freistellung (§ 1 Abs. 1 Z 8 lit. b) fehlt.",
         "accommodationWellness": "Wellness- bzw. Badeeinrichtungen sind vom Ausnahmetatbestand nicht umfasst.",
         "accommodationMeals": "Die Abgabe vollwertiger Mahlzeiten überschreitet die Freistellung (nur Frühstück/kleiner Imbiss erlaubt).",
         "expectedImpairments": "Nach § 74 Abs. 2 GewO sind schädliche Immissionen, Gefährdungen oder Störungen zu erwarten.",

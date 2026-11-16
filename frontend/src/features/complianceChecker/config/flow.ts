@@ -97,9 +97,9 @@ export const flow: readonly StepDef[] = [
         step: 1
       },
       {
-        key: "buildingUseExclusive",
+        key: "hasOtherResidents",
         kind: "boolean",
-        labelKey: "buildingUseExclusive.question"
+        labelKey: "hasOtherResidents.question"
       },
       {
         key: "hasWellnessFacilities",

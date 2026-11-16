@@ -113,7 +113,7 @@ export interface components {
             bedCount?: number;
             isStationary?: boolean;
             isOnlyTemporary?: boolean;
-            buildingUseExclusive?: boolean;
+            hasOtherResidents?: boolean;
             hasWellnessFacilities?: boolean;
             servesFullMeals?: boolean;
             zoningClarified?: boolean;

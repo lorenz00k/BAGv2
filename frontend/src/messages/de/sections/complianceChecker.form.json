@@ -78,8 +78,8 @@
         "label": "Gästebetten gesamt",
         "placeholder": "z. B. 18"
     },
-    "buildingUseExclusive": {
-        "question": "Wird das Gebäude ausschließlich für Wohnen/Beherbergung genutzt?"
+    "hasOtherResidents": {
+        "question": "Wohnen im Gebäude dauerhaft andere Personen als Sie selbst (z. B. Mieter)? Andere gewerbliche Nutzung (z. B. ein Geschäft im Erdgeschoss) zählt hier nicht."
     },
     "hasWellnessFacilities": {
         "question": "Sind Wellness-/Badeeinrichtungen (Pool, Sauna etc.) vorgesehen?"

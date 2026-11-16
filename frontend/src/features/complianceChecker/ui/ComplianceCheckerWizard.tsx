@@ -75,7 +75,7 @@ function cleanupDependentAnswers(
 
   if (!needsAccommodationDetails) {
     delete next.bedCount;
-    delete next.buildingUseExclusive;
+    delete next.hasOtherResidents;
     delete next.hasWellnessFacilities;
     delete next.servesFullMeals;
   }

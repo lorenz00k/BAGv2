@@ -79,7 +79,7 @@ export function checkAccommodationReasons(
     reasons.push("complianceResult.reasons.accommodationBeds");
   }
 
-  if (input.buildingUseExclusive !== "yes") {
+  if (input.hasOtherResidents !== "no") {
     reasons.push("complianceResult.reasons.accommodationBuildingUse");
   }
 

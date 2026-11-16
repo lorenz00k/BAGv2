@@ -7,15 +7,22 @@
  * This is the only public entry point for compliance evaluation.
  */
 
-
 import type {
   ClassificationType,
   ComplianceInput,
   ComplianceResult,
 } from "../../types/compliance.js";
 
-import { determineGfvoCategory, isOperatingWindowCompliant } from "./gfvo-rules.js";
-import { checkExclusions, checkAccommodationReasons } from "./exclusion-checker.js";
+import {
+  determineGfvoCategory,
+  getOperatingWindowRegime,
+  isOperatingWindowCompliant,
+} from "./gfvo-rules.js";
+import {
+  checkExclusions,
+  checkAccommodationReasons,
+} from "./exclusion-checker.js";
+
 import {
   resolveGeneralDocumentKeys,
   resolveSectorDocumentKeys,
@@ -173,7 +180,10 @@ export function evaluateCompliance(input: ComplianceInput): ComplianceResult {
   }
 
   // 3d. Accommodation-specific reasons
-  const accommodationReasons = checkAccommodationReasons(input, gfvoCategoryKey);
+  const accommodationReasons = checkAccommodationReasons(
+    input,
+    gfvoCategoryKey
+  );
   reasonKeys.push(...accommodationReasons);
 
   // 3e. Expected impairments (§ 74 Abs. 2 GewO)
@@ -221,7 +231,13 @@ export function evaluateCompliance(input: ComplianceInput): ComplianceResult {
     operationalDutyKeys: [...resolveOperationalDutyKeys()],
     changeDutyKeys: [...resolveChangeDutyKeys()],
     preCheckKeys: [...resolvePreCheckKeys()],
-    specialNoteKeys: [...resolveSpecialNoteKeys(input)],
+    specialNoteKeys: [
+      ...resolveSpecialNoteKeys(input),
+      // § 1 Abs. 1 Z 13: Zeiten laut Generalgenehmigungsbescheid, nicht laut GFVO
+      ...(getOperatingWindowRegime(gfvoCategoryKey) === "generalPermit"
+        ? ["complianceResult.specialNotes.generalPermitTimes"]
+        : []),
+    ],
     quickReferenceKeys: [...resolveQuickReferenceKeys()],
     disclaimerKeys: [...resolveDisclaimerKeys()],
   };

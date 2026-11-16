@@ -19,8 +19,16 @@ interface GfvoRule {
   /** Returns true when the input matches this exempt category */
   readonly matches: (input: ComplianceInput) => boolean;
   /** If true, this category has no operating-window restriction */
-  readonly exemptFromOperatingWindow: boolean;
+  readonly operatingWindow: OperatingWindowRegime;
 }
+/**
+ * Which operating-time regime applies (§ 1 Abs. 2 der 2. GFVO):
+ * - "gfvo":          standard window (Mo–Fr 6–22, Sa 6–19)
+ * - "none":          no operating-time restriction (Abs. 2 Schlussteil, Z 8–12)
+ * - "generalPermit": times come from the Generalgenehmigungsbescheid (Z 13);
+ *                    the GFVO window does not apply and we cannot judge the times
+ */
+type OperatingWindowRegime = "gfvo" | "none" | "generalPermit";
 
 // ---------------------------------------------------------------------------
 // Exempt categories (§ 1 Abs. 1 Z 1–13 der 2. GFVO)
@@ -31,23 +39,23 @@ const GFVO_EXEMPT_CATEGORIES: readonly GfvoRule[] = [
     key: "retail",
     matches: (input) =>
       input.sector === "retail" && (input.areaSqm ?? Infinity) <= 600,
-    exemptFromOperatingWindow: false,
+    operatingWindow: "gfvo",
   },
   {
     key: "office",
     matches: (input) => input.sector === "office",
-    exemptFromOperatingWindow: false,
+    operatingWindow: "gfvo",
   },
   {
     key: "warehouse",
     matches: (input) =>
       input.sector === "warehouse" && (input.areaSqm ?? Infinity) <= 600,
-    exemptFromOperatingWindow: false,
+    operatingWindow: "gfvo",
   },
   {
     key: "cosmetics",
     matches: (input) => input.sector === "cosmetics",
-    exemptFromOperatingWindow: false,
+    operatingWindow: "gfvo",
   },
   {
     key: "tailor",
@@ -55,14 +63,13 @@ const GFVO_EXEMPT_CATEGORIES: readonly GfvoRule[] = [
       input.sector === "workshop" &&
       (input.workshopSubtype === "tailor" ||
         input.workshopSubtype === "shoeService"),
-    exemptFromOperatingWindow: false,
+    operatingWindow: "gfvo",
   },
   {
     key: "textilePickup",
     matches: (input) =>
-      input.sector === "workshop" &&
-      input.workshopSubtype === "textilePickup",
-    exemptFromOperatingWindow: true,
+      input.sector === "workshop" && input.workshopSubtype === "textilePickup",
+    operatingWindow: "none",
   },
   {
     key: "accommodation",
@@ -71,34 +78,37 @@ const GFVO_EXEMPT_CATEGORIES: readonly GfvoRule[] = [
         (input.sector === "gastronomyHotel" &&
           input.hospitalitySubtype === "beherbergung")) &&
       (input.bedCount ?? Infinity) <= 30 &&
-      input.buildingUseExclusive === "yes" &&
+      input.hasOtherResidents === "no" &&
       input.hasWellnessFacilities !== "yes" &&
       input.servesFullMeals !== "yes",
-    exemptFromOperatingWindow: true,
+
+    operatingWindow: "none",
   },
   {
     key: "iceSalon",
     matches: (input) =>
       input.sector === "gastronomyHotel" &&
       input.hospitalitySubtype === "iceSalon",
-    exemptFromOperatingWindow: true,
+    operatingWindow: "none",
   },
   {
     key: "dataCenter",
-    matches: (input) => input.sector === "dataCenter",
-    exemptFromOperatingWindow: true,
+    matches: (input) =>
+      input.sector === "dataCenter" &&
+      input.hasNonEmergencyCombustion !== "yes",
+    operatingWindow: "none",
   },
   {
     key: "infrastructureSite",
     matches: (input) => input.locatedInInfrastructureSite === "yes",
-    exemptFromOperatingWindow: true,
+    operatingWindow: "none",
   },
   {
     key: "embeddedFacility",
     matches: (input) =>
       input.locatedInApprovedComplex === "yes" &&
       (input.areaSqm ?? Infinity) <= 400,
-    exemptFromOperatingWindow: true,
+    operatingWindow: "generalPermit",
   },
 ] as const;
 
@@ -124,19 +134,24 @@ export function determineGfvoCategory(
  *
  * Returns `true` when operating hours do NOT block exemption.
  */
+
+export function getOperatingWindowRegime(
+  gfvoKey: string | undefined
+): OperatingWindowRegime {
+  const rule = GFVO_EXEMPT_CATEGORIES.find((r) => r.key === gfvoKey);
+  return rule?.operatingWindow ?? "gfvo";
+}
+
 export function isOperatingWindowCompliant(
   input: ComplianceInput,
   gfvoKey: string | undefined
 ): boolean {
-  // If we matched a rule that has no window restriction → always compliant
-  if (gfvoKey) {
-    const rule = GFVO_EXEMPT_CATEGORIES.find((r) => r.key === gfvoKey);
-    if (rule?.exemptFromOperatingWindow) {
-      return true;
-    }
+  if (getOperatingWindowRegime(gfvoKey) !== "gfvo") {
+    return true;
   }
 
-  // For all other cases, only the standard GFVO window is permitted
-  return input.operatingPattern === "gfvoWindow" ||
-    input.operatingPattern === undefined;
+  return (
+    input.operatingPattern === "gfvoWindow" ||
+    input.operatingPattern === undefined
+  );
 }
