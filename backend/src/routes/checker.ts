@@ -4,7 +4,7 @@ import type { Variables } from "../types/hono.js";
 import { z } from "zod";
 import { authMiddleware } from "../middleware/auth.js";
 import { db } from "../db/index.js";
-import { checks } from "../db/schema/index.js";
+import { checks } from "../db/schema/checks.js";
 import { and, eq, isNull, desc, sql } from "drizzle-orm";
 
 import {

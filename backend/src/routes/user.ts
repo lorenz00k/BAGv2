@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { Variables } from "../types/hono.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { db } from "../db/index.js";
-import { users } from "../db/schema/index.js";
+import { users } from "../db/schema/auth.js";
 import { eq } from "drizzle-orm";
 
 const user = new Hono<{ Variables: Variables }>();

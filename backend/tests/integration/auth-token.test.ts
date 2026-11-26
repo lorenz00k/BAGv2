@@ -6,7 +6,7 @@ import {
   users,
   sessions,
   verificationTokens,
-} from "../../src/db/schema/index.js";
+} from "../../src/db/schema/auth.js";
 import {
   sendVerificationEmail,
   sendPasswordResetEmail,

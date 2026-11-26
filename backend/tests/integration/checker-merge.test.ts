@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { eq } from "drizzle-orm";
 import { db } from "../../src/db/index.js";
-import { checks, users } from "../../src/db/schema/index.js";
-import { checkerSessions } from "../../src/db/schema/checker.js";
+import { users } from "../../src/db/schema/auth.js";
+import { checks, checkerSessions } from "../../src/db/schema/checks.js";
 import { createSid, hashSid } from "../../src/utils/checkerSession.js";
 import { mergeAnonymousChecker } from "../../src/utils/sessionMerge.js";
 import { getCookie } from "./helpers.js";

@@ -1,6 +1,5 @@
 import { db } from "../db/index.js";
-import { checkerSessions } from "../db/schema/checker.js";
-import { checks } from "../db/schema/index.js";
+import { checkerSessions, checks } from "../db/schema/checks.js";
 import { eq } from "drizzle-orm";
 import { hashSid } from "./checkerSession.js";
 

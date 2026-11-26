@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { db } from "../../src/db/index.js";
-import { sessions } from "../../src/db/schema/index.js";
+import { sessions } from "../../src/db/schema/auth.js";
 import { getSession } from "./api.js";
 
 import {

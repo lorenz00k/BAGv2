@@ -2,8 +2,7 @@ import { describe, it, expect } from "vitest";
 import { eq } from "drizzle-orm";
 import app from "../../src/app.js";
 import { db } from "../../src/db/index.js";
-import { checks } from "../../src/db/schema/index.js";
-import { checkerSessions } from "../../src/db/schema/checker.js";
+import { checks, checkerSessions } from "../../src/db/schema/checks.js";
 import { createSid, hashSid } from "../../src/utils/checkerSession.js";
 import {
   SectorValues,
@@ -434,13 +433,11 @@ describe("GET /api/checker/latest", () => {
   it("returns the most recently updated own check", async () => {
     const me = await createUser();
     const session_id = await login();
-    await db
-      .insert(checks)
-      .values({
-        userId: me.id,
-        formData: { a: "old" },
-        updatedAt: new Date(Date.now() - HOUR),
-      });
+    await db.insert(checks).values({
+      userId: me.id,
+      formData: { a: "old" },
+      updatedAt: new Date(Date.now() - HOUR),
+    });
     const [newest] = await db
       .insert(checks)
       .values({ userId: me.id, formData: { a: "new" } })
