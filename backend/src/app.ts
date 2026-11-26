@@ -16,15 +16,17 @@ import { secureHeaders } from "hono/secure-headers";
 
 const app = new Hono(); //create app-instance
 
+//security header for all routes
+app.use(secureHeaders());
+
 //probes
 app.route("/health", health);
 app.route("/ready", ready);
 
-// Order matters: Request → Logger → Security headers → CORS → Route (middleware before routing)
+// Order matters: Request → Logger → CORS → Route (middleware before routing)
 
 // middleware
 app.use(logger);
-app.use(secureHeaders());
 app.use(corsMiddleware);
 app.route("/api/auth", auth);
 app.use(globalRateLimiter);
