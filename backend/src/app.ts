@@ -10,14 +10,23 @@ import account from "./routes/accounts.js";
 import viennagis from "./routes/viennagis.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import health from "./routes/health.js";
+import ready from "./routes/ready.js";
 import { secureHeaders } from "hono/secure-headers";
 
-// Order matters: Request → Logger → Security headers → CORS → Route (middleware before routing)
+
 const app = new Hono(); //create app-instance
+
+//security header for all routes
+app.use(secureHeaders());
+
+//probes
+app.route("/health", health);
+app.route("/ready", ready);
+
+// Order matters: Request → Logger → CORS → Route (middleware before routing)
 
 // middleware
 app.use(logger);
-app.use(secureHeaders());
 app.use(corsMiddleware);
 app.route("/api/auth", auth);
 app.use(globalRateLimiter);
@@ -33,9 +42,6 @@ app.route("/api/viennagis", viennagis);
 
 //error handel
 app.onError(errorHandler);
-
-//Alles in health.ts ist jetzt unter /health erreichbar
-app.route("/health", health);
 
 app.get("/", (c) => {
   return c.text("Backend läuft hoffentlich...");

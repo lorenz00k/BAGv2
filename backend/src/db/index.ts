@@ -3,6 +3,6 @@ import postgres from "postgres";
 import { env } from "../env.js";
 
 // postgres() -> connection to db
-const client = postgres(env.DATABASE_URL);
+export const client = postgres(env.DATABASE_URL);
 
 export const db = drizzle(client);

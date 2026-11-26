@@ -22,7 +22,7 @@ describe("GET /", () => {
 });
 
 describe("CORS", () => {
-  const request = (origin?: string, path = "/health") =>
+  const request = (origin?: string, path = "/") =>
     app.request(path, { headers: origin ? { Origin: origin } : {} });
 
   const allowOrigin = (res: Response) =>
