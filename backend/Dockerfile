@@ -19,8 +19,15 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
-# step 4: slim runtime-image
-# Stufe 4: schlankes Laufzeit-Image
+# step 4: migrate db
+FROM deps AS migrate
+WORKDIR /app
+COPY drizzle.config.ts ./
+COPY drizzle ./drizzle
+USER node
+CMD [ "node_modules/.bin/drizzle-kit", "migrate" ]
+
+# step 5: slim runtime-image
 FROM node:22-slim AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
