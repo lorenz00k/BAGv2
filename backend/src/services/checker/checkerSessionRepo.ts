@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 
 import { db } from "../../db/index.js";
-import { checkerSessions } from "../../db/schema/checker.js";
+import { checkerSessions } from "../../db/schema/checks.js";
 
 import type { CheckerAnswers, CheckerResult } from "./evaluate.js";
 

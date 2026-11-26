@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { db } from "../db/index.js";
-import { users, sessions } from "../db/schema/index.js";
+import { users, sessions } from "../db/schema/auth.js";
 import { eq, and, ne } from "drizzle-orm";
 import { authMiddleware } from "../middleware/auth.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";

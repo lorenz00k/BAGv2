@@ -3,7 +3,7 @@ import type { Variables } from "../types/hono.js";
 import type { MiddlewareHandler } from "hono";
 import { authMiddleware } from "../middleware/auth.js";
 import { db } from "../db/index.js";
-import { checks } from "../db/schema/index.js";
+import { checks } from "../db/schema/checks.js";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { complianceInputSchema } from "../types/compliance.js";

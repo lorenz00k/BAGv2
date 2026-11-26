@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import type { Context } from "hono";
 import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import { db } from "../db/index.js";
-import { checkerSessions } from "../db/schema/checker.js";
+import { checkerSessions } from "../db/schema/checks.js";
 import { lt } from "drizzle-orm";
 import { baseCookieOptions } from "../utils/cookies.js";
 

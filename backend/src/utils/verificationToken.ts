@@ -1,7 +1,7 @@
 // utils/verificationToken.ts
 import crypto from "node:crypto";
 import { db } from "../db/index.js";
-import { verificationTokens } from "../db/schema/index.js";
+import { verificationTokens } from "../db/schema/auth.js";
 import { eq, and, gt } from "drizzle-orm";
 
 export function generateToken(): string {

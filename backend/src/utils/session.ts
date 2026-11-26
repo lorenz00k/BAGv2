@@ -1,5 +1,5 @@
 import { db } from "../db/index.js";
-import { sessions } from "../db/schema/index.js";
+import { sessions } from "../db/schema/auth.js";
 import { eq } from "drizzle-orm";
 import { randomBytes, createHash } from "crypto";
 import { lt } from "drizzle-orm";

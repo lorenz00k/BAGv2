@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { eq } from "drizzle-orm";
 import app from "../../src/app.js";
 import { db } from "../../src/db/index.js";
-import { checks } from "../../src/db/schema/index.js";
+import { checks } from "../../src/db/schema/checks.js";
 import { createUser, login } from "./api.js";
 
 const OTHER_EMAIL = "other@example.com";
