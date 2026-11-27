@@ -6,10 +6,11 @@ import {
   formatResultForUI,
 } from "../services/viennagis/index.js";
 import { viennagisRateLimiter } from "../middleware/rate-limit.js";
-import pino from "pino";
+import {baseLogger} from "../middleware/logger.js"
 
 const viennagis = new Hono();
-const logger = pino({ name: "viennagis-route" });
+const logger = baseLogger.child({ name: "viennagis-route" });
+
 
 // Validation Schema
 const checkSchema = z.object({
@@ -37,7 +38,7 @@ viennagis.get("/autocomplete", viennagisRateLimiter, async (c) => {
       return c.json({ error: "Invalid input", issues: error.issues }, 400);
     }
 
-    logger.error({ error }, "Autocomplete failed");
+    logger.error({ err: error }, "Autocomplete failed");
     return c.json({ error: "Internal server error" }, 500);
   }
 });
@@ -60,7 +61,7 @@ viennagis.post("/check", viennagisRateLimiter, async (c) => {
       return c.json({ error: "Invalid input", issues: error.issues }, 400);
     }
 
-    logger.error({ error }, "ViennaGIS check failed"); // ← FIX: pino statt console.error
+    logger.error({ err: error }, "ViennaGIS check failed");
     return c.json({ error: "Internal server error" }, 500);
   }
 });

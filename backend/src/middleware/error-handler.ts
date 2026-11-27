@@ -1,11 +1,9 @@
 import type { ErrorHandler } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import pino from "pino";
 import { ZodError } from "zod";
+import { baseLogger } from "./logger.js";
 
-const errorLogger = pino({
-  level: "error",
-});
+const logger = baseLogger.child({ name: "error-handler" });
 
 export const errorHandler: ErrorHandler = (err, c) => {
   // Zod-Validierungsfehler → 400
@@ -27,14 +25,11 @@ export const errorHandler: ErrorHandler = (err, c) => {
       400
     );
   }
-
-  // Logge Fehler mit pino
-  errorLogger.error({
-    msg: err.message,
+  logger.error({
+    err, 
     path: c.req.path,
     method: c.req.method,
-    stack: err.stack,
-  });
+  }, "Unhandled request error");
 
   // Unterscheide zwischen bekannten und unbekannten Fehlern
   const status = "status" in err ? (err.status as ContentfulStatusCode) : 500;
