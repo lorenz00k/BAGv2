@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as api from "../api/checkerApi";
-import { CheckerResult, SavedCheck } from "../api/checkerApi";
+import { SavedCheck } from "../api/checkerApi";
 
 type Status = "idle" | "loading" | "ready" | "saving" | "evaluating" | "error";
 
@@ -46,13 +46,18 @@ export function useComplianceChecker() {
 
   const [state, setState] = useState<api.CheckerState | null>(null);
 
-  const [savedCheck, setSavedCheck] = useState<SavedCheck | null>(null);
-  const [savedResult, setSavedResult] = useState<CheckerResult | null>(null);
-  const [showResumePrompt, setShowResumePrompt] = useState(false);
-  const [stateVersion, setStateVersion] = useState(0); 
+  const [myChecks, setMyChecks] = useState<SavedCheck[]>([]);
+  const [showChecksList, setShowChecksList] = useState(false);
+  const [stateVersion, setStateVersion] = useState(0);
 
-  const answers = useMemo(() => (state?.answers ?? {}) as api.CheckerAnswers, [state]);
-  const clearErrors = useCallback(() => { setError(null); setFieldErrors({}); }, []);
+  const answers = useMemo(
+    () => (state?.answers ?? {}) as api.CheckerAnswers,
+    [state],
+  );
+  const clearErrors = useCallback(() => {
+    setError(null);
+    setFieldErrors({});
+  }, []);
 
   const init = useCallback(async () => {
     clearErrors();
@@ -62,37 +67,46 @@ export function useComplianceChecker() {
     try {
       const existing = await api.getState();
       setState(existing);
+      
+      // Fertig ausgewertete Session + eingeloggt: Liste statt letztem Ergebnis zeigen
+      if (existing.status === "finished") {
+        try {
+          const list = await api.getMyChecks();
+          if (list.length > 0) {
+            setMyChecks(list);
+            setShowChecksList(true);
+          }
+        } catch {
+          // nicht eingeloggt -> anonymes Ergebnis wie bisher
+        }
+      }
+
       setStatus("ready");
       setStateVersion((v) => v + 1);
       return existing;
     } catch (e: unknown) {
       if (!isNoSessionError(e)) {
-        const message = e instanceof Error ? e.message : "Failed to initialize session";
+        const message =
+          e instanceof Error ? e.message : "Failed to initialize session";
         setError(message);
         setStatus("error");
         throw e;
       }
     }
-    // eingeloggt + draft-check vorhanden -> Auwahl anzeigen
+    // keine Session, aber eingeloggt mit bisherigen Checks -> Liste anzeige
     try {
-      console.log("Checking for latest...");
-      const check = await api.getLatestCheck();
-      console.log("Latest check result:", check);
-      if (check) {
-        setSavedCheck(check);
-        if (check.status === "completed" && check.result) {
-          setSavedResult(check.result);
-        }
-        setShowResumePrompt(true);
+      const list = await api.getMyChecks();
+      if (list.length > 0) {
+        setMyChecks(list);
+        setShowChecksList(true);
         setStatus("ready");
         return;
       }
     } catch {
-      // Nicht eingeloggt oder kein Draft — weiter
-      //console.error("getLatestCheck failed:", e);
+      // Nicht eingeloggt -> weiter
     }
 
-    // nichts gefunden -> neue Session 
+    // nichts gefunden -> neue Session
     try {
       const fresh = await api.createSession();
       setState(fresh);
@@ -130,49 +144,52 @@ export function useComplianceChecker() {
     }
   }, [clearErrors]);
 
-  const saveAnswers = useCallback(async (patch: Partial<api.CheckerAnswers>) => {
-    if (!state) {
-      const err = new Error("No active checker state");
-      setError(err.message);
-      setStatus("error");
-      throw err;
-    }
+  const saveAnswers = useCallback(
+    async (patch: Partial<api.CheckerAnswers>) => {
+      if (!state) {
+        const err = new Error("No active checker state");
+        setError(err.message);
+        setStatus("error");
+        throw err;
+      }
 
-    clearErrors();
-    setStatus("saving");
+      clearErrors();
+      setStatus("saving");
 
-    const previousState = state;
+      const previousState = state;
 
-    const fullAnswers = {
-      ...(state.answers ?? {}),
-      ...patch,
-    } as api.CheckerAnswers;
+      const fullAnswers = {
+        ...(state.answers ?? {}),
+        ...patch,
+      } as api.CheckerAnswers;
 
-    setState((prev) =>
-      prev
-        ? {
-          ...prev,
-          answers: fullAnswers,
-          status: "draft",
-          result: null,
-        }
-        : prev
-    );
+      setState((prev) =>
+        prev
+          ? {
+              ...prev,
+              answers: fullAnswers,
+              status: "draft",
+              result: null,
+            }
+          : prev,
+      );
 
-    try {
-      const next = await api.saveAnswers(fullAnswers);
-      setState(next);
-      setStatus("ready");
-      return next;
-    } catch (e: unknown) {
-      setState(previousState);
-      setFieldErrors(extractFieldErrors(e));
-      const message = e instanceof Error ? e.message : "Failed to save";
-      setError(message);
-      setStatus("error");
-      throw e;
-    }
-  }, [state, clearErrors]);
+      try {
+        const next = await api.saveAnswers(fullAnswers);
+        setState(next);
+        setStatus("ready");
+        return next;
+      } catch (e: unknown) {
+        setState(previousState);
+        setFieldErrors(extractFieldErrors(e));
+        const message = e instanceof Error ? e.message : "Failed to save";
+        setError(message);
+        setStatus("error");
+        throw e;
+      }
+    },
+    [state, clearErrors],
+  );
 
   const runEvaluate = useCallback(async () => {
     if (!state) {
@@ -226,9 +243,8 @@ export function useComplianceChecker() {
       //console.error("Failed to delete session", e);
     }
     setState(null);
-    setSavedCheck(null);
-    setSavedResult(null);
-    setShowResumePrompt(false);
+    setShowChecksList(false);
+    setMyChecks([]);
 
     try {
       const fresh = await api.createSession();
@@ -236,7 +252,8 @@ export function useComplianceChecker() {
       setStatus("ready");
       return fresh;
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "Failed to restart session";
+      const message =
+        e instanceof Error ? e.message : "Failed to restart session";
       setError(message);
       setStatus("error");
       throw e;
@@ -252,36 +269,38 @@ export function useComplianceChecker() {
     });
   }, []);
 
+  const resumeCheck = useCallback(
+    async (check: SavedCheck) => {
+      clearErrors();
+      setStatus("loading");
+      setShowChecksList(false);
 
-  const resumeCheck = useCallback(async () => {
-    if (!savedCheck) return;
-    clearErrors();
-    setStatus("loading");
-    setShowResumePrompt(false);
-
-    try {
-      const fresh = await api.createSession();
-      const restored = await api.saveAnswers(savedCheck.formData);
-      setState(restored);
-      setSavedCheck(null);
-      setStatus("ready");
-      setStateVersion((v) => v + 1);
-      return restored;
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "Failed to restore";
-      setError(message);
-      setStatus("error");
-      throw e;
-    }
-  }, [savedCheck, clearErrors]);
+      try {
+        await api.createSession();
+        const restored = await api.saveAnswers(check.formData);
+        setState(restored);
+        setStatus("ready");
+        setStateVersion((v) => v + 1);
+        return restored;
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : "Failed to restore";
+        setError(message);
+        setStatus("error");
+        throw e;
+      }
+    },
+    [clearErrors],
+  );
 
   const startFresh = useCallback(async () => {
-    setShowResumePrompt(false);
-    setSavedCheck(null);
+    setShowChecksList(false);
+    setMyChecks([]);
     clearErrors();
     setStatus("loading");
 
     try {
+      // alte (fertige) Session verwerfen, sonst kommt sie unverändert zurück
+      await api.deleteSession().catch(() => undefined);
       const fresh = await api.createSession();
       setState(fresh);
       setStatus("ready");
@@ -295,7 +314,10 @@ export function useComplianceChecker() {
     }
   }, [clearErrors]);
 
-  const getFieldError = useCallback((field: string) => fieldErrors[field] ?? null, [fieldErrors]);
+  const getFieldError = useCallback(
+    (field: string) => fieldErrors[field] ?? null,
+    [fieldErrors],
+  );
 
   return {
     status,
@@ -311,11 +333,10 @@ export function useComplianceChecker() {
     clearErrors,
     clearFieldError,
     getFieldError,
-    showResumePrompt,
-    savedCheck,
+    myChecks,
     resumeCheck,
     startFresh,
-    savedResult,
+    showChecksList,
     stateVersion,
   };
 }

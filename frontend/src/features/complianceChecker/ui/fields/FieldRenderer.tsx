@@ -5,8 +5,6 @@ import type { FieldDef } from "../../config/flow";
 import BooleanField from "./BooleanField";
 import OptionsField from "./OptionsField";
 import NumberField from "./NumberField";
-import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 
 type Props = {
   field: FieldDef;

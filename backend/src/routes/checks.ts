@@ -4,11 +4,12 @@ import type { MiddlewareHandler } from "hono";
 import { authMiddleware } from "../middleware/auth.js";
 import { db } from "../db/index.js";
 import { checks } from "../db/schema/checks.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNull, desc, sql } from "drizzle-orm";
 import { z } from "zod";
 import { complianceInputSchema } from "../types/compliance.js";
 import { evaluateCompliance } from "../services/compliance/index.js";
 
+//Account part of the compliance-checker: lists check-results
 const checksRouter = new Hono<{ Variables: Variables }>();
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -67,15 +68,22 @@ checksRouter.post("/", async (c) => {
   }
 });
 
-// GET /api/checks - Alle Checks des Users
+// GET /api/checks - Alle Checks des Users (neuste zuerst)
 checksRouter.get("/", async (c) => {
   const userId = c.get("userId");
 
   const userChecks = await db
-    .select()
+    .select({
+      id: checks.id,
+      status: checks.status,
+      formData: checks.formData,
+      result: checks.result,
+      currentStep: checks.currentStep,
+      updatedAt: checks.updatedAt,
+    })
     .from(checks)
-    .where(eq(checks.userId, userId))
-    .orderBy(checks.createdAt);
+    .where(and(eq(checks.userId, userId), isNull(checks.deletedAt), sql`${checks.formData}::text != '{}'`))
+    .orderBy(desc(checks.updatedAt));
 
   return c.json({ checks: userChecks });
 });
@@ -132,13 +140,14 @@ checksRouter.patch("/:id", async (c) => {
     if (error instanceof z.ZodError) {
       return c.json({ error: error.issues }, 400);
     }
-        if (error instanceof SyntaxError) {
+    if (error instanceof SyntaxError) {
       return c.json({ error: "Invalid JSON" }, 400);
     }
     return c.json({ error: "Internal server error" }, 500);
   }
 });
 
+//needs to be deleted --> only one evaluate endpoint (inside routes/checker.ts)
 // POST /api/checks/:id/evaluate - Compliance-Bewertung durchführen
 checksRouter.post("/:id/evaluate", async (c) => {
   try {
@@ -179,7 +188,7 @@ checksRouter.post("/:id/evaluate", async (c) => {
     if (error instanceof z.ZodError) {
       return c.json({ error: "Invalid form data", issues: error.issues }, 400);
     }
-        if (error instanceof SyntaxError) {
+    if (error instanceof SyntaxError) {
       return c.json({ error: "Invalid JSON" }, 400);
     }
     return c.json({ error: "Internal server error" }, 500);

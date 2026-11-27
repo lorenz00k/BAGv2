@@ -158,5 +158,11 @@
         "completedTitle": "Abgeschlossener Check gefunden",
         "draftTitle": "Offener Check gefunden",
         "description": "Vom {date}."
+    },
+    "checkList": {
+        "title": "Deine bisherigen Checks",
+        "description": "Öffne ein Ergebnis, setze einen offenen Check fort oder starte einen neuen.",
+        "draft": "Offener Check",
+        "date": "Zuletzt bearbeitet am {date}"
     }
 }

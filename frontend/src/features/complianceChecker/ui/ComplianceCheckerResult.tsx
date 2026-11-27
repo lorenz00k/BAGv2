@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-
+import { useRouter, useSearchParams } from "next/navigation";
 import { useComplianceChecker } from "../hooks/useComplianceChecker";
 import ResultView from "./ResultView";
 import { Button } from "@/components/ui/Button";
@@ -22,12 +21,32 @@ export default function ComplianceCheckerResult() {
   const [isRestarting, setIsRestarting] = useState(false);
   const hasTriedRefresh = useRef(false);
 
-  const { status, state, error, refresh, restart, savedResult, savedCheck } = useComplianceChecker();
+  const searchParams = useSearchParams();
+  const checkId = searchParams.get("check");
+  const [loadedCheck, setLoadedCheck] = useState<api.SavedCheck | null>(null);
+
+  const { status, state, error, refresh, restart } = useComplianceChecker();
 
   // result: either from active session or from saved check in db
-  const result = state?.result ?? savedResult;
+  // Ergebnis eines gespeicherten Checks (aus der Liste) hat Vorrang
+  const result = checkId ? loadedCheck?.result ?? null : state?.result ?? null;
 
+  // 1) load saved checks (only if ?check=<id> in url)
+  useEffect(()=>{
+    if (!checkId) return;
+
+  api
+    .getMyCheck(checkId)
+    .then((check) => {
+      if (check.result) setLoadedCheck(check);
+      else router.replace(href(locale as Locale, "complianceChecker"));
+    })
+    .catch(() => router.replace(href(locale as Locale, "complianceChecker")));
+  }, [checkId, router, locale]);
+
+  // 2) for current session
   useEffect(() => {
+    if (checkId) return; // saved checks are loaded in 1)
     if (isRestarting) return;
     if (status !== "ready") return;
 
@@ -50,7 +69,7 @@ export default function ComplianceCheckerResult() {
     if (!state.result && hasTriedRefresh.current) {
       router.replace(href(locale as Locale, "complianceChecker"));
     }
-  }, [isRestarting, status, state, result, refresh, router]);
+  }, [checkId, isRestarting, status, state, result, refresh, router, locale]);
 
   async function handleRestart() {
     setIsRestarting(true);
@@ -65,7 +84,7 @@ export default function ComplianceCheckerResult() {
 
   async function handleEdit() {
     // Result-State hat die Antworten — neue Session mit diesen Antworten starten
-    const answers = state?.answers ?? savedCheck?.formData;
+    const answers = loadedCheck?.formData ?? state?.answers;
     if (!answers) return;
 
     try {

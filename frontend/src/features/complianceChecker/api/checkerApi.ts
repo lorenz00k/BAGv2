@@ -116,3 +116,13 @@ export async function getLatestCheck(): Promise<SavedCheck | null> {
   const data = await fetchApi<{ check: SavedCheck | null }>("/api/checker/latest");
   return data.check;
 }
+
+export async function getMyChecks(): Promise<SavedCheck[]> {
+  const data = await fetchApi<{ checks: SavedCheck[] }>("/api/checks");
+  return data.checks;
+}
+
+export async function getMyCheck(id: string): Promise<SavedCheck> {
+  const data = await fetchApi<{ check: SavedCheck }>(`/api/checks/${id}`);
+  return data.check;
+}
