@@ -13,7 +13,6 @@ import { useAuth } from "@/context/AuthContext";
 import { useChangePassword } from "../hooks/useChangePassword";
 import { useSessions } from "../hooks/useSessions";
 import { useDeleteAccount } from "../hooks/useDeleteAccount";
-import type { SessionInfo } from "@/services/account";
 
 function ChangePasswordSection() {
   const t = useTranslations("pages.account.changePassword");

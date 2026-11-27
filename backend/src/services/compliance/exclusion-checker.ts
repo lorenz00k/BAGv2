@@ -1,95 +1,58 @@
-/**
- * Checks whether a facility has any exclusion grounds that would
- * prevent it from qualifying for a GFVO exemption.
- *
- * Each check is a pure predicate — no side effects, no DB access.
- */
-
 import type { ComplianceInput } from "../../types/compliance.js";
-
-// ---------------------------------------------------------------------------
-// Result type
-// ---------------------------------------------------------------------------
+import type { ReasonKey } from "../checker/evaluate.js";
+import { LIMITS } from "./gfvo-rules.js";
 
 export interface ExclusionResult {
-  /** True when at least one exclusion ground applies */
   readonly excluded: boolean;
-  /** i18n reason keys explaining which exclusions were triggered */
-  readonly reasonKeys: readonly string[];
+  readonly reasonKeys: readonly ReasonKey[];
 }
 
-// ---------------------------------------------------------------------------
-// Core exclusion checks (§ 2 der 2. GFVO)
-// ---------------------------------------------------------------------------
-
-/**
- * Check GFVO exclusion grounds:
- * - External ventilation / cooling units (§ 2 Z 2)
- * - Regulated hazardous storage (§ 2 Z 3)
- * - Labelled hazardous storage (§ 2 Z 4)
- * - Loud music / amplification (§ 2 Z 5)
- * - IPPC / Seveso relevance (§ 2 Z 6)
- */
+/** § 2 der 2. GFVO: Ausschließungsgründe */
 export function checkExclusions(input: ComplianceInput): ExclusionResult {
-  const reasonKeys: string[] = [];
+  const reasonKeys: ReasonKey[] = [];
 
-  if (input.hasExternalVentilation === "yes") {
-    reasonKeys.push("complianceResult.reasons.externalVentilation");
-  }
-
-  if (input.storesRegulatedHazardous === "yes") {
-    reasonKeys.push("complianceResult.reasons.regulatedHazardousStorage");
-  }
-
-  if (input.storesLabelledHazardous === "yes") {
-    reasonKeys.push("complianceResult.reasons.labelledHazardousStorage");
-  }
-
-  if (input.usesLoudMusic === "yes") {
-    reasonKeys.push("complianceResult.reasons.musicExclusion");
-  }
-
-  if (input.ippcOrSevesoRelevant === "yes") {
-    reasonKeys.push("complianceResult.reasons.ippcSeveso");
-  }
+  if (input.hasExternalVentilation === "yes") reasonKeys.push("externalVentilation");
+  if (input.storesRegulatedHazardous === "yes") reasonKeys.push("regulatedHazardousStorage");
+  if (input.storesLabelledHazardous === "yes") reasonKeys.push("labelledHazardousStorage");
+  if (input.usesLoudMusic === "yes") reasonKeys.push("musicExclusion");
+  if (input.ippcOrSevesoRelevant === "yes") reasonKeys.push("ippcSeveso");
 
   return { excluded: reasonKeys.length > 0, reasonKeys };
 }
 
-// ---------------------------------------------------------------------------
-// Accommodation-specific reason checks
-// ---------------------------------------------------------------------------
+function isAccommodation(input: ComplianceInput): boolean {
+  return (
+    input.sector === "accommodation" ||
+    (input.sector === "gastronomyHotel" &&
+      input.hospitalitySubtype === "beherbergung")
+  );
+}
+
+function checkAreaLimit(input: ComplianceInput): ReasonKey[] {
+  const isLimited = input.sector === "retail" || input.sector === "warehouse";
+  return isLimited && (input.areaSqm ?? 0) > LIMITS.retailAndWarehouseSqm
+    ? ["areaExceeded"]
+    : [];
+}
+
+function checkAccommodationConditions(input: ComplianceInput): ReasonKey[] {
+  if (!isAccommodation(input)) return [];
+
+  const reasons: ReasonKey[] = [];
+  if ((input.bedCount ?? 0) > LIMITS.accommodationBeds) reasons.push("accommodationBeds");
+  if (input.hasOtherResidents === "yes") reasons.push("accommodationBuildingUse");
+  if (input.hasWellnessFacilities === "yes") reasons.push("accommodationWellness");
+  if (input.servesFullMeals === "yes") reasons.push("accommodationMeals");
+  return reasons;
+}
 
 /**
- * Additional reason keys for accommodation / hospitality subtypes.
- * These explain *why* a facility that might otherwise qualify for
- * the accommodation exemption does not meet the requirements.
+ * Warum ein Betrieb eines GFVO-Sektors die Bedingungen seiner Kategorie NICHT
+ * erfüllt. Hängt vom Sektor ab, nicht von der Kategorie, denn wer eine
+ * Bedingung verletzt, hat keine Kategorie mehr.
  */
-export function checkAccommodationReasons(
-  input: ComplianceInput,
-  gfvoCategoryKey: string | undefined
-): readonly string[] {
-  if (gfvoCategoryKey !== "accommodation") {
-    return [];
-  }
-
-  const reasons: string[] = [];
-
-  if ((input.bedCount ?? 0) > 30) {
-    reasons.push("complianceResult.reasons.accommodationBeds");
-  }
-
-  if (input.hasOtherResidents !== "no") {
-    reasons.push("complianceResult.reasons.accommodationBuildingUse");
-  }
-
-  if (input.hasWellnessFacilities === "yes") {
-    reasons.push("complianceResult.reasons.accommodationWellness");
-  }
-
-  if (input.servesFullMeals === "yes") {
-    reasons.push("complianceResult.reasons.accommodationMeals");
-  }
-
-  return reasons;
+export function checkCategoryConditions(
+  input: ComplianceInput
+): readonly ReasonKey[] {
+  return [...checkAreaLimit(input), ...checkAccommodationConditions(input)];
 }

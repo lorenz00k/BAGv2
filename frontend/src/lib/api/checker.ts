@@ -100,7 +100,7 @@ export interface components {
         /** @enum {string} */
         ClassificationKey: "noFacility" | "freistellungGFVO" | "needsPermit" | "individualAssessment";
         /** @enum {string} */
-        ReasonKey: "externalVentilation" | "regulatedHazardousStorage" | "labelledHazardousStorage" | "musicExclusion" | "ippcSeveso" | "noFacilityDefinition" | "operatingHours" | "areaExceeded" | "accommodationBeds" | "accommodationBuildingUse" | "accommodationWellness" | "accommodationMeals" | "expectedImpairments" | "individualAssessment" | "freistellungSummary";
+        ReasonKey: "externalVentilation" | "regulatedHazardousStorage" | "labelledHazardousStorage" | "musicExclusion" | "ippcSeveso" | "noFacilityDefinition" | "operatingHours" | "areaExceeded" | "accommodationBeds" | "accommodationBuildingUse" | "accommodationWellness" | "accommodationMeals" | "expectedImpairments" | "individualAssessment" | "freistellungSummary" | "closingHoursNote";
         /** @enum {string} */
         GfvoCategoryKey: "retail" | "office" | "warehouse" | "cosmetics" | "tailor" | "textilePickup" | "accommodation" | "iceSalon" | "dataCenter" | "infrastructureSite" | "embeddedFacility";
         /** @description Persisted answers for the checker. All fields are optional to support step-wise progress and saving the current full answer state. */

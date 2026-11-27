@@ -15,6 +15,7 @@
         "accommodationMeals": "Die Abgabe vollwertiger Mahlzeiten überschreitet die Freistellung (nur Frühstück/kleiner Imbiss erlaubt).",
         "expectedImpairments": "Nach § 74 Abs. 2 GewO sind schädliche Immissionen, Gefährdungen oder Störungen zu erwarten.",
         "individualAssessment": "Keine eindeutige Freistellung – eine behördliche Feststellung kann Genehmigungsfreiheit bestätigen.",
-        "freistellungSummary": "Alle Voraussetzungen der 2. GFVO sind erfüllt – die Anlage bleibt genehmigungsfrei, solange die Auflagen eingehalten werden."
+        "freistellungSummary": "Alle Voraussetzungen der 2. GFVO sind erfüllt – die Anlage bleibt genehmigungsfrei, solange die Auflagen eingehalten werden.",
+        "closingHoursNote": "Die Freistellung gilt unabhängig von den Öffnungszeiten. Gegebenenfalls gelten aber Sperrstunden nach § 113 GewO, und der Lieferverkehr ist auf Mo–Fr 6–19 Uhr und Sa 6–18 Uhr beschränkt."
     }
 }

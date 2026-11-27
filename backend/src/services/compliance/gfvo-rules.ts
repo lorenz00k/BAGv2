@@ -8,6 +8,15 @@
  */
 
 import type { ComplianceInput } from "../../types/compliance.js";
+import type { GfvoCategoryKey } from "../checker/evaluate.js";
+
+/** Size limits of § 1 Abs. 1 der 2. GFVO, shared with the exclusion checks */
+export const LIMITS = {
+  retailAndWarehouseSqm: 600, // Z 1, Z 3
+  embeddedFacilitySqm: 400, // Z 13
+  accommodationBeds: 30, // Z 8 lit. a
+} as const;
+
 
 // ---------------------------------------------------------------------------
 // Rule definition
@@ -15,7 +24,7 @@ import type { ComplianceInput } from "../../types/compliance.js";
 
 interface GfvoRule {
   /** Unique key matching the i18n GFVO category key */
-  readonly key: string;
+  readonly key: GfvoCategoryKey;
   /** Returns true when the input matches this exempt category */
   readonly matches: (input: ComplianceInput) => boolean;
   /** If true, this category has no operating-window restriction */
@@ -38,7 +47,7 @@ const GFVO_EXEMPT_CATEGORIES: readonly GfvoRule[] = [
   {
     key: "retail",
     matches: (input) =>
-      input.sector === "retail" && (input.areaSqm ?? Infinity) <= 600,
+      input.sector === "retail" && (input.areaSqm ?? Infinity) <= LIMITS.retailAndWarehouseSqm,
     operatingWindow: "gfvo",
   },
   {
@@ -49,7 +58,7 @@ const GFVO_EXEMPT_CATEGORIES: readonly GfvoRule[] = [
   {
     key: "warehouse",
     matches: (input) =>
-      input.sector === "warehouse" && (input.areaSqm ?? Infinity) <= 600,
+      input.sector === "warehouse" && (input.areaSqm ?? Infinity) <= LIMITS.retailAndWarehouseSqm,
     operatingWindow: "gfvo",
   },
   {
@@ -77,7 +86,7 @@ const GFVO_EXEMPT_CATEGORIES: readonly GfvoRule[] = [
       (input.sector === "accommodation" ||
         (input.sector === "gastronomyHotel" &&
           input.hospitalitySubtype === "beherbergung")) &&
-      (input.bedCount ?? Infinity) <= 30 &&
+      (input.bedCount ?? Infinity) <= LIMITS.accommodationBeds &&
       input.hasOtherResidents === "no" &&
       input.hasWellnessFacilities !== "yes" &&
       input.servesFullMeals !== "yes",
@@ -107,7 +116,7 @@ const GFVO_EXEMPT_CATEGORIES: readonly GfvoRule[] = [
     key: "embeddedFacility",
     matches: (input) =>
       input.locatedInApprovedComplex === "yes" &&
-      (input.areaSqm ?? Infinity) <= 400,
+      (input.areaSqm ?? Infinity) <= LIMITS.embeddedFacilitySqm,
     operatingWindow: "generalPermit",
   },
 ] as const;
@@ -122,7 +131,7 @@ const GFVO_EXEMPT_CATEGORIES: readonly GfvoRule[] = [
  */
 export function determineGfvoCategory(
   input: ComplianceInput
-): string | undefined {
+): GfvoCategoryKey | undefined {
   const match = GFVO_EXEMPT_CATEGORIES.find((rule) => rule.matches(input));
   return match?.key;
 }

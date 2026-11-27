@@ -1,3 +1,13 @@
+import {
+  determineGfvoCategory,
+  isOperatingWindowCompliant,
+} from "../compliance/gfvo-rules.js";
+import {
+  checkCategoryConditions,
+  checkExclusions,
+} from "../compliance/exclusion-checker.js";
+import { toComplianceInput } from "./toComplianceInput.js";
+
 export const SectorValues = [
   "retail",
   "office",
@@ -11,9 +21,22 @@ export const SectorValues = [
   "other",
 ] as const;
 
-export const HospitalitySubtypeValues = ["beherbergung", "iceSalon", "otherGastro"] as const;
-export const WorkshopSubtypeValues = ["tailor", "shoeService", "textilePickup", "otherWorkshop"] as const;
-export const OperatingPatternValues = ["gfvoWindow", "extendedHours", "roundTheClock"] as const;
+export const HospitalitySubtypeValues = [
+  "beherbergung",
+  "iceSalon",
+  "otherGastro",
+] as const;
+export const WorkshopSubtypeValues = [
+  "tailor",
+  "shoeService",
+  "textilePickup",
+  "otherWorkshop",
+] as const;
+export const OperatingPatternValues = [
+  "gfvoWindow",
+  "extendedHours",
+  "roundTheClock",
+] as const;
 
 export type CheckerAnswers = {
   sector?: (typeof SectorValues)[number] | undefined;
@@ -48,10 +71,7 @@ export type CheckerAnswers = {
 };
 
 export type ClassificationKey =
-  | "noFacility"
-  | "freistellungGFVO"
-  | "needsPermit"
-  | "individualAssessment";
+  "noFacility" | "freistellungGFVO" | "needsPermit" | "individualAssessment";
 
 export type ReasonKey =
   | "externalVentilation"
@@ -68,7 +88,9 @@ export type ReasonKey =
   | "accommodationMeals"
   | "expectedImpairments"
   | "individualAssessment"
-  | "freistellungSummary";
+  | "freistellungSummary"
+  | "freistellungSummary"
+  | "closingHoursNote";
 
 export type GfvoCategoryKey =
   | "retail"
@@ -108,66 +130,7 @@ export type CheckerResult = {
   rulesVersion: string;
 };
 
-const RULES_VERSION = "2025-01";
-
-function pickGfvoCategory(a: CheckerAnswers): GfvoCategoryKey | null {
-  if (a.locatedInInfrastructureSite) return "infrastructureSite";
-  if (a.locatedInApprovedComplex) return "embeddedFacility";
-
-  switch (a.sector) {
-    case "retail":
-    case "office":
-    case "warehouse":
-    case "cosmetics":
-    case "dataCenter":
-      return a.sector;
-    case "workshop":
-      if (a.workshopSubtype === "tailor") return "tailor";
-      if (a.workshopSubtype === "textilePickup") return "textilePickup";
-      return null;
-    case "accommodation":
-      return "accommodation";
-    case "gastronomyHotel":
-      if (a.hospitalitySubtype === "iceSalon") return "iceSalon";
-      if (a.hospitalitySubtype === "beherbergung") return "accommodation";
-      return null;
-    default:
-      return null;
-  }
-}
-
-function collectBlockingReasons(a: CheckerAnswers): ReasonKey[] {
-  const reasons: ReasonKey[] = [];
-  //Operating time outside GFVO window → not exempt
-  if (a.operatingPattern && a.operatingPattern !== "gfvoWindow") {
-    reasons.push("operatingHours");
-  }
-
-  //GFVO exclusion checks 
-  if (a.hasExternalVentilation) reasons.push("externalVentilation");
-  if (a.storesRegulatedHazardous) reasons.push("regulatedHazardousStorage");
-  if (a.storesLabelledHazardous) reasons.push("labelledHazardousStorage");
-  if (a.usesLoudMusic) reasons.push("musicExclusion");
-  if (a.ippcOrSevesoRelevant) reasons.push("ippcSeveso");
-
-  // Simple category-specific constraints (MVP)
-  // Retail size example appears in your content (<=600 m²)
-  if (a.sector === "retail" && typeof a.areaSqm === "number" && a.areaSqm > 600) {
-    reasons.push("areaExceeded");
-  }
-  // Accommodation constraints
-  const isAccommodation =
-    a.sector === "accommodation" || a.hospitalitySubtype === "beherbergung";
-
-  if (isAccommodation && typeof a.bedCount === "number") {
-    if (a.bedCount > 30) reasons.push("accommodationBeds");
-    if (a.hasOtherResidents === true) reasons.push("accommodationBuildingUse");
-    if (a.hasWellnessFacilities) reasons.push("accommodationWellness");
-    if (a.servesFullMeals) reasons.push("accommodationMeals");
-  }
-
-  return reasons;
-}
+const RULES_VERSION = "2026-11";
 
 function pickNextSteps(classification: ClassificationKey): NextStepKey[] {
   switch (classification) {
@@ -186,7 +149,10 @@ function pickDocumentHints(
   classification: ClassificationKey,
   a: CheckerAnswers
 ): DocumentHintKey[] {
-  if (classification === "freistellungGFVO" || classification === "noFacility") {
+  if (
+    classification === "freistellungGFVO" ||
+    classification === "noFacility"
+  ) {
     return [];
   }
 
@@ -196,14 +162,24 @@ function pickDocumentHints(
   return docs;
 }
 
-function pickAuthorityHint(classification: ClassificationKey): AuthorityHintKey {
-  return classification === "freistellungGFVO" || classification === "noFacility"
+function pickAuthorityHint(
+  classification: ClassificationKey
+): AuthorityHintKey {
+  return classification === "freistellungGFVO" ||
+    classification === "noFacility"
     ? "none"
     : "ma36";
 }
 
+/** Kategorien, bei denen die Freistellung nicht von den Öffnungszeiten abhängt (§ 1 Abs. 2 Schlussteil) */
+const CLOSING_HOURS_NOTE_CATEGORIES: ReadonlySet<GfvoCategoryKey> = new Set([
+  "accommodation",
+  "iceSalon",
+  "textilePickup",
+]);
+
 export function evaluate(a: CheckerAnswers): CheckerResult {
-  const gfvoCategory = pickGfvoCategory(a);
+  const input = toComplianceInput(a);
 
   const build = (
     classification: ClassificationKey,
@@ -219,29 +195,69 @@ export function evaluate(a: CheckerAnswers): CheckerResult {
     rulesVersion: RULES_VERSION,
   });
 
-  // 1) Not a facility (mobile/temporary) → stop
+  // 1) Kein Betrieb im Sinne der GewO
   if (a.isStationary === false || a.isOnlyTemporary === true) {
     return build("noFacility", ["noFacilityDefinition"], null);
   }
-  // 2) Special contexts that usually need clarification
+
+  // 2) Infrastruktur / genehmigte Gesamtanlage (Z 12, Z 13): die Genehmigung
+  //    des Standorts können wir nicht prüfen → Einzelfallprüfung
   if (a.locatedInInfrastructureSite || a.locatedInApprovedComplex) {
-    return build("individualAssessment", ["individualAssessment"], gfvoCategory);
+    const locationCategory =
+      determineGfvoCategory({
+        locatedInInfrastructureSite: input.locatedInInfrastructureSite,
+        locatedInApprovedComplex: input.locatedInApprovedComplex,
+        areaSqm: input.areaSqm,
+      }) ?? null;
+    return build(
+      "individualAssessment",
+      ["individualAssessment"],
+      locationCategory
+    );
   }
-  // 3) If harmful impacts expected → permit likely
+
+  const category = determineGfvoCategory(input) ?? null;
+
+  // 3) Belästigungen zu erwarten → vermutlich genehmigungspflichtig
   if (a.expectedImpairments) {
-    return build("needsPermit", ["expectedImpairments"], gfvoCategory);
+    return build("needsPermit", ["expectedImpairments"], category);
   }
 
-  const reasons = collectBlockingReasons(a);
-  const gfvoPossible = gfvoCategory !== null && a.operatingPattern === "gfvoWindow";
-
-  if (!gfvoPossible) {
-    return build("individualAssessment", ["individualAssessment"], gfvoCategory);
+  // 4) Kein GFVO-Sektor → Einzelfallprüfung
+  const conditionReasons = checkCategoryConditions(input);
+  if (category === null && conditionReasons.length === 0) {
+    return build("individualAssessment", ["individualAssessment"], null);
   }
 
-  if (reasons.length > 0) {
-    return build("needsPermit", reasons, gfvoCategory);
+  // 5) Ausschließungsgründe (§ 2) und verletzte Bedingungen → Genehmigung
+  const blocking = [...checkExclusions(input).reasonKeys, ...conditionReasons];
+  const outsideWindow = !isOperatingWindowCompliant(
+    input,
+    category ?? undefined
+  );
+
+  if (blocking.length > 0) {
+    return build(
+      "needsPermit",
+      outsideWindow ? [...blocking, "operatingHours"] : blocking,
+      category
+    );
   }
 
-  return build("freistellungGFVO", ["freistellungSummary"], gfvoCategory);
+  // 6) Nur die Öffnungszeiten sprechen gegen die Freistellung → Einzelfallprüfung
+  if (outsideWindow) {
+    return build("individualAssessment", ["operatingHours"], category);
+  }
+
+  // 7) Freigestellt. Öffnungszeiten sind hier neutral, aber Sperrstunden
+  //    (§ 113 GewO) und Lieferzeiten gelten weiter.
+  const reasons: ReasonKey[] = ["freistellungSummary"];
+  if (
+    category !== null &&
+    CLOSING_HOURS_NOTE_CATEGORIES.has(category) &&
+    a.operatingPattern !== "gfvoWindow"
+  ) {
+    reasons.push("closingHoursNote");
+  }
+  return build("freistellungGFVO", reasons, category);
 }

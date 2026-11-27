@@ -254,6 +254,7 @@ components:
         - expectedImpairments
         - individualAssessment
         - freistellungSummary
+        - closingHoursNote
 
     GfvoCategoryKey:
       type: string
