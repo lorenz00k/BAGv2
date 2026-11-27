@@ -17,6 +17,9 @@ export async function mergeAnonymousChecker(
       .returning();
 
     if (!anonymousSession) return;
+    // Session gehört schon zu einem Check -> nichts neu anlegen (sonst Duplikat,
+    // und bei einem anderen User würden fremde Antworten kopiert)
+    if (anonymousSession.checkId) return;
 
     // migrate if answers are exitsing
     const answers = anonymousSession.answers as Record<string, unknown>;
@@ -25,7 +28,7 @@ export async function mergeAnonymousChecker(
       const isCompleted =
         anonymousSession.status === "finished" &&
         anonymousSession.result !== null;
-        
+
       // connect the data to the correct user
       await tx.insert(checks).values({
         userId,

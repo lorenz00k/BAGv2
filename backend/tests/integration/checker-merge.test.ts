@@ -195,3 +195,24 @@ describe("mergeAnonymousChecker transaction", () => {
     expect(await db.select().from(checkerSessions)).toHaveLength(1);
   });
 });
+
+it("does not copy a session that is already linked to a check", async () => {
+  const user = await createUser();
+  const [check] = await db
+    .insert(checks)
+    .values({ userId: user.id, formData: { areaSqm: 50 } })
+    .returning();
+
+  const sid = createSid();
+  await db.insert(checkerSessions).values({
+    sidHash: hashSid(sid),
+    answers: { areaSqm: 50 },
+    checkId: check!.id,
+    expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+  });
+
+  await mergeAnonymousChecker(sid, user.id);
+
+  expect(await db.select().from(checks)).toHaveLength(1); // no duplicate
+  expect(await db.select().from(checkerSessions)).toHaveLength(0); // still claimed
+});

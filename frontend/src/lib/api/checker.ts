@@ -131,6 +131,11 @@ export interface components {
         };
         CheckerAnswersSaveRequest: {
             answers: components["schemas"]["CheckerAnswers"];
+            /**
+             * Format: uuid
+             * @description Optional. Check, der bearbeitet wird (sonst wird der zur Session gehörende verwendet).
+             */
+            checkId?: string;
         };
         CheckerResult: {
             classification: components["schemas"]["ClassificationKey"];

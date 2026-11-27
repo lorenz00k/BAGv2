@@ -42,11 +42,11 @@ export const answersSchema = z
     .strict();
 
 export const saveAnswersSchema = z
-    .object({
-        answers: answersSchema,
-    })
-    .strict();
-
+  .object({
+    answers: answersSchema,
+    checkId: z.string().uuid().optional(),
+  })
+  .strict();
 export type ValidatedCheckerAnswers = z.infer<typeof answersSchema>;
 
 export type ValidationIssue = {

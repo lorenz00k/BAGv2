@@ -277,7 +277,7 @@ export function useComplianceChecker() {
 
       try {
         await api.createSession();
-        const restored = await api.saveAnswers(check.formData);
+        const restored = await api.saveAnswers(check.formData, check.id);
         setState(restored);
         setStatus("ready");
         setStateVersion((v) => v + 1);

@@ -2,9 +2,10 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import type { Variables } from "../types/hono.js";
 import { z } from "zod";
-import { db } from "../db/index.js";
-import { checks } from "../db/schema/checks.js";
-import { and, eq, isNull, desc } from "drizzle-orm";
+import {
+  persistCheck,
+  CheckNotFoundError,
+} from "../services/checker/persistCheck.js";
 
 import {
   createSid,
@@ -36,7 +37,6 @@ import {
 } from "../services/checker/checkerSessionRepo.js";
 import { getUserIdFromSession } from "../utils/session.js";
 import { getCookie } from "hono/cookie";
-
 
 // Wizard and evaluation. Also for anonymous sessions
 
@@ -137,38 +137,14 @@ checkerRouter.put("/answers", async (c) => {
     if (sessionId) {
       const userId = await getUserIdFromSession(sessionId);
       if (userId) {
-        //search current draft
-        const [existingDraft] = await db
-          .select({ id: checks.id })
-          .from(checks)
-          .where(
-            and(
-              eq(checks.userId, userId),
-              eq(checks.status, "draft"),
-              isNull(checks.deletedAt)
-            )
-          )
-          .orderBy(desc(checks.updatedAt))
-          .limit(1);
-
-        if (existingDraft) {
-          // Update
-          await db
-            .update(checks)
-            .set({
-              formData: normalizedAnswers,
-              updatedAt: new Date(),
-            })
-            .where(eq(checks.id, existingDraft.id));
-        } else {
-          // New Draft
-          await db.insert(checks).values({
-            userId,
-            status: "draft",
-            formData: normalizedAnswers,
-            currentStep: "0",
-          });
-        }
+        await persistCheck({
+          userId,
+          sessionId: active.row.id,
+          linkedCheckId: active.row.checkId,
+          requestedCheckId: data.checkId,
+          formData: normalizedAnswers,
+          result: null,
+        });
       }
     }
 
@@ -185,6 +161,9 @@ checkerRouter.put("/answers", async (c) => {
     }
     if (err instanceof SyntaxError) {
       return c.json({ error: "Invalid JSON" }, 400);
+    }
+    if (err instanceof CheckNotFoundError) {
+      return c.json({ error: "Check not found" }, 404);
     }
 
     throw err;
@@ -230,38 +209,13 @@ checkerRouter.post("/evaluate", async (c) => {
     if (sessionId) {
       const userId = await getUserIdFromSession(sessionId);
       if (userId) {
-        const [existingDraft] = await db
-          .select({ id: checks.id })
-          .from(checks)
-          .where(
-            and(
-              eq(checks.userId, userId),
-              eq(checks.status, "draft"),
-              isNull(checks.deletedAt)
-            )
-          )
-          .orderBy(desc(checks.updatedAt))
-          .limit(1);
-
-        if (existingDraft) {
-          await db
-            .update(checks)
-            .set({
-              status: "completed",
-              formData: normalizedAnswers,
-              result: result,
-              updatedAt: new Date(),
-            })
-            .where(eq(checks.id, existingDraft.id));
-        } else {
-          await db.insert(checks).values({
-            userId,
-            status: "completed",
-            formData: normalizedAnswers,
-            result: result,
-            currentStep: "0",
-          });
-        }
+        await persistCheck({
+          userId,
+          sessionId: active.row.id,
+          linkedCheckId: active.row.checkId,
+          formData: normalizedAnswers,
+          result,
+        });
       }
     }
     return c.json(updated.result ?? result, 200);
@@ -277,6 +231,9 @@ checkerRouter.post("/evaluate", async (c) => {
     }
     if (err instanceof SyntaxError) {
       return c.json({ error: "Invalid JSON" }, 400);
+    }
+    if (err instanceof CheckNotFoundError) {
+      return c.json({ error: "Check not found" }, 404);
     }
 
     throw err;

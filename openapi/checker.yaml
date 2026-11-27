@@ -348,6 +348,10 @@ components:
       properties:
         answers:
           $ref: "#/components/schemas/CheckerAnswers"
+        checkId:
+          type: string
+          format: uuid
+          description: Optional. Check, der bearbeitet wird (sonst wird der zur Session gehörende verwendet).
 
     CheckerResult:
       type: object
