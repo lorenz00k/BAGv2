@@ -1,6 +1,6 @@
-import pino from "pino";
+import { baseLogger } from "../../middleware/logger.js";
 
-const logger = pino({ name: "vienna-ogd" });
+const logger = baseLogger.child({ name: "vienna-ogd" });
 
 const FETCH_TIMEOUT_MS = 10_000;
 
@@ -16,12 +16,11 @@ export async function fetchViennaOGD<T>(
   try {
     const response = await fetch(url, {
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      credentials: "include",
     });
 
     if (!response.ok) {
       logger.warn({ status: response.status, context }, "Vienna OGD API error");
-      return null; 
+      return null;
     }
 
     // Check if response is JSON
@@ -43,12 +42,11 @@ export async function fetchViennaOGD<T>(
 
     return data as T;
   } catch (error) {
-    const isTimeout =
-      error instanceof Error && error.name === "TimeoutError";
+    const isTimeout = error instanceof Error && error.name === "TimeoutError";
     if (isTimeout) {
       logger.error({ context }, "Vienna OGD request timed out");
     } else {
-      logger.error({ context, error }, "Vienna OGD fetch failed");
+      logger.error({ context, err: error }, "Vienna OGD fetch failed");
     }
     return null;
   }
@@ -65,7 +63,14 @@ export function buildWFSUrl(params: {
   maxFeatures?: number;
   sortBy?: string;
 }): string {
-  const { dataset, bbox, srsName = "EPSG:4326", cqlFilter, maxFeatures, sortBy } = params;
+  const {
+    dataset,
+    bbox,
+    srsName = "EPSG:4326",
+    cqlFilter,
+    maxFeatures,
+    sortBy,
+  } = params;
 
   const url = new URL("https://data.wien.gv.at/daten/geo");
   url.searchParams.set("service", "WFS");

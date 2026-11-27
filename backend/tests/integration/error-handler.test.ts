@@ -4,10 +4,14 @@ import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 
 // Replace the logger, so the tests stay quiet and can check what gets logged
-const { error: logError } = vi.hoisted(() => ({ error: vi.fn() }));
-vi.mock("pino", () => ({ default: () => ({ error: logError }) }));
+const { logError } = vi.hoisted(() => ({ logError: vi.fn() }));
+vi.mock("../../src/middleware/logger.js", () => ({
+  baseLogger: {
+    child: () => ({ error: logError, warn: vi.fn(), info: vi.fn() }),
+  },
+}));
 
-import { errorHandler } from "../../../src/middleware/error-handler.js";
+import { errorHandler } from "../../src/middleware/error-handler.js";
 
 // A tiny app whose only route throws the given error
 function appThrowing(error: unknown) {
@@ -73,6 +77,7 @@ describe("errorHandler", () => {
 
     expect(logError).toHaveBeenCalledTimes(1);
     expect(logError.mock.calls[0]![0]).toMatchObject({
+      err: expect.any(Error),
       path: "/boom",
       method: "GET",
     });
