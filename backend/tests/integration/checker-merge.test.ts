@@ -12,13 +12,15 @@ import { withBlockedDeletes } from "./helpers.js";
 // Creates an anonymous checker session like the checker page does and returns its cookie value
 async function createAnonymousSession(
   answers: Record<string, unknown>,
-  status: "draft" | "finished" = "draft"
+  status: "draft" | "finished" = "draft",
+  result: Record<string, unknown> | null = null
 ) {
   const sid = createSid();
   await db.insert(checkerSessions).values({
     sidHash: hashSid(sid),
     status,
     answers,
+    result,
     expiresAt: new Date(Date.now() + 60 * 60 * 1000),
   });
   return sid;
@@ -65,7 +67,11 @@ describe.each(entryPoints)("anonymous checker data after %s", (name) => {
 
   it("saves a finished session as a completed check and removes the anonymous session", async () => {
     const answers = { betriebsart: "restaurant", flaeche: 80 };
-    const sid = await createAnonymousSession(answers, "finished");
+    const result = {
+      classification: "freistellungGFVO",
+      reasons: ["freistellungSummary"],
+    };
+    const sid = await createAnonymousSession(answers, "finished", result);
 
     const res = await enter(sid);
     expect(res.status).toBeLessThan(300);
@@ -75,8 +81,37 @@ describe.each(entryPoints)("anonymous checker data after %s", (name) => {
       .from(checks)
       .where(eq(checks.userId, await userId()));
     expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({ status: "completed", formData: answers });
+    expect(rows[0]).toMatchObject({
+      status: "completed",
+      formData: answers,
+      result,
+    });
     expect(await db.select().from(checkerSessions)).toHaveLength(0);
+  });
+  it("keeps the result null for an unfinished session", async () => {
+    const sid = await createAnonymousSession({ betriebsart: "cafe" });
+    await enter(sid);
+
+    const rows = await db
+      .select()
+      .from(checks)
+      .where(eq(checks.userId, await userId()));
+    expect(rows[0]).toMatchObject({ status: "draft", result: null });
+  });
+
+  it("saves a finished session without a result as a draft, never as completed", async () => {
+    const sid = await createAnonymousSession(
+      { betriebsart: "cafe" },
+      "finished",
+      null
+    );
+    await enter(sid);
+
+    const rows = await db
+      .select()
+      .from(checks)
+      .where(eq(checks.userId, await userId()));
+    expect(rows[0]).toMatchObject({ status: "draft", result: null });
   });
 
   it("saves an unfinished session as a draft", async () => {

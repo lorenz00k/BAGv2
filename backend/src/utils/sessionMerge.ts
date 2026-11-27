@@ -21,12 +21,18 @@ export async function mergeAnonymousChecker(
     // migrate if answers are exitsing
     const answers = anonymousSession.answers as Record<string, unknown>;
     if (answers && Object.keys(answers).length > 0) {
+      // "completed" only if answers exist
+      const isCompleted =
+        anonymousSession.status === "finished" &&
+        anonymousSession.result !== null;
+        
       // connect the data to the correct user
       await tx.insert(checks).values({
         userId,
-        status: anonymousSession.status === "finished" ? "completed" : "draft",
+        status: isCompleted ? "completed" : "draft",
         currentStep: "0",
         formData: anonymousSession.answers,
+        result: anonymousSession.result,
       });
     }
   });
