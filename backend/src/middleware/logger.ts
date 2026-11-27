@@ -10,9 +10,9 @@ export const REDACT_PATHS = [
 ];
 
 type CreateOptions = {
-  production?: boolean; // how it will be printed: pretty or just json
-  level?: env.LOG_LEVEL; //Info, debug, ... -> what will be printed
-  destination?: DestinationStream; //only for tests
+  production?: boolean;             // how it will be printed: pretty or just json
+  level?: string;                   //Info, debug, ... -> what will be printed
+  destination?: DestinationStream;  //only for tests
 };
 
 export function createBaseLogger({
