@@ -2,10 +2,9 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import type { Variables } from "../types/hono.js";
 import { z } from "zod";
-import { authMiddleware } from "../middleware/auth.js";
 import { db } from "../db/index.js";
 import { checks } from "../db/schema/checks.js";
-import { and, eq, isNull, desc, sql } from "drizzle-orm";
+import { and, eq, isNull, desc } from "drizzle-orm";
 
 import {
   createSid,
@@ -37,6 +36,9 @@ import {
 } from "../services/checker/checkerSessionRepo.js";
 import { getUserIdFromSession } from "../utils/session.js";
 import { getCookie } from "hono/cookie";
+
+
+// Wizard and evaluation. Also for anonymous sessions
 
 const checkerRouter = new Hono<{ Variables: Variables }>();
 
@@ -297,39 +299,6 @@ checkerRouter.delete("/session", async (c) => {
 
   clearSidCookie(c);
   return c.body(null, 204);
-});
-
-// Check if logged in user has draft-check
-checkerRouter.get("/latest", authMiddleware, async (c) => {
-  const userId = c.get("userId");
-
-  const [latest] = await db
-    .select()
-    .from(checks)
-    .where(
-      and(
-        eq(checks.userId, userId),
-        isNull(checks.deletedAt),
-        sql`${checks.formData}::text != '{}'`
-      )
-    )
-    .orderBy(desc(checks.updatedAt))
-    .limit(1);
-
-  if (!latest) {
-    return c.json({ check: null });
-  }
-
-  return c.json({
-    check: {
-      id: latest.id,
-      status: latest.status,
-      formData: latest.formData,
-      result: latest.result,
-      currentStep: latest.currentStep,
-      updatedAt: latest.updatedAt,
-    },
-  });
 });
 
 export default checkerRouter;
