@@ -40,7 +40,6 @@ describe("authentication", () => {
     ["GET", ""],
     ["GET", `/${UNKNOWN_ID}`],
     ["PATCH", `/${UNKNOWN_ID}`],
-    ["POST", `/${UNKNOWN_ID}/evaluate`],
     ["DELETE", `/${UNKNOWN_ID}`],
   ])("requires a session for %s /api/checks%s", async (method, path) => {
     expect((await call(method, path)).status).toBe(401);
@@ -104,19 +103,40 @@ describe("POST /api/checks", () => {
 });
 
 describe("GET /api/checks", () => {
-  it("lists only the checks of the user, oldest first", async () => {
+  it("lists only the checks of the user, newest first", async () => {
     const { me, other, sid } = await twoUsers();
-    const first = await checkOf(me.id);
-    const second = await checkOf(me.id);
-    await checkOf(other.id);
+    const first = await checkOf(me.id, { sector: "retail" });
+    const second = await checkOf(me.id, { sector: "office" });
+    await checkOf(other.id, { sector: "retail" });
 
     const body = await (await call("GET", "", sid)).json();
     expect(body.checks.map((c: { id: string }) => c.id)).toEqual([
-      first.id,
       second.id,
+      first.id,
     ]);
   });
+
+  it("hides checks without answers and deleted checks", async () => {
+    const { me, sid } = await twoUsers();
+    const visible = await checkOf(me.id, { sector: "retail" });
+    await checkOf(me.id); // leere Antworten
+    await db
+      .insert(checks)
+      .values({ userId: me.id, formData: { sector: "office" }, deletedAt: new Date() });
+
+    const body = await (await call("GET", "", sid)).json();
+    expect(body.checks.map((c: { id: string }) => c.id)).toEqual([visible.id]);
+  });
+
+  it("does not expose the user id", async () => {
+    const { me, sid } = await twoUsers();
+    await checkOf(me.id, { sector: "retail" });
+
+    const body = await (await call("GET", "", sid)).json();
+    expect(body.checks[0]).not.toHaveProperty("userId");
+  });
 });
+
 
 describe("GET /api/checks/:id", () => {
   it("returns an own check", async () => {
@@ -201,69 +221,6 @@ describe("PATCH /api/checks/:id", () => {
   it("answers 404 for an id that is not a uuid", async () => {
     const { sid } = await twoUsers();
     expect((await call("PATCH", "/not-a-uuid", sid, {})).status).toBe(404);
-  });
-});
-
-describe("POST /api/checks/:id/evaluate", () => {
-  it("answers 404 for the check of another user", async () => {
-    const { other, sid } = await twoUsers();
-    const theirs = await checkOf(other.id);
-
-    expect((await call("POST", `/${theirs.id}/evaluate`, sid)).status).toBe(
-      404
-    );
-  });
-
-  it("rejects a check whose form data is invalid", async () => {
-    const { me, sid } = await twoUsers();
-    const check = await checkOf(me.id, { sector: "spaceStation", areaSqm: -5 });
-
-    const res = await call("POST", `/${check.id}/evaluate`, sid);
-    expect(res.status).toBe(400);
-    expect((await res.json()).error).toBe("Invalid form data");
-  });
-
-  it("evaluates a valid check, stores the result and marks it as completed", async () => {
-    const { me, sid } = await twoUsers();
-    const check = await checkOf(me.id, {
-      sector: "gastronomyHotel",
-      hospitalitySubtype: "otherGastro",
-      areaSqm: 80,
-      isStationary: "yes",
-      operatingPattern: "gfvoWindow",
-    });
-
-    const res = await call("POST", `/${check.id}/evaluate`, sid);
-    expect(res.status).toBe(200);
-
-    const body = await res.json();
-    expect([
-      "noFacility",
-      "freistellungGFVO",
-      "needsPermit",
-      "individualAssessment",
-    ]).toContain(body.result.classification);
-    expect(body.check.status).toBe("completed");
-
-    const [stored] = await db
-      .select()
-      .from(checks)
-      .where(eq(checks.id, check.id));
-    expect(stored?.status).toBe("completed");
-    expect(stored?.formData).toHaveProperty("result");
-  });
-
-  it("can evaluate a check again, although its form data now contains the result", async () => {
-    const { me, sid } = await twoUsers();
-    const check = await checkOf(me.id, { sector: "retail", areaSqm: 40 });
-
-    expect((await call("POST", `/${check.id}/evaluate`, sid)).status).toBe(200);
-    expect((await call("POST", `/${check.id}/evaluate`, sid)).status).toBe(200);
-  });
-
-  it("answers 404 for an id that is not a uuid", async () => {
-    const { sid } = await twoUsers();
-    expect((await call("POST", "/not-a-uuid/evaluate", sid)).status).toBe(404);
   });
 });
 
