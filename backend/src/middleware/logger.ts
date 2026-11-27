@@ -1,15 +1,43 @@
 import { pinoLogger } from "hono-pino";
-import pino from "pino";
+import pino, { type DestinationStream, type LoggerOptions } from "pino";
 import { env, isProduction } from "../env.js";
+import pretty from "pino-pretty";
 
-const devLogger = pino({
-  level: env.LOG_LEVEL,
-  transport: { target: "pino-pretty" },
-});
+export const REDACT_PATHS = [
+  "req.headers.cookie",
+  "req.headers.authorization",
+  'res.headers["set-cookie"]',
+];
 
-const prodLogger = pino({ level: env.LOG_LEVEL });
+type CreateOptions = {
+  production?: boolean; // how it will be printed: pretty or just json
+  level?: env.LOG_LEVEL; //Info, debug, ... -> what will be printed
+  destination?: DestinationStream; //only for tests
+};
 
-const baseLogger = isProduction ? prodLogger : devLogger;
+export function createBaseLogger({
+  production = isProduction,
+  level = env.LOG_LEVEL,
+  destination,
+}: CreateOptions = {}) {
+  const options: LoggerOptions = {
+    level,
+    redact: { paths: REDACT_PATHS, censor: "[REDACTED]" },
+  };
+
+  if (production) {
+    return destination ? pino(options, destination) : pino(options);
+  }
+  return pino(
+    options,
+    pretty({
+      destination: destination ?? process.stdout,
+      colorize: !destination,
+    })
+  );
+}
+
+const baseLogger = createBaseLogger();
 export { baseLogger };
 
 export const logger = pinoLogger({ pino: baseLogger });
