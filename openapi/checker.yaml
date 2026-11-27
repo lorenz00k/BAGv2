@@ -254,6 +254,7 @@ components:
         - expectedImpairments
         - individualAssessment
         - freistellungSummary
+        - closingHoursNote
 
     GfvoCategoryKey:
       type: string
@@ -303,7 +304,7 @@ components:
           type: boolean
 
         # accommodation specifics
-        buildingUseExclusive:
+        hasOtherResidents:
           type: boolean
         hasWellnessFacilities:
           type: boolean
@@ -347,6 +348,10 @@ components:
       properties:
         answers:
           $ref: "#/components/schemas/CheckerAnswers"
+        checkId:
+          type: string
+          format: uuid
+          description: Optional. Check, der bearbeitet wird (sonst wird der zur Session gehörende verwendet).
 
     CheckerResult:
       type: object

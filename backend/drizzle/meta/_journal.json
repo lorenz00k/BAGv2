@@ -50,6 +50,13 @@
       "when": 1794489842033,
       "tag": "0006_amused_wild_child",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795796589875,
+      "tag": "0007_odd_supernaut",
+      "breakpoints": true
     }
   ]
 }

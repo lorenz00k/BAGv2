@@ -20,7 +20,7 @@ export const answersSchema = z
         isOnlyTemporary: z.boolean().optional(),
 
         bedCount: z.number().int().min(0).optional(),
-        buildingUseExclusive: z.boolean().optional(),
+        hasOtherResidents: z.boolean().optional(),
         hasWellnessFacilities: z.boolean().optional(),
         servesFullMeals: z.boolean().optional(),
 
@@ -42,11 +42,11 @@ export const answersSchema = z
     .strict();
 
 export const saveAnswersSchema = z
-    .object({
-        answers: answersSchema,
-    })
-    .strict();
-
+  .object({
+    answers: answersSchema,
+    checkId: z.string().uuid().optional(),
+  })
+  .strict();
 export type ValidatedCheckerAnswers = z.infer<typeof answersSchema>;
 
 export type ValidationIssue = {
@@ -70,7 +70,7 @@ export function normalizeAnswers(answers: CheckerAnswers): CheckerAnswers {
 
     if (!needsAccommodationDetails) {
         delete next.bedCount;
-        delete next.buildingUseExclusive;
+        delete next.hasOtherResidents;
         delete next.hasWellnessFacilities;
         delete next.servesFullMeals;
     }
@@ -115,7 +115,7 @@ export function validateRequiredAnswers(
 
     if (needsAccommodationDetails) {
         requireField("bedCount");
-        requireField("buildingUseExclusive");
+        requireField("hasOtherResidents");
         requireField("hasWellnessFacilities");
         requireField("servesFullMeals");
     }

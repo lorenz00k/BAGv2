@@ -30,7 +30,7 @@ export function useVerifyEmail() {
         await refreshUser();
       })
       .catch(() => setStatus("error"));
-  }, [token]);
+  },[token, refreshUser]);
 
   const navigateHome = () => {
     router.push(href(locale as Locale, "home"));

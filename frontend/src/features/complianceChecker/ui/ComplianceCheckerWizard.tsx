@@ -13,6 +13,7 @@ import { Heading } from "@/components/typography/Heading";
 import { Text } from "@/components/typography/Text";
 import { Container } from "@/components/layout/Container";
 import ComplianceCheckerProgress from "./ComplianceCheckerProgress";
+import MyChecksList from "./MyChecksList"
 
 function visibleFields(step: StepDef, answers: Partial<CheckerAnswers>) {
   return step.fields.filter((f) => (f.when ? f.when(answers) : true));
@@ -75,7 +76,7 @@ function cleanupDependentAnswers(
 
   if (!needsAccommodationDetails) {
     delete next.bedCount;
-    delete next.buildingUseExclusive;
+    delete next.hasOtherResidents;
     delete next.hasWellnessFacilities;
     delete next.servesFullMeals;
   }
@@ -115,8 +116,8 @@ export default function ComplianceCheckerWizard() {
     restart,
     clearFieldError,
     getFieldError,
-    showResumePrompt,
-    savedCheck,
+    showChecksList,
+    myChecks,
     resumeCheck,
     startFresh,
     state,
@@ -145,15 +146,16 @@ export default function ComplianceCheckerWizard() {
     //isEdit wieder auf false setzen damit 'weiter' wieder auf Seite 2 landet
     isEditRef.current = false;
 
-  }, [stateVersion]);
+  }, [stateVersion, answers, status]);
 
   // redirect to result-page if checker is already finished
   useEffect(() => {
     if (status !== "ready") return;
+    if (showChecksList) return;
     if (state?.status === "finished" && state?.result) {
       router.replace(`${pathname}/result`);
     }
-  }, [status, state, pathname, router]);
+  }, [status, state, showChecksList, pathname, router]);
 
   useEffect(() => {
     setStepIndex((current) =>
@@ -174,7 +176,6 @@ export default function ComplianceCheckerWizard() {
 
   const currentStep = step ? stepIndex + 1 : 0;
   const totalSteps = visibleSteps.length;
-  const progressPercent = totalSteps > 0 ? (currentStep / totalSteps) * 100 : 0;
 
   function getStepFieldError(key: string) {
     return stepErrors[key] ?? null;
@@ -276,49 +277,16 @@ export default function ComplianceCheckerWizard() {
       console.error("Failed to save step", err);
     }
   }
-  if (showResumePrompt && savedCheck) {
-    const isCompleted = savedCheck.status === "completed";
-
+  if (showChecksList) {
     return (
       <Container>
-        <div className="mx-auto max-w-4xl px-4 py-10">
-          <Card variant="subtle" className="p-8 text-center hover:translate-y-0">
-            <Heading as="h2" className="mt-0">
-              {isCompleted
-                ? form("checkFound.completedTitle")
-                : form("checkFound.draftTitle")}
-            </Heading>
-            <Text size="base" tone="muted" className="mt-2">
-              {form("checkFound.description", {
-                date: new Date(savedCheck.updatedAt).toLocaleDateString("de-AT"),
-              })}
-            </Text>
-            <div className="mt-6 flex justify-center gap-3">
-              {isCompleted ? (
-                <>
-                  <Button
-                    variant="next"
-                    onClick={() => router.push(`${pathname}/result`)}
-                  >
-                    {actions("check.viewResult")}
-                  </Button>
-                  <Button variant="secondary" onClick={startFresh}>
-                    {actions("check.restart")}
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button variant="next" onClick={resumeCheck} disabled={busy}>
-                    {actions("check.resume")}
-                  </Button>
-                  <Button variant="secondary" onClick={startFresh} disabled={busy}>
-                    {actions("check.restart")}
-                  </Button>
-                </>
-              )}
-            </div>
-          </Card>
-        </div>
+        <MyChecksList
+          checks={myChecks}
+          busy={busy}
+          onOpenResult={(id) => router.push(`${pathname}/result?check=${id}`)}
+          onResume={resumeCheck}
+          onNew={startFresh}
+        />
       </Container>
     );
   }

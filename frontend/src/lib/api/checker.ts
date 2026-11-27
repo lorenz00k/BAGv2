@@ -100,7 +100,7 @@ export interface components {
         /** @enum {string} */
         ClassificationKey: "noFacility" | "freistellungGFVO" | "needsPermit" | "individualAssessment";
         /** @enum {string} */
-        ReasonKey: "externalVentilation" | "regulatedHazardousStorage" | "labelledHazardousStorage" | "musicExclusion" | "ippcSeveso" | "noFacilityDefinition" | "operatingHours" | "areaExceeded" | "accommodationBeds" | "accommodationBuildingUse" | "accommodationWellness" | "accommodationMeals" | "expectedImpairments" | "individualAssessment" | "freistellungSummary";
+        ReasonKey: "externalVentilation" | "regulatedHazardousStorage" | "labelledHazardousStorage" | "musicExclusion" | "ippcSeveso" | "noFacilityDefinition" | "operatingHours" | "areaExceeded" | "accommodationBeds" | "accommodationBuildingUse" | "accommodationWellness" | "accommodationMeals" | "expectedImpairments" | "individualAssessment" | "freistellungSummary" | "closingHoursNote";
         /** @enum {string} */
         GfvoCategoryKey: "retail" | "office" | "warehouse" | "cosmetics" | "tailor" | "textilePickup" | "accommodation" | "iceSalon" | "dataCenter" | "infrastructureSite" | "embeddedFacility";
         /** @description Persisted answers for the checker. All fields are optional to support step-wise progress and saving the current full answer state. */
@@ -113,7 +113,7 @@ export interface components {
             bedCount?: number;
             isStationary?: boolean;
             isOnlyTemporary?: boolean;
-            buildingUseExclusive?: boolean;
+            hasOtherResidents?: boolean;
             hasWellnessFacilities?: boolean;
             servesFullMeals?: boolean;
             zoningClarified?: boolean;
@@ -131,6 +131,11 @@ export interface components {
         };
         CheckerAnswersSaveRequest: {
             answers: components["schemas"]["CheckerAnswers"];
+            /**
+             * Format: uuid
+             * @description Optional. Check, der bearbeitet wird (sonst wird der zur Session gehörende verwendet).
+             */
+            checkId?: string;
         };
         CheckerResult: {
             classification: components["schemas"]["ClassificationKey"];

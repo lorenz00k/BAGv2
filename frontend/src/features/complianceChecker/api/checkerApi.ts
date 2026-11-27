@@ -84,8 +84,8 @@ export async function getState(): Promise<CheckerState> {
   return data!;
 }
 
-export async function saveAnswers(answers: Partial<CheckerAnswers>): Promise<CheckerState> {
-  const body = { answers };
+export async function saveAnswers(answers: Partial<CheckerAnswers>, checkId?: string): Promise<CheckerState> {
+  const body = { answers, checkId };
   const { data, error, response } = await client.PUT("/api/checker/answers", { body });
   if (error) throwOnError(error, response.status);
   return data!;
@@ -112,7 +112,12 @@ export type SavedCheck = {
   updatedAt: string;
 };
 
-export async function getLatestCheck(): Promise<SavedCheck | null> {
-  const data = await fetchApi<{ check: SavedCheck | null }>("/api/checker/latest");
+export async function getMyChecks(): Promise<SavedCheck[]> {
+  const data = await fetchApi<{ checks: SavedCheck[] }>("/api/checks");
+  return data.checks;
+}
+
+export async function getMyCheck(id: string): Promise<SavedCheck> {
+  const data = await fetchApi<{ check: SavedCheck }>(`/api/checks/${id}`);
   return data.check;
 }

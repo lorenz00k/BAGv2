@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { CheckCircle2, Download, RotateCcw, ChevronRight } from "lucide-react"
+import { CheckCircle2, Download, RotateCcw } from "lucide-react"
 import { useWizardStore, STEP_LABELS } from "../store/wizardStore"
 import { StepWrapper } from "../components/WizardShell"
 import { Button } from "@/components/ui/Button"

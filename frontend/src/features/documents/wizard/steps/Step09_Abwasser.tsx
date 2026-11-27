@@ -3,7 +3,7 @@
 import React from "react"
 import { useWizardStore } from "../store/wizardStore"
 import {
-    StepWrapper, TextInput, TextareaInput, CheckboxField, RadioGroup,
+    StepWrapper, TextInput, TextareaInput, CheckboxField,
     FieldDivider, HintBox, WizardNav,
 } from "../components/WizardShell"
 

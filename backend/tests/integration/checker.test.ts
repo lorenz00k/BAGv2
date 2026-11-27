@@ -264,7 +264,7 @@ describe("PUT /api/checker/answers", () => {
       });
     });
 
-    it("updates the existing draft instead of creating a second one", async () => {
+    it("does not touch an unrelated draft of the same user", async () => {
       const { user, session_id, sid } = await loggedInChecker();
       await db
         .insert(checks)
@@ -273,20 +273,22 @@ describe("PUT /api/checker/answers", () => {
       await put(sid, { areaSqm: 80 }, { session_id });
 
       const rows = await checksOf(user.id);
+      expect(rows).toHaveLength(2);
+      expect(rows.map((r) => r.formData)).toEqual(
+        expect.arrayContaining([{ old: true }, { areaSqm: 80 }])
+      );
+    });
+
+    it("updates the same check on a second save in the same session", async () => {
+      const { user, session_id, sid } = await loggedInChecker();
+
+      await put(sid, { areaSqm: 80 }, { session_id });
+      await put(sid, { areaSqm: 90 }, { session_id });
+
+      const rows = await checksOf(user.id);
       expect(rows).toHaveLength(1);
-      expect(rows[0]?.formData).toEqual({ areaSqm: 80 });
+      expect(rows[0]?.formData).toEqual({ areaSqm: 90 });
     });
-
-    it("creates no check without a login", async () => {
-      const sid = await createAnonymousSession();
-      await put(sid, { sector: PLAIN_SECTOR });
-
-      expect(await db.select().from(checks)).toHaveLength(0);
-    });
-
-    it.todo(
-      "does not overwrite a draft that the user is editing elsewhere (it takes the most recently updated draft)"
-    );
   });
 });
 
@@ -415,63 +417,142 @@ describe("DELETE /api/checker/session", () => {
   });
 });
 
-describe("GET /api/checker/latest", () => {
-  it("requires a login", async () => {
-    expect((await call("GET", "/latest")).status).toBe(401);
+describe("saving for logged-in users", () => {
+  const as = (x: { sid: string; session_id: string }) => ({
+    sid: x.sid,
+    session_id: x.session_id,
   });
 
-  it("returns null when the user has no check with data", async () => {
-    const me = await createUser();
-    const session_id = await login();
-    await db.insert(checks).values({ userId: me.id, formData: {} });
+  it("keeps updating the same check on repeated saves", async () => {
+    const ctx = await loggedInChecker();
 
-    const res = await call("GET", "/latest", { session_id });
+    await call("PUT", "/answers", as(ctx), { answers: { areaSqm: 10 } });
+    await call("PUT", "/answers", as(ctx), { answers: { areaSqm: 20 } });
+
+    const rows = await checksOf(ctx.user.id);
+    expect(rows).toHaveLength(1);
+    expect((rows[0]!.formData as { areaSqm: number }).areaSqm).toBe(20);
+    expect((await rowOf(ctx.sid))!.checkId).toBe(rows[0]!.id);
+  });
+
+  it("creates a separate check for a new session", async () => {
+    const ctx = await loggedInChecker();
+    const otherSid = await createAnonymousSession();
+
+    await call("PUT", "/answers", as(ctx), { answers: { areaSqm: 10 } });
+    await call(
+      "PUT",
+      "/answers",
+      { sid: otherSid, session_id: ctx.session_id },
+      {
+        answers: { areaSqm: 20 },
+      }
+    );
+
+    expect(await checksOf(ctx.user.id)).toHaveLength(2);
+  });
+
+  it("updates the requested check, not the most recently changed draft", async () => {
+    const ctx = await loggedInChecker();
+    const secondSid = await createAnonymousSession();
+
+    // A (older) and B (newer)
+    await call("PUT", "/answers", as(ctx), { answers: { areaSqm: 10 } });
+    await call(
+      "PUT",
+      "/answers",
+      { sid: secondSid, session_id: ctx.session_id },
+      {
+        answers: { areaSqm: 20 },
+      }
+    );
+    const [a, b] = (await checksOf(ctx.user.id)).sort(
+      (x, y) => x.createdAt.getTime() - y.createdAt.getTime()
+    );
+
+    // edit A through the second session
+    const res = await call(
+      "PUT",
+      "/answers",
+      { sid: secondSid, session_id: ctx.session_id },
+      {
+        answers: { areaSqm: 99 },
+        checkId: a!.id,
+      }
+    );
     expect(res.status).toBe(200);
-    expect((await res.json()).check).toBeNull();
+
+    const rows = await checksOf(ctx.user.id);
+    const area = (id: string) =>
+      (rows.find((r) => r.id === id)!.formData as { areaSqm: number }).areaSqm;
+    expect(rows).toHaveLength(2);
+    expect(area(a!.id)).toBe(99);
+    expect(area(b!.id)).toBe(20); // unchanged
   });
 
-  it("returns the most recently updated own check", async () => {
-    const me = await createUser();
-    const session_id = await login();
-    await db.insert(checks).values({
-      userId: me.id,
-      formData: { a: "old" },
-      updatedAt: new Date(Date.now() - HOUR),
+  it("evaluate completes the linked check instead of creating a duplicate", async () => {
+    const ctx = await loggedInChecker();
+
+    await call("PUT", "/answers", as(ctx), { answers: completeAnswers() });
+    const res = await call("POST", "/evaluate", as(ctx));
+    expect(res.status).toBe(200);
+
+    const rows = await checksOf(ctx.user.id);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.status).toBe("completed");
+    expect(rows[0]!.result).not.toBeNull();
+  });
+
+  it("editing a completed check turns it back into a draft without result", async () => {
+    const ctx = await loggedInChecker();
+    await call("PUT", "/answers", as(ctx), { answers: completeAnswers() });
+    await call("POST", "/evaluate", as(ctx));
+
+    await call("PUT", "/answers", as(ctx), {
+      answers: { ...completeAnswers(), areaSqm: 81 },
     });
-    const [newest] = await db
+
+    const [row] = await checksOf(ctx.user.id);
+    expect(row!.status).toBe("draft");
+    expect(row!.result).toBeNull();
+  });
+
+  it("rejects the checkId of another user and leaves that check untouched", async () => {
+    const ctx = await loggedInChecker();
+    const other = await createUser("other@example.com");
+    const [foreign] = await db
       .insert(checks)
-      .values({ userId: me.id, formData: { a: "new" } })
+      .values({ userId: other.id, formData: { areaSqm: 5 } })
       .returning();
 
-    const body = await (await call("GET", "/latest", { session_id })).json();
-    expect(body.check).toMatchObject({
-      id: newest!.id,
-      formData: { a: "new" },
+    const res = await call("PUT", "/answers", as(ctx), {
+      answers: { areaSqm: 99 },
+      checkId: foreign!.id,
     });
+    expect(res.status).toBe(404);
+
+    const [after] = await checksOf(other.id);
+    expect((after!.formData as { areaSqm: number }).areaSqm).toBe(5);
   });
 
-  it("does not return the check of another user", async () => {
-    await createUser();
-    const other = await createUser("other@example.com");
-    const session_id = await login();
-    await db
-      .insert(checks)
-      .values({ userId: other.id, formData: { secret: true } });
+  it("creates a new check when the linked check was soft-deleted", async () => {
+    const ctx = await loggedInChecker();
+    await call("PUT", "/answers", as(ctx), { answers: { areaSqm: 10 } });
+    await db.update(checks).set({ deletedAt: new Date() });
 
-    expect(
-      (await (await call("GET", "/latest", { session_id })).json()).check
-    ).toBeNull();
+    const res = await call("PUT", "/answers", as(ctx), {
+      answers: { areaSqm: 20 },
+    });
+    expect(res.status).toBe(200);
+
+    const rows = await checksOf(ctx.user.id);
+    expect(rows).toHaveLength(2);
+    expect(rows.filter((r) => r.deletedAt === null)).toHaveLength(1);
   });
 
-  it("ignores deleted checks", async () => {
-    const me = await createUser();
-    const session_id = await login();
-    await db
-      .insert(checks)
-      .values({ userId: me.id, formData: { a: 1 }, deletedAt: new Date() });
-
-    expect(
-      (await (await call("GET", "/latest", { session_id })).json()).check
-    ).toBeNull();
+  it("does not touch checks for anonymous users", async () => {
+    const sid = await createAnonymousSession();
+    await call("PUT", "/answers", { sid }, { answers: { areaSqm: 10 } });
+    expect(await db.select().from(checks)).toHaveLength(0);
   });
 });

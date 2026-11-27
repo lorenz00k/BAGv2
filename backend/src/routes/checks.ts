@@ -4,11 +4,10 @@ import type { MiddlewareHandler } from "hono";
 import { authMiddleware } from "../middleware/auth.js";
 import { db } from "../db/index.js";
 import { checks } from "../db/schema/checks.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNull, desc, sql } from "drizzle-orm";
 import { z } from "zod";
-import { complianceInputSchema } from "../types/compliance.js";
-import { evaluateCompliance } from "../services/compliance/index.js";
 
+//Account part of the compliance-checker: lists check-results
 const checksRouter = new Hono<{ Variables: Variables }>();
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -67,15 +66,22 @@ checksRouter.post("/", async (c) => {
   }
 });
 
-// GET /api/checks - Alle Checks des Users
+// GET /api/checks - Alle Checks des Users (neuste zuerst)
 checksRouter.get("/", async (c) => {
   const userId = c.get("userId");
 
   const userChecks = await db
-    .select()
+    .select({
+      id: checks.id,
+      status: checks.status,
+      formData: checks.formData,
+      result: checks.result,
+      currentStep: checks.currentStep,
+      updatedAt: checks.updatedAt,
+    })
     .from(checks)
-    .where(eq(checks.userId, userId))
-    .orderBy(checks.createdAt);
+    .where(and(eq(checks.userId, userId), isNull(checks.deletedAt), sql`${checks.formData}::text != '{}'`))
+    .orderBy(desc(checks.updatedAt));
 
   return c.json({ checks: userChecks });
 });
@@ -132,54 +138,7 @@ checksRouter.patch("/:id", async (c) => {
     if (error instanceof z.ZodError) {
       return c.json({ error: error.issues }, 400);
     }
-        if (error instanceof SyntaxError) {
-      return c.json({ error: "Invalid JSON" }, 400);
-    }
-    return c.json({ error: "Internal server error" }, 500);
-  }
-});
-
-// POST /api/checks/:id/evaluate - Compliance-Bewertung durchführen
-checksRouter.post("/:id/evaluate", async (c) => {
-  try {
-    const userId = c.get("userId");
-    const checkId = c.req.param("id");
-
-    // Check laden + Ownership prüfen
-    const [check] = await db
-      .select()
-      .from(checks)
-      .where(and(eq(checks.id, checkId), eq(checks.userId, userId)))
-      .limit(1);
-
-    if (!check) {
-      return c.json({ error: "Check not found" }, 404);
-    }
-
-    // FormData validieren
-    const formData = check.formData as Record<string, unknown>;
-    const validatedInput = complianceInputSchema.parse(formData);
-
-    // Compliance evaluieren
-    const result = evaluateCompliance(validatedInput);
-
-    // Ergebnis in DB speichern + Status auf completed
-    const [updated] = await db
-      .update(checks)
-      .set({
-        formData: { ...formData, result },
-        status: "completed",
-        updatedAt: new Date(),
-      })
-      .where(eq(checks.id, checkId))
-      .returning();
-
-    return c.json({ result, check: updated });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ error: "Invalid form data", issues: error.issues }, 400);
-    }
-        if (error instanceof SyntaxError) {
+    if (error instanceof SyntaxError) {
       return c.json({ error: "Invalid JSON" }, 400);
     }
     return c.json({ error: "Internal server error" }, 500);

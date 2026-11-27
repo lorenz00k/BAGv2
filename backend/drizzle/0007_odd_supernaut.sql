@@ -1,0 +1,2 @@
+ALTER TABLE "checker_sessions" ADD COLUMN "check_id" uuid;--> statement-breakpoint
+ALTER TABLE "checker_sessions" ADD CONSTRAINT "checker_sessions_check_id_checks_id_fk" FOREIGN KEY ("check_id") REFERENCES "public"."checks"("id") ON DELETE set null ON UPDATE no action;

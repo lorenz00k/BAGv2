@@ -10,11 +10,12 @@
         "operatingHours": "Geplante Betriebszeiten überschreiten den Rahmen der 2. GFVO (§ 1 Abs. 2).",
         "areaExceeded": "Die angegebene Fläche überschreitet die Höchstgrenze der gewählten Freistellungskategorie.",
         "accommodationBeds": "Mehr als 30 Gästebetten führen zur Genehmigungspflicht (§ 1 Abs. 1 Z 8 2. GFVO).",
-        "accommodationBuildingUse": "Das Gebäude wird nicht ausschließlich für Wohn-/Beherbergungszwecke genutzt – Voraussetzung der Freistellung fehlt.",
+        "accommodationBuildingUse": "Im Gebäude wohnen dauerhaft andere Personen als der Betriebsinhaber – Voraussetzung der Freistellung (§ 1 Abs. 1 Z 8 lit. b) fehlt.",
         "accommodationWellness": "Wellness- bzw. Badeeinrichtungen sind vom Ausnahmetatbestand nicht umfasst.",
         "accommodationMeals": "Die Abgabe vollwertiger Mahlzeiten überschreitet die Freistellung (nur Frühstück/kleiner Imbiss erlaubt).",
         "expectedImpairments": "Nach § 74 Abs. 2 GewO sind schädliche Immissionen, Gefährdungen oder Störungen zu erwarten.",
         "individualAssessment": "Keine eindeutige Freistellung – eine behördliche Feststellung kann Genehmigungsfreiheit bestätigen.",
-        "freistellungSummary": "Alle Voraussetzungen der 2. GFVO sind erfüllt – die Anlage bleibt genehmigungsfrei, solange die Auflagen eingehalten werden."
+        "freistellungSummary": "Alle Voraussetzungen der 2. GFVO sind erfüllt – die Anlage bleibt genehmigungsfrei, solange die Auflagen eingehalten werden.",
+        "closingHoursNote": "Die Freistellung gilt unabhängig von den Öffnungszeiten. Gegebenenfalls gelten aber Sperrstunden nach § 113 GewO, und der Lieferverkehr ist auf Mo–Fr 6–19 Uhr und Sa 6–18 Uhr beschränkt."
     }
 }
